@@ -1,0 +1,575 @@
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { ChevronDown, Check, Search, RotateCcw, CheckCheck, RefreshCw, X, Sparkles } from 'lucide-react';
+import Tooltip from './ui/Tooltip';
+import { getMonthsForQuarter } from '../utils/periodUtils';
+
+function CustomDropdown({
+  label,
+  options = [],
+  value,
+  onChange,
+  multi = false,
+  allOptionLabel = 'All',
+  searchable = false,
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const allValues = useMemo(() => {
+    return options.map((opt) => (typeof opt === 'object' ? opt.value : opt));
+  }, [options]);
+
+  const selectedValues = useMemo(() => {
+    if (Array.isArray(value)) return value;
+    if (value === 'ALL' || value === 'Total') {
+      return allValues;
+    }
+    if (!value || value === '') return [];
+    return [value];
+  }, [value, allValues]);
+
+  const isAllSelected =
+    allValues.length > 0 &&
+    (value === 'ALL' ||
+      value === 'Total' ||
+      selectedValues.length === allValues.length);
+
+  const filteredOptions = useMemo(() => {
+    if (!search.trim()) return options;
+    return options.filter((opt) =>
+      String(opt.label || opt).toLowerCase().includes(search.toLowerCase().trim())
+    );
+  }, [options, search]);
+
+  const handleToggleOption = (optVal) => {
+    if (!multi) {
+      onChange(optVal);
+      setIsOpen(false);
+      return;
+    }
+
+    const allOptionValue = label === 'Quarter' ? 'Total' : 'ALL';
+
+    if (optVal === 'ALL' || optVal === 'Total') {
+      if (isAllSelected) {
+        onChange([]);
+      } else {
+        onChange(allOptionValue);
+      }
+      return;
+    }
+
+    let next;
+    if (isAllSelected) {
+      next = allValues.filter((v) => v !== optVal);
+    } else if (selectedValues.includes(optVal)) {
+      next = selectedValues.filter((v) => v !== optVal);
+    } else {
+      next = [...selectedValues, optVal];
+      if (allValues.length > 0 && next.length === allValues.length) {
+        next = allOptionValue;
+      }
+    }
+    onChange(next);
+  };
+
+  const handleSelectAll = () => {
+    onChange(label === 'Quarter' ? 'Total' : 'ALL');
+  };
+
+  const handleClearAll = () => {
+    onChange([]);
+  };
+
+  const displayText = useMemo(() => {
+    if (isAllSelected) return allOptionLabel;
+    if (selectedValues.length === 0) return 'None';
+    if (selectedValues.length === 1) {
+      const match = options.find((o) => (typeof o === 'object' ? o.value : o) === selectedValues[0]);
+      const raw = match?.label || selectedValues[0];
+      return String(raw).replace(/^\d+[\s._-]+/, '').trim() || raw;
+    }
+    if (label === 'Month' && selectedValues.length <= 2) {
+      return selectedValues.map((v) => (typeof v === 'string' ? v.slice(0, 3) : v)).join(', ');
+    }
+    if (label === 'Quarter' && selectedValues.length <= 2) {
+      return selectedValues.join(', ');
+    }
+    return `${selectedValues.length} Selected`;
+  }, [isAllSelected, selectedValues, allOptionLabel, options, label]);
+
+  return (
+    <div className="relative flex flex-col" ref={dropdownRef}>
+      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 select-none">
+        {label}
+      </span>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center justify-between gap-2 px-3 py-1.5 rounded-md border text-xs transition-all cursor-pointer select-none ${isOpen
+          ? 'bg-white border-blue-600 ring-2 ring-blue-600/20 text-slate-950 shadow-xs font-semibold'
+          : !isAllSelected
+            ? 'bg-blue-50 border-blue-600 text-blue-950 font-semibold shadow-xs'
+            : 'bg-white border-slate-300 text-slate-900 hover:bg-slate-50 hover:border-slate-400 shadow-2xs font-medium'
+          }`}
+      >
+        <span className={`max-w-[140px] truncate ${!isAllSelected ? 'text-blue-950 font-semibold' : 'text-slate-900 font-medium'}`}>
+          {displayText}
+        </span>
+        {!isAllSelected && multi && selectedValues.length > 1 && (
+          <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-xs ml-auto">
+            {selectedValues.length}
+          </span>
+        )}
+        <ChevronDown
+          className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? 'rotate-180 text-blue-700' : !isAllSelected ? 'text-blue-800' : 'text-slate-700'}`}
+        />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-1.5 z-50 bg-white border border-slate-300 rounded-md shadow-xl min-w-[240px] max-w-[320px] p-2 flex flex-col gap-1.5 animate-in fade-in duration-150">
+          <div className="flex items-center justify-between px-2 pb-1.5 border-b border-slate-200 text-[11px]">
+            <span className="font-bold text-slate-800 uppercase tracking-wider text-[10px]">
+              Filter {label}
+            </span>
+            {multi && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSelectAll}
+                  className="text-[11px] font-bold text-blue-700 hover:text-blue-900 cursor-pointer"
+                >
+                  All
+                </button>
+                <span className="text-slate-300 font-bold">|</span>
+                <button
+                  type="button"
+                  onClick={handleClearAll}
+                  className="text-[11px] font-bold text-slate-600 hover:text-slate-900 cursor-pointer"
+                >
+                  Reset
+                </button>
+              </div>
+            )}
+          </div>
+
+          {searchable && options.length > 5 && (
+            <div className="relative px-1 pt-0.5">
+              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search..."
+                className="w-full pl-8 pr-2.5 py-1 text-xs bg-slate-50 border border-slate-300 rounded-md outline-none focus:bg-white focus:border-blue-600 transition-all text-slate-900 font-medium placeholder-slate-400"
+              />
+            </div>
+          )}
+
+          <div className="max-h-60 overflow-y-auto flex flex-col gap-1 pt-1 pr-0.5 custom-scroll">
+            {multi && (
+              <button
+                type="button"
+                onClick={() => handleToggleOption('ALL')}
+                className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-left transition-colors cursor-pointer ${isAllSelected
+                  ? 'bg-blue-50 border border-blue-200 text-blue-950 font-semibold'
+                  : 'text-slate-800 hover:bg-slate-50 border border-transparent'
+                  }`}
+              >
+                <div
+                  className={`w-4 h-4 rounded flex items-center justify-center shrink-0 transition-colors ${isAllSelected
+                    ? 'border-2 border-blue-600 bg-blue-600 text-white'
+                    : 'border-2 border-slate-400 bg-white'
+                    }`}
+                >
+                  {isAllSelected && <Check className="w-3.5 h-3.5 text-white stroke-[2.5]" />}
+                </div>
+                <span className="truncate">{allOptionLabel}</span>
+              </button>
+            )}
+
+            {filteredOptions.map((opt) => {
+              const val = typeof opt === 'object' ? opt.value : opt;
+              const text = typeof opt === 'object' ? opt.label : opt;
+              const isSelected = isAllSelected || selectedValues.includes(val);
+
+              return (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => handleToggleOption(val)}
+                  className={`w-full flex items-center ${multi ? 'gap-2.5 justify-start' : 'justify-between'} px-2.5 py-1.5 rounded-md text-xs font-medium text-left transition-colors cursor-pointer ${isSelected
+                    ? 'bg-blue-50 border border-blue-200 text-blue-950 font-semibold'
+                    : 'text-slate-800 hover:bg-slate-50 border border-transparent'
+                    }`}
+                >
+                  {multi ? (
+                    <>
+                      <div
+                        className={`w-4 h-4 rounded flex items-center justify-center shrink-0 transition-colors ${isSelected
+                          ? 'border-2 border-blue-600 bg-blue-600 text-white'
+                          : 'border-2 border-slate-400 bg-white'
+                          }`}
+                      >
+                        {isSelected && <Check className="w-3.5 h-3.5 text-white stroke-[2.5]" />}
+                      </div>
+                      <span className="truncate">{text}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="truncate">{text}</span>
+                      {isSelected && (
+                        <Check className="w-4 h-4 text-blue-600 stroke-[2.5] shrink-0 ml-auto" />
+                      )}
+                    </>
+                  )}
+                </button>
+              );
+            })}
+
+            {filteredOptions.length === 0 && (
+              <div className="py-3 text-center text-xs text-slate-500 font-medium italic">
+                No matching options
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function Topbar({
+  onToggleSidebar,
+  filters = {},
+  updateFilters,
+  dashboardData,
+  loading,
+  refreshAll,
+  getActiveBusinesses,
+  isAdmin,
+  user,
+  onOpenAi,
+}) {
+  const [draftFilters, setDraftFilters] = useState(filters);
+
+  useEffect(() => {
+    setDraftFilters(filters);
+  }, [filters]);
+
+  const fys = dashboardData?.meta?.fys || [];
+  const quarters = [
+    { value: 'Q1', label: 'Q1' },
+    { value: 'Q2', label: 'Q2' },
+    { value: 'Q3', label: 'Q3' },
+    { value: 'Q4', label: 'Q4' },
+  ];
+
+  const monthOptions = useMemo(() => {
+    const availableMonths = getMonthsForQuarter(draftFilters.quarter);
+    return availableMonths.map((m) => ({ value: m, label: m }));
+  }, [draftFilters.quarter]);
+
+  const handleQuarterChange = (val) => {
+    const normQ = val === 'ALL' || (Array.isArray(val) && val.length === quarters.length) ? 'Total' : val;
+    const availableMonths = getMonthsForQuarter(normQ);
+
+    let nextMonth = draftFilters.month;
+    if (nextMonth && nextMonth !== 'ALL') {
+      if (Array.isArray(nextMonth)) {
+        const validMonths = nextMonth.filter((m) => availableMonths.includes(m));
+        nextMonth = validMonths.length > 0 ? (validMonths.length === availableMonths.length ? 'ALL' : validMonths) : 'ALL';
+      } else if (!availableMonths.includes(nextMonth)) {
+        nextMonth = 'ALL';
+      }
+    }
+
+    setDraftFilters((prev) => ({
+      ...prev,
+      quarter: normQ,
+      month: nextMonth,
+    }));
+  };
+
+  const handleYearChange = (val) => {
+    const fyVal = Array.isArray(val) ? val[0] : val;
+    setDraftFilters((prev) => ({
+      ...prev,
+      fy: fyVal,
+    }));
+  };
+
+  const cleanLabel = (text) => {
+    if (!text) return '';
+    return String(text).replace(/^\d+[\s._-]+/, '').trim() || text;
+  };
+
+  const segments = useMemo(() => {
+    const meta = dashboardData?.meta;
+    let list = [];
+    if (meta?.business_mapping && Array.isArray(meta.business_mapping)) {
+      const seen = {};
+      meta.business_mapping.forEach((r) => {
+        const s = (r.segment_n || r.segment || r.Segment || '').trim();
+        if (s && !seen[s] && !s.toUpperCase().includes('DCO')) {
+          seen[s] = true;
+          list.push(s);
+        }
+      });
+      list.sort();
+    } else {
+      list = (meta?.segments || []).filter((s) => !String(s).toUpperCase().includes('DCO'));
+    }
+    return list.map((s) => ({
+      value: s,
+      label: cleanLabel(s),
+    }));
+  }, [dashboardData]);
+
+  const businesses = useMemo(() => {
+    let rawList = [];
+    if (typeof getActiveBusinesses === 'function') {
+      try {
+        rawList = getActiveBusinesses(draftFilters.segment) || [];
+      } catch {
+        // Fall back to mapping
+      }
+    }
+    if (!rawList.length) {
+      const meta = dashboardData?.meta;
+      if (meta?.business_mapping && Array.isArray(meta.business_mapping)) {
+        const selectedSegs = Array.isArray(draftFilters.segment)
+          ? draftFilters.segment
+          : draftFilters.segment && draftFilters.segment !== 'ALL'
+            ? [draftFilters.segment]
+            : [];
+        const seen = {};
+        meta.business_mapping.forEach((r) => {
+          const segN = (r.segment_n || '').trim();
+          const segOld = (r.segment || r.Segment || '').trim();
+          const buN = (r.biz1_n || r.Biz1_N || '').trim();
+          if (selectedSegs.length > 0) {
+            const matchesSelected = selectedSegs.some(
+              (s) => s.toLowerCase() === segN.toLowerCase() || s.toLowerCase() === segOld.toLowerCase()
+            );
+            if (!matchesSelected) return;
+          }
+          if (buN && !seen[buN] && buN.toUpperCase() !== 'NYJ' && !buN.toUpperCase().includes('DCO')) {
+            seen[buN] = true;
+            rawList.push(buN);
+          }
+        });
+        rawList.sort();
+      } else {
+        rawList = (meta?.biz_units || []).filter((b) => !String(b).toUpperCase().includes('DCO') && String(b).toUpperCase() !== 'NYJ');
+      }
+    }
+    return rawList.map((b) => {
+      const val = typeof b === 'object' ? b.value || b.label : b;
+      const lbl = typeof b === 'object' ? b.label || b.value : b;
+      return {
+        value: val,
+        label: cleanLabel(lbl),
+      };
+    });
+  }, [getActiveBusinesses, draftFilters.segment, dashboardData]);
+
+  const segmentOptions = useMemo(() => {
+    return segments.filter((s) => (typeof s === 'object' ? s.value : s) !== 'ALL');
+  }, [segments]);
+
+  const businessOptions = useMemo(() => {
+    return businesses.filter((b) => (typeof b === 'object' ? b.value : b) !== 'ALL');
+  }, [businesses]);
+
+  const hasEmptySelection = useMemo(() => {
+    const isEmpty = (v) => {
+      if (Array.isArray(v) && v.length === 0) return true;
+      if (v === '' || v === null || v === undefined) return true;
+      return false;
+    };
+    return (
+      isEmpty(draftFilters.fy) ||
+      isEmpty(draftFilters.quarter) ||
+      isEmpty(draftFilters.month) ||
+      isEmpty(draftFilters.segment) ||
+      isEmpty(draftFilters.bu)
+    );
+  }, [draftFilters]);
+
+  const hasPendingChanges = useMemo(() => {
+    const isDifferent = (a, b) => {
+      if (Array.isArray(a) && Array.isArray(b)) {
+        if (a.length !== b.length) return true;
+        return a.some((val) => !b.includes(val));
+      }
+      return a !== b;
+    };
+    return (
+      isDifferent(draftFilters.fy, filters.fy) ||
+      isDifferent(draftFilters.quarter, filters.quarter) ||
+      isDifferent(draftFilters.month, filters.month) ||
+      isDifferent(draftFilters.segment, filters.segment) ||
+      isDifferent(draftFilters.bu, filters.bu)
+    );
+  }, [draftFilters, filters]);
+
+  const handleApply = () => {
+    if (hasEmptySelection || !hasPendingChanges) return;
+    updateFilters(draftFilters);
+  };
+
+  const resetFilters = () => {
+    const defaultFy =
+      dashboardData?.meta?.budget_fy ||
+      (dashboardData?.meta?.fys?.length
+        ? dashboardData.meta.fys[dashboardData.meta.fys.length - 1]
+        : 'FY26');
+    const resetValues = {
+      fy: defaultFy,
+      quarter: 'Total',
+      month: 'ALL',
+      segment: 'ALL',
+      bu: 'ALL',
+    };
+    setDraftFilters(resetValues);
+    updateFilters(resetValues);
+  };
+
+  return (
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-6 py-3 shadow-xs">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 w-full">
+        <div className="flex items-end gap-3 flex-wrap flex-1">
+          <CustomDropdown
+            label="Year"
+            options={fys}
+            value={draftFilters.fy}
+            onChange={handleYearChange}
+            multi={false}
+            searchable={true}
+          />
+
+          <CustomDropdown
+            label="Quarter"
+            options={quarters}
+            value={draftFilters.quarter}
+            onChange={handleQuarterChange}
+            multi={true}
+            allOptionLabel="Full Year"
+          />
+
+          <CustomDropdown
+            label="Month"
+            options={monthOptions}
+            value={draftFilters.month || 'ALL'}
+            onChange={(val) => setDraftFilters((prev) => ({ ...prev, month: val }))}
+            multi={true}
+            searchable={true}
+            allOptionLabel="All Months"
+          />
+
+          <CustomDropdown
+            label="Business Group"
+            options={segmentOptions}
+            value={draftFilters.segment}
+            onChange={(val) =>
+              setDraftFilters((prev) => {
+                let nextBu = prev.bu;
+                if (nextBu && nextBu !== 'ALL') {
+                  const validBUs = typeof getActiveBusinesses === 'function' ? getActiveBusinesses(val) : [];
+                  if (validBUs.length > 0) {
+                    const isStillValid = Array.isArray(nextBu)
+                      ? nextBu.every((b) => validBUs.includes(b))
+                      : validBUs.includes(nextBu);
+                    if (!isStillValid) {
+                      nextBu = 'ALL';
+                    }
+                  }
+                }
+                return { ...prev, segment: val, bu: nextBu };
+              })
+            }
+            multi={true}
+            searchable={true}
+            allOptionLabel="All Business Groups"
+          />
+
+          <CustomDropdown
+            label="Business"
+            options={businessOptions}
+            value={draftFilters.bu}
+            onChange={(val) => setDraftFilters((prev) => ({ ...prev, bu: val }))}
+            multi={true}
+            searchable={true}
+            allOptionLabel="All Businesses"
+          />
+        </div>
+
+        <div className="flex items-center gap-2.5 ml-auto shrink-0 flex-wrap sm:flex-nowrap self-end pb-0.5">
+          <button
+            type="button"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-all cursor-pointer shadow-xs group shrink-0"
+            id="askFinanceAiBtn"
+            title="Open Finance AI Copilot"
+            onClick={onOpenAi}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-blue-200 group-hover:scale-110 transition-transform" />
+            <span>Ask Finance AI</span>
+          </button>
+
+          <button
+            type="button"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-800 hover:text-slate-950 bg-white hover:bg-slate-100 border border-slate-300 rounded-md transition-colors cursor-pointer shadow-2xs"
+            id="resetFiltersBtn"
+            title="Reset all filters to default"
+            onClick={resetFilters}
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Reset</span>
+          </button>
+
+          <Tooltip
+            content={
+              hasEmptySelection
+                ? 'Please select at least one value for each filter before applying.'
+                : !hasPendingChanges
+                  ? 'No filter changes to apply'
+                  : ''
+            }
+            position="bottom"
+            className={hasEmptySelection || !hasPendingChanges || loading ? 'cursor-not-allowed' : ''}
+          >
+            <button
+              type="button"
+              className={`flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold rounded-md transition-all shadow-xs ${hasEmptySelection || !hasPendingChanges || loading
+                ? 'bg-slate-200 text-slate-400 border border-slate-300 cursor-not-allowed pointer-events-none'
+                : 'bg-blue-600 hover:bg-blue-700 cursor-pointer text-white shadow-xs'
+                }`}
+              id="applyFiltersBtn"
+              onClick={handleApply}
+              disabled={loading || hasEmptySelection || !hasPendingChanges}
+            >
+              {loading ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Check className="w-3.5 h-3.5" />
+              )}
+              <span>{loading ? 'Applying...' : 'Apply'}</span>
+            </button>
+          </Tooltip>
+        </div>
+      </div>
+    </header>
+  );
+}

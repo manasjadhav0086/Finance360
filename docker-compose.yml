@@ -1,0 +1,17 @@
+services:
+  analytics-finance-service:
+    build: .
+    image: ${DOCKER_IMAGE:-analytics-finance-service:latest}
+    env_file:
+      - backend/.env
+    ports:
+      - "4821:4821"
+      - "4820:4820"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 1G
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped

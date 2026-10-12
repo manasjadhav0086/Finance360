@@ -1,0 +1,9 @@
+.git
+.gitignore
+README.md
+Dockerfile
+docker-compose.yml
+backend/node_modules
+frontend/node_modules
+key.json
+.env
