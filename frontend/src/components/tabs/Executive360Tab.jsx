@@ -193,7 +193,7 @@ export default function Executive360Tab({
     const bm = DATA?.meta?.business_mapping || [];
     const isExcluded = (s) => {
       const raw = String(s || '').toUpperCase();
-      return raw.includes('ORG') || raw.includes('DCO') || raw === 'NYJ';
+      return raw.includes('ORG');
     };
 
     if (bm.length > 0) {
@@ -211,9 +211,7 @@ export default function Executive360Tab({
     }
 
     const bus = DATA?.bu ? Object.keys(DATA.bu) : [];
-    return bus
-      .filter((b) => b !== 'NYJ' && !String(DATA?.meta?.bu_segment?.[b] || '').toUpperCase().includes('DCO'))
-      .sort();
+    return bus.sort();
   }, [dashboardData]);
 
   // Mapping from Business (biz1_n) to Business Group (segment_n)
@@ -790,7 +788,7 @@ export default function Executive360Tab({
     const groupMap = {};
     const isExcluded = (s) => {
       const raw = String(s || '').toUpperCase();
-      return raw.includes('ORG') || raw.includes('DCO') || raw === 'NYJ';
+      return raw.includes('ORG');
     };
 
     if (bm.length > 0) {

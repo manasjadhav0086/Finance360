@@ -1,5 +1,3 @@
-import { isDcoOrNyj } from './formatters.js';
-
 /**
  * Resolves effective allowed segments and businesses for a given user.
  * If user is admin, returns isUnrestricted: true.
@@ -39,8 +37,6 @@ export function resolveUserScope(user, businessMappingRecords = []) {
     const sNew = String(bmr.segment_n || bmr.Segment_N || '').trim();
     const bOld = String(bmr.biz1 || bmr.Biz1 || '').trim();
     const bNew = String(bmr.biz1_n || bmr.Biz1_N || '').trim();
-
-    if (isDcoOrNyj(sNew || sOld, bNew || bOld)) continue;
 
     const groupMatches = rawGroups.some((g) => {
       const gClean = g.toLowerCase().trim();

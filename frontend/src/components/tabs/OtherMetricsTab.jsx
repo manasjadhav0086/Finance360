@@ -60,8 +60,7 @@ export default function OtherMetricsTab({
         const seg = (r.segment_n || r.segment || r.Segment || '').trim();
         const biz = (r.biz1_n || r.biz1 || r.Biz1 || '').trim();
 
-        if (!biz || biz.toUpperCase() === 'NYJ' || biz.toUpperCase().includes('DCO')) return;
-        if (seg.toUpperCase().includes('DCO')) return;
+        if (!biz) return;
 
         const key = `${seg}:::${biz}`;
         if (!seen.has(key)) {
@@ -79,9 +78,8 @@ export default function OtherMetricsTab({
     // Fallback if business_mapping is empty
     if (pairs.length === 0 && dashboardData?.meta?.biz_units) {
       dashboardData.meta.biz_units.forEach((b) => {
-        if (!b || b.toUpperCase() === 'NYJ' || b.toUpperCase().includes('DCO')) return;
+        if (!b) return;
         const seg = buSegment[b] || 'Other Group';
-        if (seg.toUpperCase().includes('DCO')) return;
         const key = `${seg}:::${b}`;
         if (!seen.has(key)) {
           seen.add(key);

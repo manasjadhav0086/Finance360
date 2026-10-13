@@ -45,7 +45,7 @@ router.get('/business-options', verifyAdmin, async (req, res) => {
     for (const r of rows || []) {
       const s = String(r.Segment_N || r.Segment || '').trim();
       const b = String(r.Biz1_N || r.Biz1 || '').trim();
-      if (!s || s.toUpperCase().includes('DCO') || !b || b.toUpperCase().includes('NYJ')) continue;
+      if (!s || !b) continue;
 
       allGroups.add(s);
       allBusinesses.add(b);

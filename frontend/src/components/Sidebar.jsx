@@ -119,11 +119,11 @@ export default function Sidebar({
       >
         <div className="h-16 px-4 bg-white/10 backdrop-blur-md border-b border-white/15 flex items-center shrink-0">
           <div className="flex items-center gap-3">
-            <div className="bg-white px-1.5 py-1 rounded-md shadow-xs flex items-center justify-center shrink-0">
+            <div className="flex items-center justify-center shrink-0">
               <img
-                src="/fin/niit_logo.svg"
-                alt="NIIT"
-                className="h-5.5 w-auto object-contain"
+                src="/fin/finance360_logo.svg"
+                alt="Finance360"
+                className="h-8 w-8 object-contain shadow-xs rounded-md"
               />
             </div>
             <div className="h-7 w-px bg-white/25 shrink-0" />

@@ -1,9 +1,3 @@
-export function isDcoOrNyj(segStr, bizStr) {
-  const s = String(segStr || '').toUpperCase();
-  const b = String(bizStr || '').toUpperCase();
-  return s.includes('DCO') || b.includes('NYJ') || b.includes('DCO') || s.includes('NYJ');
-}
-
 export function serializeRow(row) {
   if (!row || typeof row !== 'object') return row;
   const out = {};

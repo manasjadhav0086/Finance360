@@ -1,197 +1,115 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import keycloak, { initKeycloak, login as kcLogin, logout as kcLogout } from '../services/keycloak';
-import api, { setAccessToken, clearAccessToken } from '../services/api';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import api, { setAccessToken } from '../services/api';
 import { apiEndpoints } from '../apiEndpoints';
-import { Loader2 } from 'lucide-react';
 
-const DEFAULT_AUTH = {
-  isAuthorized: false,
-  role: 'user',
-  isAdmin: false,
+const DEFAULT_ADMIN_USER = {
+  user_id: 'usr_admin',
+  email: 'admin@finance360.internal',
+  name: 'Finance360 Admin',
+  role: 'admin',
+  business_groups: [],
+  businesses: [],
 };
 
-export function parseTokenRoles(profile) {
-  if (!profile) return DEFAULT_AUTH;
-
-  return {
-    isAuthorized: true,
-    role: 'user',
-    isAdmin: false,
-  };
-}
+const DEFAULT_AUTH = {
+  isAuthorized: true,
+  role: 'admin',
+  isAdmin: true,
+};
 
 const AuthContext = createContext({
-  isLoggedIn: false,
-  authenticated: false,
-  user: null,
+  isLoggedIn: true,
+  authenticated: true,
+  user: DEFAULT_ADMIN_USER,
   setUser: () => { },
-  token: null,
-  role: 'user',
-  isAdmin: false,
+  token: 'local-finance360-token',
+  role: 'admin',
+  isAdmin: true,
   authData: DEFAULT_AUTH,
   isUnauthorized: false,
   setIsUnauthorized: () => { },
-  syncDbProfile: async () => { },
-  fetchCurrentUser: async () => { },
-  loading: true,
-  loadingUser: true,
-  authLoading: true,
+  syncDbProfile: async () => DEFAULT_ADMIN_USER,
+  fetchCurrentUser: async () => DEFAULT_ADMIN_USER,
+  loading: false,
+  loadingUser: false,
+  authLoading: false,
   login: () => { },
   logout: () => { },
   keycloak: null,
 });
 
 export const AuthProvider = ({ children }) => {
-  const [authenticated, setAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [authenticated] = useState(true);
+  const [user, setUser] = useState(DEFAULT_ADMIN_USER);
+  const [token] = useState('local-finance360-token');
   const [authData, setAuthData] = useState(DEFAULT_AUTH);
-  const [isForbidden, setIsForbidden] = useState(false);
-  const isInitializedRef = useRef(false);
-
-  const syncDbProfile = async (currentToken) => {
-    try {
-      const res = await api.get(apiEndpoints.USER, {
-        headers: {
-          Authorization: `Bearer ${currentToken}`,
-        },
-      });
-      const data = res.data;
-      if (data?.user) {
-        const dbUser = data.user;
-        setUser(dbUser);
-        setToken(currentToken);
-        setAccessToken(currentToken);
-        setAuthenticated(true);
-        setIsForbidden(false);
-        setAuthData({
-          isAuthorized: true,
-          role: dbUser.role || 'user',
-          isAdmin: dbUser.role === 'admin',
-        });
-        return dbUser;
-      }
-      throw new Error('No user profile found in database');
-    } catch (err) {
-      console.warn('DB Profile sync / verification failed:', err.response?.data || err.message);
-      setAuthenticated(false);
-      setUser(null);
-      setToken(null);
-      clearAccessToken();
-      setIsForbidden(true);
-      setAuthData(DEFAULT_AUTH);
-      return null;
-    }
-  };
-
-  const handleAuthenticatedUser = async (accessToken) => {
-    const verifiedUser = await syncDbProfile(accessToken);
-    return Boolean(verifiedUser);
-  };
 
   useEffect(() => {
-    if (isInitializedRef.current) return;
-    isInitializedRef.current = true;
-
-    initKeycloak({
-      onLoad: 'login-required',
-      pkceMethod: 'S256',
-      checkLoginIframe: false,
-    })
-      .then(async (isAuth) => {
-        if (isAuth && keycloak.token) {
-          await handleAuthenticatedUser(keycloak.token);
-        } else {
-          setAuthenticated(false);
-          setIsForbidden(false);
-          setAuthData(DEFAULT_AUTH);
+    setAccessToken('local-finance360-token');
+    // Optionally fetch user profile from MySQL if available
+    api.get(apiEndpoints.USER)
+      .then((res) => {
+        if (res.data?.user) {
+          setUser(res.data.user);
+          setAuthData({
+            isAuthorized: true,
+            role: res.data.user.role || 'admin',
+            isAdmin: res.data.user.role === 'admin',
+          });
         }
       })
-      .catch((err) => {
-        console.error('Keycloak initialization error:', err);
-        setAuthenticated(false);
-        setIsForbidden(false);
-        setAuthData(DEFAULT_AUTH);
-      })
-      .finally(() => {
-        setLoading(false);
+      .catch(() => {
+        // Safe fallback to default admin
       });
-
-    keycloak.onTokenExpired = () => {
-      setAuthenticated(false);
-      setUser(null);
-      setToken(null);
-      clearAccessToken();
-    };
-
-    keycloak.onAuthLogout = () => {
-      setIsLoggingOut(true);
-      setAuthenticated(false);
-      setUser(null);
-      setToken(null);
-      clearAccessToken();
-    };
   }, []);
 
-  const login = useCallback((options = {}) => {
-    return kcLogin({ redirectUri: window.location.origin, ...options });
-  }, []);
+  const syncDbProfile = async () => {
+    try {
+      const res = await api.get(apiEndpoints.USER);
+      if (res.data?.user) {
+        setUser(res.data.user);
+        return res.data.user;
+      }
+    } catch {
+      // Keep default admin user
+    }
+    return DEFAULT_ADMIN_USER;
+  };
 
-  const logout = useCallback((options = {}) => {
-    setIsLoggingOut(true);
-    setLoading(true);
-    setAuthenticated(false);
-    setUser(null);
-    setToken(null);
-    clearAccessToken();
-    return kcLogout(options);
-  }, []);
+  const login = useCallback(() => { }, []);
+  const logout = useCallback(() => { }, []);
 
-  const role = user?.role || authData.role || 'user';
-  const isAdmin = Boolean(user?.role === 'admin' || authData.isAdmin);
-  const isLoggedIn = authenticated;
-  const isUnauthorized = isForbidden;
+  const role = user?.role || authData.role || 'admin';
+  const isAdmin = Boolean(role === 'admin');
 
   return (
     <AuthContext.Provider
       value={{
-        isLoggedIn,
-        authenticated,
+        isLoggedIn: true,
+        authenticated: true,
         user,
         setUser,
         token,
         role,
         isAdmin,
         authData,
-        isUnauthorized,
-        isLoggingOut,
+        isUnauthorized: false,
+        isLoggingOut: false,
         setIsUnauthorized: () => { },
         syncDbProfile,
         fetchCurrentUser: syncDbProfile,
-        loading,
-        loadingUser: loading,
-        authLoading: loading,
+        loading: false,
+        loadingUser: false,
+        authLoading: false,
         login,
         logout,
-        keycloak,
+        keycloak: null,
       }}
     >
-      {loading || isLoggingOut ? (
-        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-4 text-center p-6 select-none">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-          {isLoggingOut && (
-            <div className="text-xs font-bold tracking-widest uppercase text-blue-900 font-mono">
-              Signing out...
-            </div>
-          )}
-        </div>
-      ) : children}
+      {children}
     </AuthContext.Provider>
   );
 };
-
 
 export function useAuth() {
   const context = useContext(AuthContext);
@@ -202,6 +120,3 @@ export function useAuth() {
 }
 
 export default AuthContext;
-
-
-

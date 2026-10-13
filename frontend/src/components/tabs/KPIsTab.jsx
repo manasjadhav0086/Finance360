@@ -126,9 +126,7 @@ export default function KPIsTab({
 
     const addPair = (group, bu) => {
       const gNorm = String(group || '').trim();
-      const bNorm = String(bu || '').trim();
-      if (!bNorm || bNorm.toUpperCase() === 'NYJ' || bNorm.toUpperCase().includes('DCO')) return;
-      if (gNorm.toUpperCase().includes('DCO')) return;
+      if (!bNorm) return;
 
       const norm = bNorm.toLowerCase();
       const gLow = gNorm.toLowerCase();

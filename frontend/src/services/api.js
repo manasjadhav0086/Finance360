@@ -1,12 +1,11 @@
 import axios from 'axios';
 import { apiEndpoints } from '../apiEndpoints';
-import keycloak from './keycloak';
 
 // Access token management (Purely In-Memory)
-let inMemoryAccessToken = null;
+let inMemoryAccessToken = 'local-finance360-token';
 
 export const setAccessToken = (token) => {
-  inMemoryAccessToken = token || null;
+  inMemoryAccessToken = token || 'local-finance360-token';
 };
 
 export const clearAccessToken = () => {
@@ -14,10 +13,7 @@ export const clearAccessToken = () => {
 };
 
 export const getAccessToken = () => {
-  if (keycloak && keycloak.token) {
-    return keycloak.token;
-  }
-  return inMemoryAccessToken;
+  return inMemoryAccessToken || 'local-finance360-token';
 };
 
 const api = axios.create({

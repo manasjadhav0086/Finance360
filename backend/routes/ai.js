@@ -16,8 +16,6 @@ async function getBmRecords() {
       SELECT DISTINCT Segment, Biz1, Segment_N, Biz1_N 
       FROM dataai
       WHERE Segment IS NOT NULL AND Biz1 IS NOT NULL
-        AND (Segment NOT LIKE '%DCO%')
-        AND (Biz1 NOT LIKE '%NYJ%')
     `;
     const rows = await mysqlService.executeQuery(sql);
     bmRawRecords = rows || [];

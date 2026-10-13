@@ -96,7 +96,7 @@ function UserScopeDialog({
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="user@niit.com"
+                  placeholder="user@finance360.com"
                   className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-md outline-none focus:bg-white focus:border-blue-600 font-medium"
                 />
               </div>

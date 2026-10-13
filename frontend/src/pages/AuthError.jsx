@@ -1,16 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldAlert, LogOut, Mail, HelpCircle, RotateCcw } from 'lucide-react';
-import keycloak from '../services/keycloak';
 import { useAuth } from '../context/AuthContext';
 
 export default function AuthError() {
   const navigate = useNavigate();
-  const { fetchCurrentUser, logout } = useAuth();
+  const { user, fetchCurrentUser, logout } = useAuth();
   const [retrying, setRetrying] = useState(false);
-  const parsed = keycloak?.tokenParsed || keycloak?.idTokenParsed || {};
-  const email = parsed.email || parsed.preferred_username || '';
-  const userName = parsed.name || email.split('@')[0] || '';
+  const email = user?.email || 'admin@finance360.internal';
+  const userName = user?.name || 'Administrator';
 
   const initials = (userName || email || 'US')
     .split(' ')
@@ -44,9 +42,9 @@ export default function AuthError() {
       <div className="w-full max-w-md flex flex-col items-center">
         <div className="mb-6 flex items-center gap-3">
           <img
-            src="/fin/niit_logo.svg"
-            alt="NIIT"
-            className="h-7 w-auto object-contain"
+            src="/fin/finance360_logo.svg"
+            alt="Finance360"
+            className="h-7 w-7 object-contain"
           />
           <div className="h-8 w-px bg-slate-300" />
           <div className="flex flex-col">

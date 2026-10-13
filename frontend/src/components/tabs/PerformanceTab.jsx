@@ -532,13 +532,13 @@ export default function PerformanceTab({
   // Helper to normalize Business Group labels
   const cleanLabel = (text) => String(text || '').replace(/^\d+[\s._-]+/, '').trim();
 
-  // Get authoritative Business Groups from business_mapping (strictly Segment_N, excluding Orgs and DCO)
+  // Get authoritative Business Groups from business_mapping (strictly Segment_N)
   const getActiveBusinessGroups = () => {
     let bgs = [];
     const isExcluded = (s) => {
       const cl = cleanLabel(s).toUpperCase();
       const raw = String(s || '').toUpperCase();
-      return cl === 'ORGS' || cl === 'ORG' || cl.includes('DCO') || raw.includes('ORG') || raw.includes('DCO');
+      return cl === 'ORGS' || cl === 'ORG' || raw.includes('ORG');
     };
 
     if (filters.segment && filters.segment !== 'ALL' && !(Array.isArray(filters.segment) && (filters.segment.length === 0 || filters.segment.includes('ALL')))) {

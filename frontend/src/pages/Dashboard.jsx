@@ -158,10 +158,6 @@ export default function Dashboard({ isAdmin, user }) {
         const s = (bm.segment || '').trim();
         const sn = (bm.segment_n || '').trim();
         const b = (bm.biz1 || '').trim();
-        const bn = (bm.biz1_n || '').trim();
-        if (s.toUpperCase().includes('DCO') || sn.toUpperCase().includes('DCO') || b.toUpperCase() === 'NYJ' || bn.toUpperCase() === 'NYJ') {
-          return;
-        }
         if (s && sn) {
           if (!segments[s]) segments[s] = new Set();
           if (!segments[sn]) segments[sn] = new Set();
@@ -214,9 +210,7 @@ export default function Dashboard({ isAdmin, user }) {
         meta.business_mapping.forEach((r) => {
           const sn = (r.segment_n || '').trim();
           const s = (r.segment || r.Segment || '').trim();
-          const bn = (r.biz1_n || r.Biz1_N || '').trim();
-
-          if (sn.toUpperCase().includes('DCO') || s.toUpperCase().includes('DCO') || !bn || bn.toUpperCase() === 'NYJ' || bn.toUpperCase().includes('DCO')) return;
+          if (!bn) return;
 
           if (isAll) {
             bus.add(bn);
@@ -252,7 +246,7 @@ export default function Dashboard({ isAdmin, user }) {
 
       if (bus.size === 0 && meta.biz_units) {
         meta.biz_units.forEach((b) => {
-          if (b && b.toUpperCase() !== 'NYJ' && !String(meta.bu_segment?.[b] || '').toUpperCase().includes('DCO')) {
+          if (b) {
             bus.add(b);
           }
         });
@@ -269,11 +263,6 @@ export default function Dashboard({ isAdmin, user }) {
       if (!row) return false;
       const seg = (row.segment_n || row.Segment_n || row.segment || row.Segment || '').trim();
       const biz = (row.biz1_n || row.Biz1_n || row.biz1 || row.Biz1 || row.biz || row.Biz || '').trim();
-
-      // Exclude DCO and NYJ globally
-      if (seg.toUpperCase().includes('DCO') || biz.toUpperCase() === 'NYJ') {
-        return false;
-      }
 
       // Month & Period filter matching
       if (!matchesMonthFilter(row, activeFilters)) {
@@ -461,7 +450,6 @@ export default function Dashboard({ isAdmin, user }) {
 
           if (buList.length === 1) {
             const bu = buList[0];
-            if (bu === 'NYJ') return null;
             let node = getMonthlyEntityNode(DATA?.monthly?.bu, bu);
             if (node) return node;
             const aliasBus = aliasMap.businesses?.[bu];
@@ -477,7 +465,6 @@ export default function Dashboard({ isAdmin, user }) {
         // If Segment is selected and no BU is selected
         if (isSegSelected && !isBuSelected && segList.length === 1) {
           const seg = segList[0];
-          if (typeof seg === 'string' && String(seg).toUpperCase().includes('DCO')) return null;
           let node = getMonthlyEntityNode(DATA?.monthly?.segment, seg);
           if (node) return node;
           const aliasSegs = aliasMap.segments?.[seg];
@@ -490,9 +477,7 @@ export default function Dashboard({ isAdmin, user }) {
         }
 
         // Aggregate across matched BUs
-        const bus = (DATA?.monthly?.bu ? Object.keys(DATA.monthly.bu) : []).filter(
-          (b) => b !== 'NYJ' && !String(DATA?.meta?.bu_segment?.[b] || '').toUpperCase().includes('DCO')
-        );
+        const bus = DATA?.monthly?.bu ? Object.keys(DATA.monthly.bu) : [];
         const matchedBUs = bus.filter((b) =>
           matchesScope({ Biz1: b, Segment: DATA?.meta?.bu_segment?.[b] }, activeFilters)
         );
@@ -667,7 +652,6 @@ export default function Dashboard({ isAdmin, user }) {
 
         if (buList.length === 1) {
           const bu = buList[0];
-          if (bu === 'NYJ') return null;
           if (DATA?.bu?.[bu]?.[fy]?.[scenario]?.[q]) return DATA.bu[bu][fy][scenario][q];
           const aliasBus = aliasMap.businesses?.[bu];
           if (aliasBus) {
@@ -681,7 +665,6 @@ export default function Dashboard({ isAdmin, user }) {
       // If Segment is selected and no BU is selected
       if (isSegSelected && !isBuSelected && segList.length === 1) {
         const seg = segList[0];
-        if (typeof seg === 'string' && String(seg).toUpperCase().includes('DCO')) return null;
         if (DATA?.segment?.[seg]?.[fy]?.[scenario]?.[q]) return DATA.segment[seg][fy][scenario][q];
         const aliasSegs = aliasMap.segments?.[seg];
         if (aliasSegs) {
@@ -692,9 +675,7 @@ export default function Dashboard({ isAdmin, user }) {
       }
 
       // Aggregate across matched BUs if no single node found
-      const bus = (DATA?.bu ? Object.keys(DATA.bu) : []).filter(
-        (b) => b !== 'NYJ' && !String(DATA?.meta?.bu_segment?.[b] || '').toUpperCase().includes('DCO')
-      );
+      const bus = DATA?.bu ? Object.keys(DATA.bu) : [];
       const matchedBUs = bus.filter((b) =>
         matchesScope({ Biz1: b, Segment: DATA?.meta?.bu_segment?.[b] }, activeFilters)
       );

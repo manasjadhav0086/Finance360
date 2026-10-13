@@ -322,14 +322,14 @@ export default function Topbar({
       const seen = {};
       meta.business_mapping.forEach((r) => {
         const s = (r.segment_n || r.segment || r.Segment || '').trim();
-        if (s && !seen[s] && !s.toUpperCase().includes('DCO')) {
+        if (s && !seen[s]) {
           seen[s] = true;
           list.push(s);
         }
       });
       list.sort();
     } else {
-      list = (meta?.segments || []).filter((s) => !String(s).toUpperCase().includes('DCO'));
+      list = meta?.segments ? [...meta.segments] : [];
     }
     return list.map((s) => ({
       value: s,
@@ -365,14 +365,14 @@ export default function Topbar({
             );
             if (!matchesSelected) return;
           }
-          if (buN && !seen[buN] && buN.toUpperCase() !== 'NYJ' && !buN.toUpperCase().includes('DCO')) {
+          if (buN && !seen[buN]) {
             seen[buN] = true;
             rawList.push(buN);
           }
         });
         rawList.sort();
       } else {
-        rawList = (meta?.biz_units || []).filter((b) => !String(b).toUpperCase().includes('DCO') && String(b).toUpperCase() !== 'NYJ');
+        rawList = meta?.biz_units ? [...meta.biz_units] : [];
       }
     }
     return rawList.map((b) => {

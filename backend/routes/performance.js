@@ -17,8 +17,6 @@ async function ensureAliases() {
     SELECT DISTINCT Segment, Biz1, Segment_N, Biz1_N 
     FROM dataai
     WHERE Segment IS NOT NULL AND Biz1 IS NOT NULL
-      AND (Segment NOT LIKE '%DCO%')
-      AND (Biz1 NOT LIKE '%NYJ%')
   `;
   const rows = await mysqlService.executeQuery(sql);
   bmRawRecords = rows || [];
@@ -67,8 +65,7 @@ async function fetchView(viewKey, segment, biz1, userScope = { isUnrestricted: t
         Segment,
         ROUND(SUM(CASE WHEN Nature = 'Actuals' THEN Mn ELSE 0 END), 4) AS Revenue
       FROM dataai
-      WHERE (Segment IS NULL OR UPPER(Segment) NOT LIKE '%DCO%')
-        AND (Biz1 IS NULL OR UPPER(Biz1) NOT LIKE '%NYJ%')
+      WHERE 1=1
     `;
     const filterClauses = [];
     if (!userScope.isUnrestricted) {
@@ -115,8 +112,7 @@ async function fetchView(viewKey, segment, biz1, userScope = { isUnrestricted: t
         Segment,
         ROUND(SUM(CASE WHEN Nature IN ('Actual', 'Actuals') THEN Amount ELSE 0 END), 4) AS OrderIntake
       FROM order_intake
-      WHERE (Segment IS NULL OR UPPER(Segment) NOT LIKE '%DCO%')
-        AND (Biz1 IS NULL OR UPPER(Biz1) NOT LIKE '%NYJ%')
+      WHERE 1=1
     `;
     const filterClauses = [];
     if (!userScope.isUnrestricted) {
@@ -150,13 +146,10 @@ async function fetchView(viewKey, segment, biz1, userScope = { isUnrestricted: t
   if (viewKey === 'orderintake_view') tableName = 'order_intake';
   else if (viewKey === 'capex_view') tableName = 'capex';
   else if (viewKey === 'collection_view') tableName = 'collection';
-  else if (viewKey === 'enrollment_view') return [];
 
   sql = `
     SELECT * FROM ${tableName} 
     WHERE 1=1 
-      ${hasSegmentCol ? "AND (Segment IS NULL OR UPPER(Segment) NOT LIKE '%DCO%')" : ''}
-      AND (Biz1 IS NULL OR UPPER(Biz1) NOT LIKE '%NYJ%')
   `;
 
   if (!userScope.isUnrestricted) {

@@ -6,7 +6,6 @@
 
 import express from 'express';
 import mysqlService from '../utils/mysqlClient.js';
-import { isDcoOrNyj } from '../utils/formatters.js';
 import { verifyUser } from '../middleware/auth.js';
 import { resolveUserScope } from '../utils/authScope.js';
 
@@ -49,8 +48,6 @@ async function fetchBusinessMappingRecords() {
     SELECT DISTINCT Segment, Biz1, Segment_N, Biz1_N 
     FROM dataai
     WHERE Segment IS NOT NULL AND Biz1 IS NOT NULL
-      AND (Segment NOT LIKE '%DCO%')
-      AND (Biz1 NOT LIKE '%NYJ%')
   `;
   const bmRaw = await mysqlService.executeQuery(bmQuery);
   const businessMappingRecords = [];
@@ -60,8 +57,6 @@ async function fetchBusinessMappingRecords() {
     const s_old = String(bmr.Segment || bmr.segment || '').trim();
     const b_n = String(bmr.Biz1_N || bmr.biz1_n || '').trim();
     const b_old = String(bmr.Biz1 || bmr.biz1 || '').trim();
-
-    if (isDcoOrNyj(s_n, b_n) || isDcoOrNyj(s_old, b_old)) continue;
 
     const s_effective = s_n || s_old;
     const b_effective = b_n || b_old;
@@ -162,8 +157,7 @@ async function fetchAndNormalize(options = {}) {
     queryParams.push(cleanBu, cleanBu);
   }
 
-  whereClauses.push("(`Segment` IS NULL OR UPPER(`Segment`) NOT LIKE '%DCO%') AND (`Biz1` IS NULL OR UPPER(`Biz1`) NOT LIKE '%NYJ%')");
-  const whereSql = whereClauses.join(' AND ');
+  const whereSql = whereClauses.length > 0 ? whereClauses.join(' AND ') : '1=1';
 
   const mainPnlQuery = `
     SELECT
@@ -190,8 +184,6 @@ async function fetchAndNormalize(options = {}) {
       ROUND(SUM(CASE WHEN Nature = 'Actuals' THEN Mn ELSE 0 END), 4) AS act_val,
       ROUND(SUM(CASE WHEN Nature = 'Budget' THEN Mn ELSE 0 END), 4) AS bud_val
     FROM dataai
-    WHERE (Segment IS NULL OR UPPER(Segment) NOT LIKE '%DCO%')
-      AND (Biz1 IS NULL OR UPPER(Biz1) NOT LIKE '%NYJ%')
     GROUP BY FYs, DATE_FORMAT(\`Posting Date\`, '%b'), Biz1, Segment, \`SG&A\`
   `;
 
@@ -201,20 +193,14 @@ async function fetchAndNormalize(options = {}) {
     mysqlService.executeQuery(`
       SELECT Year as fy, Month as month, Biz1 as biz, Segment as segment, Nature, ROUND(Amount, 4) as Amount
       FROM capex
-      WHERE (Segment IS NULL OR UPPER(Segment) NOT LIKE '%DCO%')
-        AND (Biz1 IS NULL OR UPPER(Biz1) NOT LIKE '%NYJ%')
     `),
     mysqlService.executeQuery(`
       SELECT Year as fy, Month as month, Biz1 as biz, Segment as segment, Nature, ROUND(Amount, 4) as Amount
       FROM collection
-      WHERE (Segment IS NULL OR UPPER(Segment) NOT LIKE '%DCO%')
-        AND (Biz1 IS NULL OR UPPER(Biz1) NOT LIKE '%NYJ%')
     `),
     mysqlService.executeQuery(`
       SELECT Year as fy, Month as month, Biz1 as biz, Segment as segment, Nature, ROUND(Amount, 4) as Amount
       FROM order_intake
-      WHERE (Segment IS NULL OR UPPER(Segment) NOT LIKE '%DCO%')
-        AND (Biz1 IS NULL OR UPPER(Biz1) NOT LIKE '%NYJ%')
     `),
   ]);
 
@@ -237,7 +223,7 @@ async function fetchAndNormalize(options = {}) {
     return false;
   };
 
-  const rawRows = (rawResult || []).filter((r) => !isDcoOrNyj(r.Segment || r.segment, r.Biz1 || r.biz) && isRowAllowed(r.Segment || r.segment, r.Biz1 || r.biz));
+  const rawRows = (rawResult || []).filter((r) => isRowAllowed(r.Segment || r.segment, r.Biz1 || r.biz));
   const heatmapRows = (heatmapRaw || []).filter((r) => isRowAllowed(r.Segment || r.segment, r.Biz1 || r.biz));
   const capexRows = (capexRaw || []).filter((r) => isRowAllowed(r.Segment || r.segment, r.Biz1 || r.biz));
   const collRows = (collRaw || []).filter((r) => isRowAllowed(r.Segment || r.segment, r.Biz1 || r.biz));
@@ -262,7 +248,6 @@ async function fetchAndNormalize(options = {}) {
   for (const bmr of bmRecords || []) {
     const sEffective = bmr.segment_n || bmr.segment;
     const bEffective = bmr.biz1_n || bmr.biz1;
-    if (isDcoOrNyj(sEffective, bEffective)) continue;
 
     buSegmentMap[bEffective] = sEffective;
     if (bmr.biz1) {
@@ -284,19 +269,17 @@ async function fetchAndNormalize(options = {}) {
     if (bmr.segment) segmentsSet.add(bmr.segment);
   }
 
-  const businessMappingRecords = (bmRecords || []).filter(
-    bmr => !isDcoOrNyj(bmr.segment_n || bmr.segment, bmr.biz1_n || bmr.biz1)
-  );
+  const businessMappingRecords = bmRecords || [];
 
   // Helper to record quarterly metric values across company, segment, and bu
   function recordQuarterlyMetric(rowFy, q, biz, seg, metricName, actVal, budVal) {
     if (!rowFy || !q || !metricName) return;
     fysSet.add(rowFy);
     quartersSet.add(q);
-    if (seg && !isDcoOrNyj(seg, null)) segmentsSet.add(seg);
-    if (biz && !isDcoOrNyj(null, biz)) {
+    if (seg) segmentsSet.add(seg);
+    if (biz) {
       bizUnitsSet.add(biz);
-      if (seg && !isDcoOrNyj(seg, null) && !buSegmentMap[biz]) {
+      if (seg && !buSegmentMap[biz]) {
         buSegmentMap[biz] = seg;
       }
     }
@@ -319,12 +302,12 @@ async function fetchAndNormalize(options = {}) {
 
       // Segment level
       const targetSegs = new Set();
-      if (seg && !isDcoOrNyj(seg, null)) {
+      if (seg) {
         targetSegs.add(seg);
         if (segSegmentNMap[seg]) targetSegs.add(segSegmentNMap[seg]);
       }
       const mappedSeg = buSegmentMap[biz];
-      if (mappedSeg && !isDcoOrNyj(mappedSeg, null)) {
+      if (mappedSeg) {
         targetSegs.add(mappedSeg);
         if (segSegmentNMap[mappedSeg]) targetSegs.add(segSegmentNMap[mappedSeg]);
       }
@@ -336,7 +319,7 @@ async function fetchAndNormalize(options = {}) {
 
       // BU level
       const targetBus = new Set();
-      if (biz && !isDcoOrNyj(null, biz)) {
+      if (biz) {
         targetBus.add(biz);
         if (buBiz1NMap[biz]) targetBus.add(buBiz1NMap[biz]);
       }
@@ -459,12 +442,12 @@ async function fetchAndNormalize(options = {}) {
 
       // Segment level
       const targetSegs = new Set();
-      if (seg && !isDcoOrNyj(seg, null)) {
+      if (seg) {
         targetSegs.add(seg);
         if (segSegmentNMap[seg]) targetSegs.add(segSegmentNMap[seg]);
       }
       const mappedSeg = buSegmentMap[biz];
-      if (mappedSeg && !isDcoOrNyj(mappedSeg, null)) {
+      if (mappedSeg) {
         targetSegs.add(mappedSeg);
         if (segSegmentNMap[mappedSeg]) targetSegs.add(segSegmentNMap[mappedSeg]);
       }
@@ -476,7 +459,7 @@ async function fetchAndNormalize(options = {}) {
 
       // BU level
       const targetBus = new Set();
-      if (biz && !isDcoOrNyj(null, biz)) {
+      if (biz) {
         targetBus.add(biz);
         if (buBiz1NMap[biz]) targetBus.add(buBiz1NMap[biz]);
       }
