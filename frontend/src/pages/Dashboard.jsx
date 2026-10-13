@@ -158,6 +158,7 @@ export default function Dashboard({ isAdmin, user }) {
         const s = (bm.segment || '').trim();
         const sn = (bm.segment_n || '').trim();
         const b = (bm.biz1 || '').trim();
+        const bn = (bm.biz1_n || '').trim();
         if (s && sn) {
           if (!segments[s]) segments[s] = new Set();
           if (!segments[sn]) segments[sn] = new Set();
@@ -210,6 +211,7 @@ export default function Dashboard({ isAdmin, user }) {
         meta.business_mapping.forEach((r) => {
           const sn = (r.segment_n || '').trim();
           const s = (r.segment || r.Segment || '').trim();
+          const bn = (r.biz1_n || r.Biz1_N || r.biz1 || r.Biz1 || '').trim();
           if (!bn) return;
 
           if (isAll) {
