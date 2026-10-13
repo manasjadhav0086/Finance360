@@ -1,5 +1,5 @@
 /**
- * Utility functions for dynamic Financial Year (FY), Quarter, and Month nomenclature and normalization across FinSightEdge.
+ * Utility functions for dynamic Financial Year (FY), Quarter, and Month nomenclature and normalization across Finance360.
  * 
  * Rules:
  * - Financial Year starts in April (Q1: Apr-Jun, Q2: Jul-Sep, Q3: Oct-Dec, Q4: Jan-Mar).

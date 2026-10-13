@@ -16,7 +16,7 @@ const ALLOWED_ISSUERS = [
   'https://dst.stackroute.in/shield/realms/lxp-etech-sso',
 ];
 
-const ALLOWED_CLIENT_IDS = ['finsight-edge'];
+const ALLOWED_CLIENT_IDS = ['finance360', 'finance-360'];
 
 // Periodic cleanup of expired cache entries to prevent memory leaks
 setInterval(() => {
@@ -178,7 +178,7 @@ export const verifyUser = async (req, res, next) => {
 
     if (!hasValidAzp && !hasValidAud) {
       return res.status(403).json({
-        error: 'Access Denied: Token was not issued for finsight-edge application',
+        error: 'Access Denied: Token was not issued for Finance360 application',
         received_azp: verifiedPayload.azp || 'none',
         received_aud: verifiedPayload.aud || 'none',
       });

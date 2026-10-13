@@ -51,7 +51,7 @@ export default function AuthError() {
           <div className="h-8 w-px bg-slate-300" />
           <div className="flex flex-col">
             <span className="text-sm font-bold text-blue-800 tracking-tight leading-none">
-              FINsightEdge
+              Finance360
             </span>
             <span className="text-xs text-slate-400 font-medium">
               Analytics Platform

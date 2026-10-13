@@ -1,8 +1,8 @@
 ====================================================================================================
-FINsightEdge - Data Architecture, BigQuery Mapping & Calculation Logic Reference
+Finance360 - Data Architecture, BigQuery Mapping & Calculation Logic Reference
 ====================================================================================================
 
-This document provides a comprehensive, end-to-end technical reference for FINsightEdge.
+This document provides a comprehensive, end-to-end technical reference for Finance360.
 It details the origin of every metric, the BigQuery views and tables queried, the filtering
 mechanisms, and the exact computational formulas used across all dashboard tabs.
 
@@ -56,7 +56,7 @@ queries Google Cloud BigQuery across two primary datasets: `Finance_View` and `f
 All data is structured through `finance_data.business_mapping` into standardized Business Groups (Segment_N)
 and Businesses (Biz1_N):
 
-COMPANY: FINsightEdge Enterprise
+COMPANY: Finance360 Enterprise
 │
 ├── 1. Business Group: 1 ETLS
 │   └── Business: RPS

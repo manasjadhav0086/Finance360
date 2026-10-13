@@ -205,7 +205,7 @@ export default function CopilotDrawer({
                     <Sparkles className="w-4 h-4 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold text-slate-950">FINsightEdge AI Analyst</h3>
+                    <h3 className="text-xs font-bold text-slate-950">Finance360 AI Analyst</h3>
                     <span className="text-xs font-bold text-slate-800">Context: {activeScopeText}</span>
                   </div>
                 </div>

@@ -1,5 +1,5 @@
 /**
- * Centralized Enterprise Finance Theme System for FinSightEdge.
+ * Centralized Enterprise Finance Theme System for Finance360.
  * 
  * Defines centralized design tokens, color palette, typography, radii,
  * and deterministic category/metric color mappings.

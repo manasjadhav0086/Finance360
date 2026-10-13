@@ -1,6 +1,6 @@
 # Permanent Data Contract & BigQuery Source of Truth
 
-This document establishes the permanent, non-negotiable data architecture and source-of-truth rules for the FINsightEdge Finance Dashboard.
+This document establishes the permanent, non-negotiable data architecture and source-of-truth rules for the Finance360 Finance Dashboard.
 
 ---
 

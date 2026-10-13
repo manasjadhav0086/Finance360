@@ -22,14 +22,14 @@ const isProd = isProdEnvironment();
 const DEV_CONFIG = {
   url: 'https://login-dev.stackroute.io/shield',
   realm: 'lxp-lbg-qa',
-  clientId: 'finsight-edge',
+  clientId: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_KEYCLOAK_CLIENT_ID) || 'finance360',
 };
 
 // Prod Keycloak Config (etech)
 const PROD_CONFIG = {
   url: 'https://dst.stackroute.in/shield',
   realm: 'lxp-etech-sso',
-  clientId: 'finsight-edge',
+  clientId: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_KEYCLOAK_CLIENT_ID) || 'finance360',
 };
 
 const ACTIVE_CONFIG = isProd ? PROD_CONFIG : DEV_CONFIG;

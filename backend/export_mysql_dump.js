@@ -13,7 +13,7 @@ async function exportDatabase() {
   const writeStream = fs.createWriteStream(outputFile, { encoding: 'utf8' });
 
   writeStream.write('-- ====================================================\n');
-  writeStream.write('-- FINANCE360 / FINSIGHTEDGE SYNTHETIC DATA SQL DUMP\n');
+  writeStream.write('-- FINANCE360 SYNTHETIC DATA SQL DUMP\n');
   writeStream.write('-- Generated for zero-cost local or cloud MySQL deployment\n');
   writeStream.write('-- ====================================================\n\n');
   writeStream.write('CREATE DATABASE IF NOT EXISTS `finance_data`;\n');

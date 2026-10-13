@@ -128,7 +128,7 @@ export default function Sidebar({
             </div>
             <div className="h-7 w-px bg-white/25 shrink-0" />
             <span className="text-lg font-bold text-white tracking-tight leading-none drop-shadow-xs whitespace-nowrap">
-              FINsightEdge
+              Finance360
             </span>
           </div>
         </div>

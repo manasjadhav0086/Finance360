@@ -1,5 +1,5 @@
 -- ====================================================
--- FINANCE360 / FINSIGHTEDGE SYNTHETIC DATA SQL DUMP
+-- FINANCE360 SYNTHETIC DATA SQL DUMP
 -- Generated for zero-cost local or cloud MySQL deployment
 -- ====================================================
 
