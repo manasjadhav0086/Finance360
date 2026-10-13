@@ -1,0 +1,45 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build Frontend Assets
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME || 'manasjadhav0086' }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: ${{ env.DOCKERHUB_TOKEN != '' }}
+          tags: |
+            manasjadhav0086/finance360:latest
+            manasjadhav0086/finance360:${{ github.sha }}

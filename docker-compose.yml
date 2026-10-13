@@ -1,10 +1,36 @@
 services:
-  # Optional containerized MySQL (uncomment if not using local installed MySQL 8.0)
+  # Main Finance360 Application (Frontend SPA + Node Express Backend via Nginx & Supervisor)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${DOCKER_IMAGE:-manasjadhav0086/finance360:latest}
+    container_name: finance360-app
+    env_file:
+      - backend/.env
+    ports:
+      - "4821:4821" # Nginx frontend & API reverse proxy
+      - "4820:4820" # Direct Backend API port
+    environment:
+      - NODE_ENV=production
+      # Allows Docker container to connect to host MySQL instance on Windows/Mac/Linux
+      - MYSQL_HOST=${MYSQL_HOST:-host.docker.internal}
+      - MYSQL_PORT=${MYSQL_PORT:-3306}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+    restart: unless-stopped
+
+  # Optional: Standalone MySQL Container (Uncomment if you want MySQL running fully inside Docker)
   # mysql:
   #   image: mysql:8.0
   #   container_name: finance360-mysql
   #   environment:
-  #     MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-rootpassword}
+  #     MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-Manas0086}
   #     MYSQL_DATABASE: ${MYSQL_DATABASE:-finance_data}
   #   ports:
   #     - "3306:3306"
@@ -12,23 +38,6 @@ services:
   #     - mysql_data:/var/lib/mysql
   #     - ./backend/finance_data_dump.sql:/docker-entrypoint-initdb.d/init.sql
   #   restart: unless-stopped
-
-  analytics-finance-service:
-    build: .
-    image: ${DOCKER_IMAGE:-analytics-finance-service:latest}
-    env_file:
-      - backend/.env
-    ports:
-      - "4821:4821"
-      - "4820:4820"
-    deploy:
-      resources:
-        limits:
-          cpus: "0.50"
-          memory: 1G
-    environment:
-      - NODE_ENV=production
-    restart: unless-stopped
 
 # volumes:
 #   mysql_data:

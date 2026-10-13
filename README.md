@@ -1,4 +1,4 @@
-# Finance360 (FINsightEdge) - Enterprise Financial Intelligence Suite
+# Finance360 - Enterprise Financial Intelligence Suite
 
 Finance360 is an executive-grade financial analytics dashboard and financial intelligence suite. It delivers multi-period P&L normalization, Actuals-vs-Budget variance analysis, multi-dimensional drill-downs across 8 Business Units and 4 Business Groups, and an AI-driven Financial Intelligence Analyst.
 
@@ -243,3 +243,41 @@ The built-in **MySQL Financial Intelligence Agent** (`backend/aiService.js`) use
 - Fully understands financial questions regarding Revenue, Gross Profit, EBITDA, Costs, Budgets, Capex, Collections, and Net Cash.
 - Guarantees read-only SQL safety (`SELECT` statements only).
 - Renders dynamic chart specifications (`bar`, `line`, `doughnut`) directly from the verified database records.
+
+---
+
+## 9. Docker Hub Connection & Container Deployment
+
+The project is configured to publish to Docker Hub as **`manasjadhav0086/finance360`**.
+
+### 1. Build and Run via Docker Compose
+Ensure frontend assets are built:
+```bash
+cd frontend && npm run build && cd ..
+```
+Start the application container:
+```bash
+docker compose up -d
+```
+Access points:
+- **Web Dashboard**: `http://localhost:4821/fin/`
+- **Backend API**: `http://localhost:4820/fin/api/health`
+
+### 2. Manual Docker Build & Push to Docker Hub
+```bash
+# 1. Log in to Docker Hub
+docker login -u manasjadhav0086
+
+# 2. Build the Docker image
+docker build -t manasjadhav0086/finance360:latest .
+
+# 3. Push image to your Docker Hub repository
+docker push manasjadhav0086/finance360:latest
+```
+
+### 3. Automated CI/CD
+A GitHub Actions workflow is included at [`.github/workflows/docker.yml`](file:///.github/workflows/docker.yml). To enable automatic Docker Hub deployment upon every push:
+1. Go to your GitHub repository: `Settings` > `Secrets and variables` > `Actions`.
+2. Add `DOCKERHUB_USERNAME`: `manasjadhav0086`
+3. Add `DOCKERHUB_TOKEN`: Your Docker Hub Personal Access Token (from `hub.docker.com` > Account Settings > Security).
+
