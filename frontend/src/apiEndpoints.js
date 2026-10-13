@@ -21,13 +21,13 @@ export const apiEndpoints = {
   // Core Dashboard dataset (P&L, metadata, business mapping)
   DASHBOARD_DATA: '/dashboard-data',
 
-  // BigQuery authoritative views for Performance tab
+  // MySQL authoritative views for Performance tab
   PERFORMANCE_VIEWS: '/performance-views',
 
-  // Google Cloud BigQuery Data Agent / AI Assistant
+  // MySQL-backed Finance AI Assistant
   AI_ASSISTANT: '/ai',
 
-  // Google Vertex AI Grounded Live News & Macro Environment Agent
+  // Market Intelligence & Macro Environment Agent
   LIVE_NEWS: '/news',
 };
 

@@ -26,6 +26,6 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 RUN mkdir -p /var/www/html/fin
 COPY frontend/dist /var/www/html/fin
 
-EXPOSE 4811 4810
+EXPOSE 4821 4820
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

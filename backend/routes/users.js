@@ -30,15 +30,13 @@ router.get('/me', verifyUser, async (req, res) => {
 // Get business hierarchy options for user permissions (admin only)
 router.get('/business-options', verifyAdmin, async (req, res) => {
   try {
-    const project = process.env.GOOGLE_CLOUD_PROJECT;
     const query = `
       SELECT DISTINCT Segment, Segment_N, Biz1, Biz1_N 
-      FROM \`${project}.finance_data.business_mapping\`
-      WHERE (Segment IS NULL OR UPPER(Segment) NOT LIKE '%DCO%')
-        AND (Biz1 IS NULL OR UPPER(Biz1) NOT LIKE '%NYJ%')
+      FROM dataai
+      WHERE Segment IS NOT NULL AND Biz1 IS NOT NULL
     `;
-    const bqService = (await import('../utils/bigqueryClient.js')).default;
-    const rows = await bqService.executeQuery(query);
+    const mysqlService = (await import('../utils/mysqlClient.js')).default;
+    const rows = await mysqlService.executeQuery(query);
 
     const groupMap = new Map();
     const allBusinesses = new Set();

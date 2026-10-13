@@ -109,7 +109,7 @@ export default function CopilotDrawer({
 
       const response = await api.post(apiEndpoints.AI_ASSISTANT, payload);
       const res = response.data;
-      let answer = res.answer || res.response || res.result || 'No response returned from BigQuery Data Agent.';
+      let answer = res.answer || res.response || res.result || 'No response returned from Finance AI Assistant.';
 
       if (res.chart_option) {
         answer += `\n\n\`\`\`echarts\n${JSON.stringify(res.chart_option, null, 2)}\n\`\`\``;
@@ -169,7 +169,7 @@ export default function CopilotDrawer({
                 Finance AI Analyst
               </span>
               <span className="text-[11px] text-slate-700 font-semibold">
-                BigQuery Financial Intelligence
+                MySQL Financial Intelligence
               </span>
             </div>
           </div>
@@ -285,7 +285,7 @@ export default function CopilotDrawer({
           {loading && (
             <div className="flex items-center gap-2 p-3 rounded-md bg-white border border-slate-200 text-slate-700 font-medium text-xs shadow-xs max-w-[85%]">
               <Loader2 className="w-3.5 h-3.5 text-blue-600 animate-spin" />
-              <span>Analyzing BigQuery views and computing metrics...</span>
+              <span>Analyzing MySQL financial data and computing metrics...</span>
             </div>
           )}
           <div ref={messagesEndRef} />

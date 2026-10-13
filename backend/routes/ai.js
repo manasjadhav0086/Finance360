@@ -2,7 +2,7 @@ import express from 'express';
 import aiService from '../aiService.js';
 import { verifyUser } from '../middleware/auth.js';
 import { resolveUserScope } from '../utils/authScope.js';
-import bqService from '../utils/bigqueryClient.js';
+import mysqlService from '../utils/mysqlClient.js';
 
 export const router = express.Router();
 
@@ -12,24 +12,24 @@ let bmRawRecords = [];
 async function getBmRecords() {
   if (mappingLoaded && bmRawRecords.length) return bmRawRecords;
   try {
-    const project = process.env.GOOGLE_CLOUD_PROJECT;
     const sql = `
-      SELECT Segment, Biz1, Segment_N, Biz1_N 
-      FROM \`${project}.finance_data.business_mapping\`
-      WHERE (Segment IS NULL OR UPPER(Segment) NOT LIKE '%DCO%')
-        AND (Biz1 IS NULL OR UPPER(Biz1) NOT LIKE '%NYJ%')
+      SELECT DISTINCT Segment, Biz1, Segment_N, Biz1_N 
+      FROM dataai
+      WHERE Segment IS NOT NULL AND Biz1 IS NOT NULL
+        AND (Segment NOT LIKE '%DCO%')
+        AND (Biz1 NOT LIKE '%NYJ%')
     `;
-    const rows = await bqService.executeQuery(sql);
+    const rows = await mysqlService.executeQuery(sql);
     bmRawRecords = rows || [];
     mappingLoaded = true;
   } catch (err) {
-    console.warn('[AI Route] Failed to fetch business mapping for scoping:', err.message);
+    console.warn('[AI Route] Failed to fetch business mapping for scoping from MySQL:', err.message);
   }
   return bmRawRecords;
 }
 
 /**
- * Interacts with Google Cloud BigQuery Data Agent.
+ * Interacts with MySQL Finance Intelligence Assistant.
  */
 router.post('/', verifyUser, async (req, res) => {
   try {
@@ -53,9 +53,9 @@ router.post('/', verifyUser, async (req, res) => {
 
     return res.json(result);
   } catch (exc) {
-    console.error(`[API] Error processing AI chat: ${exc.message}`, exc);
+    console.error(`[API] Error processing AI finance query: ${exc.message}`, exc);
     return res.status(500).json({
-      detail: 'AI Agent query failed. Please verify Application Default Credentials and agent connectivity.'
+      detail: 'AI Finance Assistant query failed. Please verify MySQL connectivity.'
     });
   }
 });

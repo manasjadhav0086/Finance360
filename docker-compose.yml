@@ -1,4 +1,18 @@
 services:
+  # Optional containerized MySQL (uncomment if not using local installed MySQL 8.0)
+  # mysql:
+  #   image: mysql:8.0
+  #   container_name: finance360-mysql
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-rootpassword}
+  #     MYSQL_DATABASE: ${MYSQL_DATABASE:-finance_data}
+  #   ports:
+  #     - "3306:3306"
+  #   volumes:
+  #     - mysql_data:/var/lib/mysql
+  #     - ./backend/finance_data_dump.sql:/docker-entrypoint-initdb.d/init.sql
+  #   restart: unless-stopped
+
   analytics-finance-service:
     build: .
     image: ${DOCKER_IMAGE:-analytics-finance-service:latest}
@@ -15,3 +29,6 @@ services:
     environment:
       - NODE_ENV=production
     restart: unless-stopped
+
+# volumes:
+#   mysql_data:

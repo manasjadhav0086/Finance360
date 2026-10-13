@@ -1,13 +1,10 @@
 import express from 'express';
-import bqService from '../utils/bigqueryClient.js';
+import mysqlService from '../utils/mysqlClient.js';
 import { serializeRow } from '../utils/formatters.js';
 import { verifyUser } from '../middleware/auth.js';
 import { resolveUserScope } from '../utils/authScope.js';
 
 const router = express.Router();
-
-const project = process.env.GOOGLE_CLOUD_PROJECT;
-const dataset = process.env.BIGQUERY_DATASET;
 
 let mappingLoaded = false;
 let bmRawRecords = [];
@@ -17,12 +14,13 @@ const segToBizs = new Map();
 async function ensureAliases() {
   if (mappingLoaded) return;
   const sql = `
-    SELECT Segment, Biz1, Segment_N, Biz1_N 
-    FROM \`${project}.finance_data.business_mapping\`
-    WHERE (Segment IS NULL OR UPPER(Segment) NOT LIKE '%DCO%')
-      AND (Biz1 IS NULL OR UPPER(Biz1) NOT LIKE '%NYJ%')
+    SELECT DISTINCT Segment, Biz1, Segment_N, Biz1_N 
+    FROM dataai
+    WHERE Segment IS NOT NULL AND Biz1 IS NOT NULL
+      AND (Segment NOT LIKE '%DCO%')
+      AND (Biz1 NOT LIKE '%NYJ%')
   `;
-  const rows = await bqService.executeQuery(sql);
+  const rows = await mysqlService.executeQuery(sql);
   bmRawRecords = rows || [];
 
   for (const r of rows || []) {
@@ -55,23 +53,119 @@ async function ensureAliases() {
   mappingLoaded = true;
 }
 
-async function fetchView(bqView, segment, biz1, userScope = { isUnrestricted: true }) {
-  const hasSegmentCol = ['dataai_view', 'orderintake_view', 'capex_view', 'collection_view', 'enrollment_view'].includes(bqView);
-  let sql = `
-    SELECT * FROM \`${project}.${dataset}.${bqView}\` 
+async function fetchView(viewKey, segment, biz1, userScope = { isUnrestricted: true }) {
+  let sql = '';
+  const params = [];
+  const hasSegmentCol = ['dataai', 'dataai_view', 'orderintake_view', 'capex_view', 'collection_view', 'enrollment_view'].includes(viewKey);
+
+  if (viewKey === 'RevBizWise') {
+    sql = `
+      SELECT 
+        FYs AS Filter_FY,
+        QuarterFY,
+        Biz1,
+        Segment,
+        ROUND(SUM(CASE WHEN Nature = 'Actuals' THEN Mn ELSE 0 END), 4) AS Revenue
+      FROM dataai
+      WHERE (Segment IS NULL OR UPPER(Segment) NOT LIKE '%DCO%')
+        AND (Biz1 IS NULL OR UPPER(Biz1) NOT LIKE '%NYJ%')
+    `;
+    const filterClauses = [];
+    if (!userScope.isUnrestricted) {
+      if (userScope.allowedBizs?.length) {
+        filterClauses.push('Biz1 IN (?)');
+        params.push(userScope.allowedBizs);
+      } else if (userScope.allowedSegments?.length) {
+        filterClauses.push('Segment IN (?)');
+        params.push(userScope.allowedSegments);
+      } else {
+        filterClauses.push('1 = 0');
+      }
+    }
+    if (segment && segment.toUpperCase() !== 'ALL') {
+      filterClauses.push('(Segment = ? OR Segment_N = ?)');
+      params.push(segment.trim(), segment.trim());
+    }
+    if (biz1 && biz1.toUpperCase() !== 'ALL') {
+      filterClauses.push('(Biz1 = ? OR Biz1_N = ?)');
+      params.push(biz1.trim(), biz1.trim());
+    }
+    if (filterClauses.length > 0) {
+      sql += ' AND ' + filterClauses.join(' AND ');
+    }
+    sql += ' GROUP BY FYs, QuarterFY, Biz1, Segment';
+    const rows = await mysqlService.executeQuery(sql, params);
+    return (rows || []).map(serializeRow);
+  }
+
+  if (viewKey === 'OrderBizWise') {
+    sql = `
+      SELECT 
+        Year AS Filter_FY,
+        CONCAT(
+          CASE 
+            WHEN Month IN ('Apr', 'May', 'Jun') THEN 'Q1 '
+            WHEN Month IN ('Jul', 'Aug', 'Sep') THEN 'Q2 '
+            WHEN Month IN ('Oct', 'Nov', 'Dec') THEN 'Q3 '
+            ELSE 'Q4 '
+          END,
+          Year
+        ) AS QuarterFY,
+        Biz1,
+        Segment,
+        ROUND(SUM(CASE WHEN Nature IN ('Actual', 'Actuals') THEN Amount ELSE 0 END), 4) AS OrderIntake
+      FROM order_intake
+      WHERE (Segment IS NULL OR UPPER(Segment) NOT LIKE '%DCO%')
+        AND (Biz1 IS NULL OR UPPER(Biz1) NOT LIKE '%NYJ%')
+    `;
+    const filterClauses = [];
+    if (!userScope.isUnrestricted) {
+      if (userScope.allowedBizs?.length) {
+        filterClauses.push('Biz1 IN (?)');
+        params.push(userScope.allowedBizs);
+      } else if (userScope.allowedSegments?.length) {
+        filterClauses.push('Segment IN (?)');
+        params.push(userScope.allowedSegments);
+      } else {
+        filterClauses.push('1 = 0');
+      }
+    }
+    if (segment && segment.toUpperCase() !== 'ALL') {
+      filterClauses.push('Segment = ?');
+      params.push(segment.trim());
+    }
+    if (biz1 && biz1.toUpperCase() !== 'ALL') {
+      filterClauses.push('Biz1 = ?');
+      params.push(biz1.trim());
+    }
+    if (filterClauses.length > 0) {
+      sql += ' AND ' + filterClauses.join(' AND ');
+    }
+    sql += ' GROUP BY Year, QuarterFY, Biz1, Segment';
+    const rows = await mysqlService.executeQuery(sql, params);
+    return (rows || []).map(serializeRow);
+  }
+
+  let tableName = 'dataai';
+  if (viewKey === 'orderintake_view') tableName = 'order_intake';
+  else if (viewKey === 'capex_view') tableName = 'capex';
+  else if (viewKey === 'collection_view') tableName = 'collection';
+  else if (viewKey === 'enrollment_view') return [];
+
+  sql = `
+    SELECT * FROM ${tableName} 
     WHERE 1=1 
       ${hasSegmentCol ? "AND (Segment IS NULL OR UPPER(Segment) NOT LIKE '%DCO%')" : ''}
       AND (Biz1 IS NULL OR UPPER(Biz1) NOT LIKE '%NYJ%')
   `;
-  const params = {};
 
   if (!userScope.isUnrestricted) {
     if (userScope.allowedBizs?.length) {
-      sql += ' AND Biz1 IN UNNEST(@userAllowedBizs)';
-      params.userAllowedBizs = userScope.allowedBizs;
+      sql += ' AND Biz1 IN (?)';
+      params.push(userScope.allowedBizs);
     } else if (hasSegmentCol && userScope.allowedSegments?.length) {
-      sql += ' AND Segment IN UNNEST(@userAllowedSegments)';
-      params.userAllowedSegments = userScope.allowedSegments;
+      sql += ' AND Segment IN (?)';
+      params.push(userScope.allowedSegments);
     } else {
       sql += ' AND 1=0';
     }
@@ -81,26 +175,26 @@ async function fetchView(bqView, segment, biz1, userScope = { isUnrestricted: tr
     const matchingBizs = Array.from(segToBizs.get(segment.trim()) || []);
     if (hasSegmentCol) {
       if (matchingBizs.length > 0) {
-        sql += ' AND (Segment = @segment OR Biz1 IN UNNEST(@matchingBizs))';
-        params.matchingBizs = matchingBizs;
+        sql += ' AND (Segment = ? OR Biz1 IN (?))';
+        params.push(segment.trim(), matchingBizs);
       } else {
-        sql += ' AND Segment = @segment';
+        sql += ' AND Segment = ?';
+        params.push(segment.trim());
       }
-      params.segment = segment.trim();
     } else if (matchingBizs.length > 0) {
-      sql += ' AND Biz1 IN UNNEST(@matchingBizs)';
-      params.matchingBizs = matchingBizs;
+      sql += ' AND Biz1 IN (?)';
+      params.push(matchingBizs);
     }
   }
 
   if (biz1 && biz1.toUpperCase() !== 'ALL') {
     const bizVal = biz1.trim();
     const matchingAliases = Array.from(new Set([bizVal, ...(bizAliases.get(bizVal) || [])]));
-    sql += ' AND Biz1 IN UNNEST(@matchingAliases)';
-    params.matchingAliases = matchingAliases;
+    sql += ' AND Biz1 IN (?)';
+    params.push(matchingAliases);
   }
 
-  const rawRows = await bqService.executeQuery(sql, params);
+  const rawRows = await mysqlService.executeQuery(sql, params);
   return (rawRows || []).map(serializeRow);
 }
 
@@ -122,14 +216,14 @@ router.get('/', verifyUser, async (req, res) => {
 
     const entries = await Promise.all(
       Object.entries(views).map(async ([key, bqView]) => {
-        const rows = await fetchView(bqView, segment, biz1, userScope);
+        const rows = await fetchView(key, segment, biz1, userScope);
         return [key, { rows, viewName: bqView }];
       })
     );
 
     return res.json(Object.fromEntries(entries));
   } catch (exc) {
-    console.error(`[PerformanceRouter] Query error: ${exc.message}`);
+    console.error(`[PerformanceRouter] MySQL Query error: ${exc.message}`);
     return res.status(500).json({ detail: exc.message });
   }
 });

@@ -1,7 +1,9 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import mongoose from 'mongoose';
+
+import mysqlService from './utils/mysqlClient.js';
+import { initDatabase } from './init_db.js';
 
 import dashboard from './routes/dashboard.js';
 import performance from './routes/performance.js';
@@ -20,48 +22,53 @@ const port = process.env.PORT || 4820;
 const basePath = "/fin/api";
 
 // === ROUTES ===
-// Dashboard data routes
+// Dashboard data routes (MySQL backed)
 app.use(`${basePath}/dashboard-data`, dashboard);
 
-// Performance views routes
+// Performance views routes (MySQL backed)
 app.use(`${basePath}/performance-views`, performance);
 
-// AI Assistant routes
+// AI Assistant routes (MySQL backed finance service)
 app.use(`${basePath}/ai`, ai);
 
-// Live News routes
+// Live News routes (market intelligence)
 app.use(`${basePath}/news`, news);
 
-// User routes
+// User routes (MySQL backed user authentication & scoping)
 app.use(`${basePath}/user`, users);
 
 // Health check route
-app.get(`${basePath}/health`, (req, res) => {
-  res.json({ status: 'OK', message: 'Server is running' });
+app.get(`${basePath}/health`, async (req, res) => {
+  const dbStatus = await mysqlService.testConnection();
+  res.json({
+    status: dbStatus ? 'OK' : 'DEGRADED',
+    database: 'MySQL',
+    connected: dbStatus,
+    message: 'Server is running'
+  });
 });
 
-mongoose.connect(process.env.MONGO_URI, {
-  serverSelectionTimeoutMS: 10000,
-  connectTimeoutMS: 10000
-})
-  .then(async () => {
-    console.log('Connected to MongoDB');
+// Startup: Verify MySQL connectivity and initialize tables
+async function startServer() {
+  try {
+    const isConnected = await mysqlService.testConnection();
+    if (!isConnected) {
+      throw new Error('Failed to connect to MySQL database.');
+    }
+    console.log('[Server] Connected to MySQL database successfully.');
+
+    // Initialize database tables if needed
+    await initDatabase();
 
     app.listen(port, '0.0.0.0', () => {
-      console.log(`Server running on port ${port}`);
+      console.log(`[Server] Running on port ${port} (MySQL mode)`);
     });
-  })
-  .catch((error) => {
-    console.error('MongoDB connection error:', error);
-  });
+  } catch (error) {
+    console.error('[Server Startup Error]:', error.message);
+    process.exit(1);
+  }
+}
 
-// Handle MongoDB connection errors
-mongoose.connection.on('error', error => {
-  console.error('MongoDB error:', error);
-});
-
-mongoose.connection.on('disconnected', () => {
-  console.log('MongoDB disconnected');
-});
+startServer();
 
 export default app;
