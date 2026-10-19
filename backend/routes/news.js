@@ -97,7 +97,7 @@ class MarketIntelligenceService {
           source: 'Bloomberg Quint / Business Standard',
           published_date: 'Current Fiscal Period',
           url: 'https://www.business-standard.com',
-          summary: `Chief Financial Officers emphasize strict control over fixed operational expenditures, optimizing headcount productivity while expanding high-margin digital lines.`,
+          summary: `Chief Financial Officers emphasize strict control over fixed operational expenditures, optimizing workforce productivity while expanding high-margin digital lines.`,
           relevance: 'Reflects broader industry trends where fixed cost controls drive healthy EBITDA margins even during demand normalization.'
         }
       ],

@@ -1,68 +1,112 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import api, { setAccessToken } from '../services/api';
+import api, { setAccessToken, clearAccessToken, getAccessToken } from '../services/api';
 import { apiEndpoints } from '../apiEndpoints';
 
-const DEFAULT_ADMIN_USER = {
-  user_id: 'usr_admin',
-  email: 'admin@finance360.internal',
-  name: 'Finance360 Admin',
-  role: 'admin',
-  business_groups: [],
-  businesses: [],
-};
-
-const DEFAULT_AUTH = {
-  isAuthorized: true,
-  role: 'admin',
-  isAdmin: true,
-};
-
 const AuthContext = createContext({
-  isLoggedIn: true,
-  authenticated: true,
-  user: DEFAULT_ADMIN_USER,
+  isLoggedIn: false,
+  authenticated: false,
+  user: null,
   setUser: () => { },
-  token: 'local-finance360-token',
-  role: 'admin',
-  isAdmin: true,
-  authData: DEFAULT_AUTH,
+  token: null,
+  role: 'user',
+  isAdmin: false,
+  authData: { isAuthorized: false, role: 'user', isAdmin: false },
   isUnauthorized: false,
   setIsUnauthorized: () => { },
-  syncDbProfile: async () => DEFAULT_ADMIN_USER,
-  fetchCurrentUser: async () => DEFAULT_ADMIN_USER,
+  syncDbProfile: async () => null,
+  fetchCurrentUser: async () => null,
   loading: false,
   loadingUser: false,
-  authLoading: false,
-  login: () => { },
+  authLoading: true,
+  login: async () => { },
   logout: () => { },
 });
 
 export const AuthProvider = ({ children }) => {
-  const [authenticated] = useState(true);
-  const [user, setUser] = useState(DEFAULT_ADMIN_USER);
-  const [token] = useState('local-finance360-token');
-  const [authData, setAuthData] = useState(DEFAULT_AUTH);
+  const [token, setToken] = useState(() => getAccessToken());
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [isUnauthorized, setIsUnauthorized] = useState(false);
 
+  // Initialize and verify existing session token on application mount
   useEffect(() => {
-    setAccessToken('local-finance360-token');
-    // Optionally fetch user profile from MySQL if available
+    const existingToken = getAccessToken();
+    if (!existingToken) {
+      setAuthLoading(false);
+      return;
+    }
+
+    setAccessToken(existingToken);
     api.get(apiEndpoints.USER)
       .then((res) => {
         if (res.data?.user) {
           setUser(res.data.user);
-          setAuthData({
-            isAuthorized: true,
-            role: res.data.user.role || 'admin',
-            isAdmin: res.data.user.role === 'admin',
-          });
+          setToken(existingToken);
+        } else {
+          clearAccessToken();
+          setUser(null);
+          setToken(null);
         }
       })
       .catch(() => {
-        // Safe fallback to default admin
+        clearAccessToken();
+        setUser(null);
+        setToken(null);
+      })
+      .finally(() => {
+        setAuthLoading(false);
       });
   }, []);
 
-  const syncDbProfile = async () => {
+  // Listen for unauthorized 401 events dispatched from axios interceptor
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      clearAccessToken();
+      setUser(null);
+      setToken(null);
+    };
+
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+  }, []);
+
+  const login = useCallback(async (email, password) => {
+    const res = await api.post(apiEndpoints.LOGIN, { email, password });
+    const { token: receivedToken, user: receivedUser, must_change_password } = res.data || {};
+
+    if (!receivedToken || !receivedUser) {
+      throw new Error('Invalid response from authentication server.');
+    }
+
+    setAccessToken(receivedToken);
+    setToken(receivedToken);
+    setUser(receivedUser);
+    setIsUnauthorized(false);
+    return { user: receivedUser, must_change_password: Boolean(must_change_password || receivedUser.must_change_password) };
+  }, []);
+
+  const changePassword = useCallback(async (newPassword, confirmPassword) => {
+    const res = await api.post(apiEndpoints.CHANGE_PASSWORD, { newPassword, confirmPassword });
+    const { token: freshToken, user: updatedUser } = res.data || {};
+
+    if (freshToken) {
+      setAccessToken(freshToken);
+      setToken(freshToken);
+    }
+    if (updatedUser) {
+      setUser(updatedUser);
+    }
+    return updatedUser;
+  }, []);
+
+  const logout = useCallback(() => {
+    clearAccessToken();
+    setToken(null);
+    setUser(null);
+    setIsUnauthorized(false);
+  }, []);
+
+  const syncDbProfile = useCallback(async () => {
     try {
       const res = await api.get(apiEndpoints.USER);
       if (res.data?.user) {
@@ -70,37 +114,38 @@ export const AuthProvider = ({ children }) => {
         return res.data.user;
       }
     } catch {
-      // Keep default admin user
+      // User fetch failed
     }
-    return DEFAULT_ADMIN_USER;
-  };
+    return user;
+  }, [user]);
 
-  const login = useCallback(() => { }, []);
-  const logout = useCallback(() => { }, []);
-
-  const role = user?.role || authData.role || 'admin';
+  const role = user?.role || 'user';
   const isAdmin = Boolean(role === 'admin');
+  const isLoggedIn = Boolean(token && user);
+  const mustChangePassword = Boolean(user?.must_change_password);
 
   return (
     <AuthContext.Provider
       value={{
-        isLoggedIn: true,
-        authenticated: true,
+        isLoggedIn,
+        authenticated: isLoggedIn,
         user,
         setUser,
         token,
         role,
         isAdmin,
-        authData,
-        isUnauthorized: false,
+        mustChangePassword,
+        authData: { isAuthorized: isLoggedIn, role, isAdmin },
+        isUnauthorized,
         isLoggingOut: false,
-        setIsUnauthorized: () => { },
+        setIsUnauthorized,
         syncDbProfile,
         fetchCurrentUser: syncDbProfile,
-        loading: false,
-        loadingUser: false,
-        authLoading: false,
+        loading: authLoading,
+        loadingUser: authLoading,
+        authLoading,
         login,
+        changePassword,
         logout,
       }}
     >

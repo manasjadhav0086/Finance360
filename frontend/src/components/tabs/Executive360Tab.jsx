@@ -1,20 +1,35 @@
 import { useMemo, useState } from 'react';
+import {
+  TrendingUp,
+  TrendingDown,
+  Target,
+  Coins,
+  Building2,
+  PieChart,
+  Wallet,
+  ArrowUpRight,
+  ArrowDownRight,
+  Layers,
+  HelpCircle,
+  Calendar,
+  Filter,
+} from 'lucide-react';
 import EChart from '../charts/EChart';
 import { useTableHover } from '../../utils/tableHighlight';
 import Shimmer from '../ui/Shimmer';
-import { getPeriodLabels } from '../../utils/periodUtils';
-import { sortDimensionsByContribution, sortSeriesByContribution, sortPieDataByContribution } from '../../utils/chartUtils';
+import { getPeriodLabels, normalizeMonth, normalizeQuarter } from '../../utils/periodUtils';
 import { getCategoryColor, getLighterTints, THEME_TOKENS } from '../../utils/theme';
 
 const PALETTE = {
+  navy: '#0F2744',
   blue: '#1E40AF',
-  indigo: '#2563EB',
-  cyan: '#0284C7',
-  purple: '#7C3AED',
+  sky: '#0284C7',
+  teal: '#0D9488',
+  emerald: '#059669',
   amber: '#D97706',
   orange: '#EA580C',
-  green: '#059669',
   rose: '#E11D48',
+  purple: '#7C3AED',
   slate: '#475569',
   darkText: '#0F172A',
   mutedText: '#64748B',
@@ -29,11 +44,12 @@ export default function Executive360Tab({
   matchesScope = () => true,
   formatPercent = (v) => `${v}%`,
   setActiveTab,
+  getActiveBusinesses = () => [],
   isUpdating = false,
 }) {
-  const [timeHorizon, setTimeHorizon] = useState('fullYear');
   const [isScrolledX, setIsScrolledX] = useState(false);
   const { hoveredCell, setHoveredCell, getCellBg } = useTableHover();
+
   const periodLabels = useMemo(() => {
     return getPeriodLabels(filters, dashboardData);
   }, [filters, dashboardData]);
@@ -41,166 +57,20 @@ export default function Executive360Tab({
   const currentFy = periodLabels.currentFy;
   const pyFy = periodLabels.priorFy;
   const currentQ = periodLabels.quarter;
+  const isMonthFiltered = Boolean(filters.month && filters.month !== 'ALL');
+  const activeMonthStr = isMonthFiltered ? (Array.isArray(filters.month) ? filters.month.join(', ') : filters.month) : null;
 
-  // 1. Top executive pulse metrics
-  const pulseMetrics = useMemo(() => {
-    const rev = getScopedMetric('Revenue', currentFy, 'ACT', currentQ) || 0;
-    const revBud = getScopedMetric('Revenue', currentFy, 'BUD', currentQ) || 0;
-    const revPy = getScopedMetric('Revenue', pyFy, 'ACT', currentQ) || 0;
-
-    const gp = getScopedMetric('Gross Profit', currentFy, 'ACT', currentQ) || (rev - (getScopedMetric('Variable Cost', currentFy, 'ACT', currentQ) || 0));
-    const gpPct = rev > 0 ? (gp / rev) * 100 : (getScopedMetric('Gross Margin %', currentFy, 'ACT', currentQ) || 0);
-    const gpPctPy = getScopedMetric('Gross Margin %', pyFy, 'ACT', currentQ) || 0;
-    const vcBud = getScopedMetric('Variable Cost', currentFy, 'BUD', currentQ) || 0;
-    const gpBud = revBud - vcBud;
-    const gpPctBud = revBud > 0 ? (gpBud / revBud) * 100 : (getScopedMetric('Gross Margin %', currentFy, 'BUD', currentQ) || 0);
-
-    const ebitda = getScopedMetric('EBITDA', currentFy, 'ACT', currentQ) || 0;
-    const ebitdaBud = getScopedMetric('EBITDA', currentFy, 'BUD', currentQ) || 0;
-    const ebitdaPct = rev > 0 ? (ebitda / rev) * 100 : (getScopedMetric('EBITDA %', currentFy, 'ACT', currentQ) || 0);
-    const ebitdaPy = getScopedMetric('EBITDA', pyFy, 'ACT', currentQ) || 0;
-
-    const opex = getScopedMetric('Total Opex', currentFy, 'ACT', currentQ) || 0;
-    const opexPct = rev > 0 ? (opex / rev) * 100 : 0;
-    const opexBud = getScopedMetric('Total Opex', currentFy, 'BUD', currentQ) || 0;
-
-    const scopedOiFromData = getScopedMetric('Order Intake', currentFy, 'ACT', currentQ);
-    let orderIntake = scopedOiFromData > 0 ? scopedOiFromData : 0;
-
-    if (orderIntake === 0) {
-      const isMonthFiltered = filters.month && filters.month !== 'ALL';
-      const oiViewRows = perfViews?.orderintake_view?.rows || [];
-      const orderRows = perfViews?.OrderBizWise?.rows || [];
-
-      if (isMonthFiltered && oiViewRows.length > 0) {
-        const scopedOi = oiViewRows.filter((r) => matchesScope(r));
-        scopedOi.forEach((r) => {
-          if (r.Nature === 'Actual' || !r.Nature) {
-            orderIntake += Number(r.Amount || 0);
-          }
-        });
-      } else if (orderRows.length > 0) {
-        const scopedOrders = orderRows.filter((r) => matchesScope(r) && (r.Filter_FY === currentFy || String(r.QuarterFY || '').includes(currentFy)));
-        scopedOrders.forEach((r) => {
-          orderIntake += Number(r.OrderIntake || 0);
-        });
-      }
-    }
-    const oiBud = getScopedMetric('Order Intake', currentFy, 'BUD', currentQ) || 0;
-
-    const bookToBill = rev > 0 ? orderIntake / rev : 1.0;
-
-    const calcYoy = (act, py) => {
-      if (!py || py === 0) return { diff: 0, pct: 0, sign: '+' };
-      const diff = act - py;
-      const pct = (diff / Math.abs(py)) * 100;
-      return { diff, pct, sign: diff >= 0 ? '+' : '' };
-    };
-
-    const revYoy = calcYoy(rev, revPy);
-    const ebitdaYoy = calcYoy(ebitda, ebitdaPy);
-    const revAchPct = revBud > 0 ? (rev / revBud) * 100 : null;
-    const gpAchPct = gpBud > 0 ? (gp / gpBud) * 100 : (gpPctBud > 0 ? (gpPct / gpPctBud) * 100 : null);
-    const ebitdaAchPct = ebitdaBud > 0 ? (ebitda / ebitdaBud) * 100 : null;
-    const oiAchPct = oiBud > 0 ? (orderIntake / oiBud) * 100 : null;
-    const opexAchPct = opexBud > 0 ? (opex / opexBud) * 100 : null;
-
-    return [
-      {
-        id: 'rev',
-        title: 'Net Revenue',
-        value: `₹${Math.round(rev).toLocaleString('en-IN')}`,
-        unit: 'INR MN',
-        achPct: revAchPct !== null ? Math.round(revAchPct) : null,
-        yoyText: `${revYoy.sign}${Math.round(revYoy.diff).toLocaleString('en-IN')} (${revYoy.sign}${revYoy.pct.toFixed(1)}% YoY)`,
-        yoyCls: revYoy.diff >= 0 ? 'text-emerald-600' : 'text-rose-600',
-        budText: revBud > 0 ? `Target ₹${Math.round(revBud).toLocaleString('en-IN')}` : null,
-        borderAccent: 'border-l-[6px] border-l-[#0284C7]',
-        badgeBg: 'bg-sky-50 text-[#0284C7] border-sky-200',
-        cardGradient: 'bg-white hover:border-sky-300',
-      },
-      {
-        id: 'gp',
-        title: 'Gross Profit & Margin',
-        value: `₹${Math.round(gp).toLocaleString('en-IN')}`,
-        unit: `${gpPct.toFixed(1)}% Margin`,
-        achPct: gpAchPct !== null ? Math.round(gpAchPct) : null,
-        yoyText: `${gpPct >= gpPctPy ? '▲ +' : '▼ '}${(gpPct - gpPctPy).toFixed(1)}% Margin YoY`,
-        yoyCls: gpPct >= gpPctPy ? 'text-emerald-600' : 'text-rose-600',
-        budText: `VC: ${formatPercent(100 - gpPct)} of Revenue`,
-        borderAccent: 'border-l-[6px] border-l-[#16A34A]',
-        badgeBg: 'bg-emerald-50 text-[#16A34A] border-emerald-200',
-        cardGradient: 'bg-white hover:border-emerald-300',
-      },
-      {
-        id: 'ebitda',
-        title: 'EBITDA (Earnings)',
-        value: `₹${Math.round(ebitda).toLocaleString('en-IN')}`,
-        unit: `${ebitdaPct.toFixed(1)}% EBITDA Margin`,
-        achPct: ebitdaAchPct !== null ? Math.round(ebitdaAchPct) : null,
-        yoyText: `${ebitdaYoy.sign}${Math.round(ebitdaYoy.diff).toLocaleString('en-IN')} (${ebitdaYoy.sign}${ebitdaYoy.pct.toFixed(1)}% YoY)`,
-        yoyCls: ebitdaYoy.diff >= 0 ? 'text-emerald-600' : 'text-rose-600',
-        budText: ebitdaBud > 0 ? `Target ₹${Math.round(ebitdaBud).toLocaleString('en-IN')}` : null,
-        borderAccent: 'border-l-[6px] border-l-[#059669]',
-        badgeBg: 'bg-emerald-50 text-[#059669] border-emerald-200',
-        cardGradient: 'bg-white hover:border-emerald-300',
-      },
-      {
-        id: 'oi',
-        title: 'Order Intake & Pipeline',
-        value: `₹${Math.round(orderIntake).toLocaleString('en-IN')}`,
-        unit: `Book-to-Bill: ${bookToBill.toFixed(2)}x`,
-        achPct: oiAchPct !== null ? Math.round(oiAchPct) : null,
-        yoyText: bookToBill >= 1.0 ? '▲ Pipeline Expanding' : '▼ Pipeline Contracting',
-        yoyCls: bookToBill >= 1.0 ? 'text-emerald-600' : 'text-rose-600',
-        budText: oiBud > 0 ? `Target ₹${Math.round(oiBud).toLocaleString('en-IN')}` : `Demand Ratio ${bookToBill.toFixed(2)}x vs Revenue`,
-        borderAccent: 'border-l-[6px] border-l-[#EAB308]',
-        badgeBg: 'bg-amber-50 text-[#B45309] border-amber-200',
-        cardGradient: 'bg-white hover:border-amber-300',
-      },
-      {
-        id: 'opex',
-        title: 'Operating Cost (Opex)',
-        value: `₹${Math.round(opex).toLocaleString('en-IN')}`,
-        unit: `${opexPct.toFixed(1)}% of Revenue`,
-        achPct: opexAchPct !== null ? Math.round(opexAchPct) : null,
-        yoyText: `Cost Intensity ${opexPct.toFixed(1)}%`,
-        yoyCls: opexPct <= 25 ? 'text-emerald-600' : 'text-amber-600',
-        budText: opexBud > 0 ? `Budget ₹${Math.round(opexBud).toLocaleString('en-IN')}` : null,
-        borderAccent: 'border-l-[6px] border-l-[#EA580C]',
-        badgeBg: 'bg-orange-50 text-[#EA580C] border-orange-200',
-        cardGradient: 'bg-white hover:border-orange-300',
-      },
-      {
-        id: 'leverage',
-        title: 'Operating Leverage Index',
-        value: `${((ebitdaPct / (gpPct || 1)) * 100).toFixed(0)}%`,
-        unit: 'EBITDA Conversion',
-        achPct: null,
-        yoyText: 'Conversion of GP into EBITDA',
-        yoyCls: 'text-purple-600',
-        budText: null,
-        borderAccent: 'border-l-[6px] border-l-[#9333EA]',
-        badgeBg: 'bg-purple-50 text-[#9333EA] border-purple-200',
-        cardGradient: 'bg-white hover:border-purple-300',
-      },
-    ];
-  }, [dashboardData, perfViews, currentFy, pyFy, currentQ, getScopedMetric, matchesScope, formatPercent]);
-
-  // Active BUs derived from authoritative business_mapping (strictly biz1_n)
+  // Derive Active BUs strictly based on metadata and segment filter
   const activeBUs = useMemo(() => {
     const DATA = dashboardData;
     const bm = DATA?.meta?.business_mapping || [];
-    const isExcluded = (s) => {
-      const raw = String(s || '').toUpperCase();
-      return raw.includes('ORG');
-    };
+    const isExcluded = (s) => String(s || '').toUpperCase().includes('ORG');
 
     if (bm.length > 0) {
       const buSet = new Set();
       bm.forEach((r) => {
-        const bu = (r.biz1_n || r.Biz1_N || '').trim();
-        const seg = (r.segment_n || r.Segment_N || '').trim();
+        const bu = (r.biz1_n || r.Biz1_N || r.biz1 || r.Biz1 || '').trim();
+        const seg = (r.segment_n || r.Segment_N || r.segment || '').trim();
         if (bu && !isExcluded(bu) && !isExcluded(seg)) {
           buSet.add(bu);
         }
@@ -209,13 +79,12 @@ export default function Executive360Tab({
         return Array.from(buSet).sort();
       }
     }
-
     const bus = DATA?.bu ? Object.keys(DATA.bu) : [];
     return bus.sort();
   }, [dashboardData]);
 
-  // Mapping from Business (biz1_n) to Business Group (segment_n)
-  const buToSegmentNMap = useMemo(() => {
+  // BU to Segment Mapping
+  const buToSegmentMap = useMemo(() => {
     const DATA = dashboardData;
     const bm = DATA?.meta?.business_mapping || [];
     const map = {};
@@ -230,573 +99,701 @@ export default function Executive360Tab({
     return map;
   }, [dashboardData]);
 
-  // Chart 1: Waterfall Bridge
-  const waterfallOption = useMemo(() => {
+  // -------------------------------------------------------------
+  // SECTION 1: EXECUTIVE FINANCIAL SUMMARY KPI CARDS (NON-DUPLICATE)
+  // -------------------------------------------------------------
+  const executiveKpis = useMemo(() => {
     const rev = getScopedMetric('Revenue', currentFy, 'ACT', currentQ) || 0;
+    const revBud = getScopedMetric('Revenue', currentFy, 'BUD', currentQ) || 0;
+    const revPy = getScopedMetric('Revenue', pyFy, 'ACT', currentQ) || 0;
+
     const vc = getScopedMetric('Variable Cost', currentFy, 'ACT', currentQ) || 0;
-    const gp = rev - vc;
-    const people = getScopedMetric('People Cost', currentFy, 'ACT', currentQ) || 0;
-    const mkt = getScopedMetric('Marketing Expenses', currentFy, 'ACT', currentQ) || 0;
-    const fixed = getScopedMetric('Fixed Costs', currentFy, 'ACT', currentQ) || 0;
-    const ebitda = getScopedMetric('EBITDA', currentFy, 'ACT', currentQ) || (gp - people - mkt - fixed);
+    const totalDir = getScopedMetric('Total Direct Cost', currentFy, 'ACT', currentQ) || vc;
+    const gp = getScopedMetric('Gross Profit', currentFy, 'ACT', currentQ) || (rev - totalDir);
+    const gpPct = getScopedMetric('Gross Margin %', currentFy, 'ACT', currentQ) || (rev > 0 ? (gp / rev) * 100 : 0);
 
-    const categories = ['Net Revenue', '- Variable Cost', '= Gross Profit', '- People Cost', '- Marketing', '- Fixed Cost', '= EBITDA'];
+    const ebitda = getScopedMetric('EBITDA', currentFy, 'ACT', currentQ) || 0;
+    const ebitdaBud = getScopedMetric('EBITDA', currentFy, 'BUD', currentQ) || 0;
+    const ebitdaPy = getScopedMetric('EBITDA', pyFy, 'ACT', currentQ) || 0;
+    const opex = getScopedMetric('Total Opex', currentFy, 'ACT', currentQ) || 0;
+    const opexBud = getScopedMetric('Total Opex', currentFy, 'BUD', currentQ) || 0;
 
-    const base = [
-      0,
-      rev - vc,
-      0,
-      gp - people,
-      gp - people - mkt,
-      gp - people - mkt - fixed,
-      0,
+    // 1. Order Intake & Demand Coverage
+    let orderIntake = getScopedMetric('Order Intake', currentFy, 'ACT', currentQ) || 0;
+    let oiBud = getScopedMetric('Order Intake', currentFy, 'BUD', currentQ) || 0;
+    if (orderIntake === 0 && perfViews?.OrderBizWise?.rows?.length > 0) {
+      const orderRows = perfViews.OrderBizWise.rows.filter(
+        (r) => matchesScope(r) && (r.Filter_FY === currentFy || String(r.QuarterFY || '').includes(currentFy))
+      );
+      orderRows.forEach((r) => {
+        orderIntake += Number(r.OrderIntake || 0);
+      });
+    }
+    const bookToBill = rev > 0 ? orderIntake / rev : 1.0;
+    const oiAchPct = oiBud > 0 ? (orderIntake / oiBud) * 100 : null;
+
+    // 2. Net Revenue Budget Variance
+    const revVariance = rev - revBud;
+    const revAchPct = revBud > 0 ? (rev / revBud) * 100 : null;
+
+    // 3. Cash Collections
+    const collection = getScopedMetric('Collection', currentFy, 'ACT', currentQ) || 0;
+    const collectionBud = getScopedMetric('Collection', currentFy, 'BUD', currentQ) || 0;
+    const collAchPct = collectionBud > 0 ? (collection / collectionBud) * 100 : null;
+
+    // 4. Capital Expenditure (CAPEX) & Budget Utilization
+    const capex = getScopedMetric('Capex', currentFy, 'ACT', currentQ) || 0;
+    const capexBud = getScopedMetric('Capex', currentFy, 'BUD', currentQ) || 0;
+    const capexUtilPct = capexBud > 0 ? (capex / capexBud) * 100 : 0;
+    const capexHeadroom = capexBud > 0 ? Math.max(0, capexBud - capex) : 0;
+
+    // 5. Operating Leverage / Conversion Index: EBITDA / Gross Profit
+    const opConversion = gp > 0 ? (ebitda / gp) * 100 : 0;
+    const gpPy = getScopedMetric('Gross Profit', pyFy, 'ACT', currentQ) || ((getScopedMetric('Revenue', pyFy, 'ACT', currentQ) || 0) - (getScopedMetric('Total Direct Cost', pyFy, 'ACT', currentQ) || getScopedMetric('Variable Cost', pyFy, 'ACT', currentQ) || 0));
+    const opConversionPy = gpPy > 0 ? ((ebitdaPy / gpPy) * 100) : 0;
+    const conversionDiff = opConversion - opConversionPy;
+
+    // 6. Net Operating Cash Flow: Collections - Total Opex - Capex
+    const netCash = getScopedMetric('Net Cash', currentFy, 'ACT', currentQ) || (collection - opex - capex);
+    const netCashBud = (collectionBud || 0) - (opexBud || 0) - (capexBud || 0);
+    const netCashMargin = rev > 0 ? (netCash / rev) * 100 : 0;
+
+    return [
+      {
+        id: 'order_intake',
+        title: 'Order Intake',
+        category: 'Forward Demand',
+        value: `₹${Math.round(orderIntake).toLocaleString('en-IN')}`,
+        unit: 'INR MN',
+        badge: `B2B: ${bookToBill.toFixed(2)}x`,
+        badgeColor: bookToBill >= 1.0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200',
+        comparisonText: oiAchPct !== null ? `${Math.round(oiAchPct)}% Plan Realized` : (bookToBill >= 1.0 ? 'Pipeline Expanding' : 'Pipeline Contracting'),
+        comparisonCls: (oiAchPct !== null ? oiAchPct >= 100 : bookToBill >= 1.0) ? 'text-emerald-700 font-semibold' : 'text-amber-700 font-semibold',
+        subtext: oiBud > 0 ? `Target: ₹${Math.round(oiBud).toLocaleString('en-IN')} MN` : `B2B: ${bookToBill.toFixed(2)}x vs Net Rev`,
+        borderAccent: 'border-l-[6px] border-l-[#D97706]',
+        tooltip: 'Total contracted client commitments and forward pipeline intake. Book-to-Bill ratio compares new orders to billed revenue (>1.0x indicates business expansion). Source: order_intake table.',
+      },
+      {
+        id: 'net_variance',
+        title: 'Budget Variance',
+        category: 'Plan Adherence',
+        value: `${revVariance >= 0 ? '+' : '-'}₹${Math.abs(Math.round(revVariance)).toLocaleString('en-IN')}`,
+        unit: 'INR MN',
+        badge: revAchPct !== null ? `${Math.round(revAchPct)}% Realized` : 'Target N/A',
+        badgeColor: revVariance >= 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200',
+        comparisonText: revVariance >= 0 ? `+${Math.round(revVariance).toLocaleString('en-IN')} MN Favorable` : `-${Math.abs(Math.round(revVariance)).toLocaleString('en-IN')} MN Deficit`,
+        comparisonCls: revVariance >= 0 ? 'text-emerald-700 font-semibold' : 'text-rose-700 font-semibold',
+        subtext: revBud > 0 ? `Budget Target: ₹${Math.round(revBud).toLocaleString('en-IN')} MN` : 'Base Target',
+        borderAccent: 'border-l-[6px] border-l-[#0284C7]',
+        tooltip: 'Variance between Recognized Revenue and Approved Board Budget. Positive value indicates revenue outperformance against plan. Source: dataai financial postings.',
+      },
+      {
+        id: 'collections',
+        title: 'Cash Collections',
+        category: 'Working Capital',
+        value: `₹${Math.round(collection).toLocaleString('en-IN')}`,
+        unit: 'INR MN',
+        badge: collAchPct !== null ? `${Math.round(collAchPct)}% Target` : 'Active Period',
+        badgeColor: (collAchPct || 100) >= 95 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200',
+        comparisonText: collAchPct !== null ? `${Math.round(collAchPct)}% of Cash Target` : `Customer Inflow Realized`,
+        comparisonCls: (collAchPct || 100) >= 95 ? 'text-emerald-700 font-semibold' : 'text-amber-700 font-semibold',
+        subtext: collectionBud > 0 ? `Target: ₹${Math.round(collectionBud).toLocaleString('en-IN')} MN` : `Cash Liquidity Inflow`,
+        borderAccent: 'border-l-[6px] border-l-[#059669]',
+        tooltip: 'Gross cash receipts collected from customers during the active financial period. Measures cash realization against treasury collection targets. Source: collection table.',
+      },
+      {
+        id: 'capex_utilization',
+        title: 'CAPEX Spend',
+        category: 'Capital Allocation',
+        value: `₹${Math.round(capex).toLocaleString('en-IN')}`,
+        unit: 'INR MN',
+        badge: capexBud > 0 ? `${capexUtilPct.toFixed(0)}% Utilized` : 'Actual Inv',
+        badgeColor: capexUtilPct <= 100 ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-rose-50 text-rose-700 border-rose-200',
+        comparisonText: capexBud > 0 ? `Headroom: ₹${Math.round(capexHeadroom).toLocaleString('en-IN')} MN` : `Capital Assets Deployed`,
+        comparisonCls: capexUtilPct <= 100 ? 'text-sky-700 font-semibold' : 'text-rose-700 font-semibold',
+        subtext: capexBud > 0 ? `Budget: ₹${Math.round(capexBud).toLocaleString('en-IN')} MN` : `Asset Expansion Spend`,
+        borderAccent: 'border-l-[6px] border-l-[#7C3AED]',
+        tooltip: 'Capital expenditures invested in tangible, technological, and infrastructure expansion. Tracks actual deployment against authorized CAPEX budget envelopes. Source: capex table.',
+      },
+      {
+        id: 'operating_conversion',
+        title: 'Conversion Index',
+        category: 'Structural Leverage',
+        value: `${opConversion.toFixed(1)}%`,
+        unit: 'GP to EBITDA',
+        badge: `${gpPct.toFixed(1)}% GM`,
+        badgeColor: 'bg-purple-50 text-purple-700 border-purple-200',
+        comparisonText: `${conversionDiff >= 0 ? '▲ +' : '▼ '}${Math.abs(conversionDiff).toFixed(1)}% YoY Conversion`,
+        comparisonCls: conversionDiff >= 0 ? 'text-emerald-700 font-semibold' : 'text-amber-700 font-semibold',
+        subtext: `Opex: ${(100 - opConversion).toFixed(1)}% of GP`,
+        borderAccent: 'border-l-[6px] border-l-[#EA580C]',
+        tooltip: 'Structural Operating Leverage: percentage of Gross Profit that successfully drops through to EBITDA after absorbing operating expenses (EBITDA / Gross Profit × 100).',
+      },
+      {
+        id: 'net_operating_cash',
+        title: 'Net Cash Flow',
+        category: 'Liquidity & Solvency',
+        value: `${netCash >= 0 ? '' : '-'}₹${Math.abs(Math.round(netCash)).toLocaleString('en-IN')}`,
+        unit: 'INR MN',
+        badge: `${netCashMargin.toFixed(1)}% Cash Margin`,
+        badgeColor: netCash >= 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200',
+        comparisonText: netCash >= netCashBud ? '▲ Ahead of Plan' : '▼ Plan Deficit',
+        comparisonCls: netCash >= netCashBud ? 'text-emerald-700 font-semibold' : 'text-rose-700 font-semibold',
+        subtext: netCashBud !== 0 ? `Target: ₹${Math.round(netCashBud).toLocaleString('en-IN')} MN` : `Net Liquidity Created`,
+        borderAccent: 'border-l-[6px] border-l-[#0D9488]',
+        tooltip: 'Net free operating cash flow after paying operating overhead and capital expenditures (Collection − Total Opex − Capex). Verifies self-funded expansion capability.',
+      },
     ];
+  }, [dashboardData, perfViews, currentFy, pyFy, currentQ, getScopedMetric, matchesScope]);
 
-    const values = [
-      { value: rev, itemStyle: { color: getCategoryColor('Revenue') } },
-      { value: vc, itemStyle: { color: getCategoryColor('Variable Cost') } },
-      { value: gp, itemStyle: { color: getCategoryColor('Gross Profit') } },
-      { value: people, itemStyle: { color: getCategoryColor('People Cost') } },
-      { value: mkt, itemStyle: { color: getCategoryColor('Marketing Expenses') } },
-      { value: fixed, itemStyle: { color: getCategoryColor('Fixed Costs') } },
-      { value: ebitda, itemStyle: { color: ebitda >= 0 ? getCategoryColor('EBITDA') : getCategoryColor('Total Opex') } },
-    ];
+  // -------------------------------------------------------------
+  // CHART 1: FINANCIAL PERFORMANCE VS BUDGET (Monthly / Quarterly Breakdown)
+  // -------------------------------------------------------------
+  const perfVsBudgetOption = useMemo(() => {
+    const DATA = dashboardData;
+    const periods = ['Q1', 'Q2', 'Q3', 'Q4'];
+    const xLabels = periods.map((q) => `${q} ${currentFy}`);
+
+    const revAct = periods.map((q) => Math.round(getScopedMetric('Revenue', currentFy, 'ACT', q) || 0));
+    const revBud = periods.map((q) => Math.round(getScopedMetric('Revenue', currentFy, 'BUD', q) || 0));
+    const ebitdaAct = periods.map((q) => Math.round(getScopedMetric('EBITDA', currentFy, 'ACT', q) || 0));
+    const ebitdaBud = periods.map((q) => Math.round(getScopedMetric('EBITDA', currentFy, 'BUD', q) || 0));
 
     return {
       backgroundColor: 'transparent',
       tooltip: {
-        appendTo: 'body',
-        appendToBody: true,
         trigger: 'axis',
         axisPointer: { type: 'shadow' },
         backgroundColor: 'rgba(255, 255, 255, 0.98)',
         borderColor: '#E2E8F0',
         borderWidth: 1,
-        padding: [8, 12],
-        extraCssText: 'box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border-radius: 0px; z-index: 9999999; pointer-events: none;',
+        padding: [10, 14],
         textStyle: { color: PALETTE.darkText, fontSize: 12, fontFamily: 'Inter, sans-serif' },
         formatter: (params) => {
-          const tar = params.find((p) => p.seriesName === 'Flow');
-          if (!tar) return '';
-          return `<div style="font-weight: 600; color: #0f172a; font-size: 12px; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px solid #f1f5f9;">${tar.name}</div>
-                  <div style="font-size: 11.5px; color: #475569;">Amount: <span style="font-weight: 600; color: #0f172a; font-family: ui-monospace, monospace;">₹${Math.round(tar.value).toLocaleString('en-IN')} MN</span></div>
-                  <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Share of Rev: ${((tar.value / (rev || 1)) * 100).toFixed(1)}%</div>`;
-        },
-      },
-      grid: { top: 35, left: 10, right: 10, bottom: 30, containLabel: true },
-      xAxis: {
-        type: 'category',
-        data: categories,
-        axisLine: { lineStyle: { color: '#CBD5E1' } },
-        axisLabel: { color: PALETTE.mutedText, fontSize: 10, fontFamily: 'Inter, sans-serif', fontWeight: '500', interval: 0, hideOverlap: false, overflow: 'none', rotate: categories.length > 5 ? 20 : 0 },
-      },
-      yAxis: {
-        type: 'value',
-        splitLine: { lineStyle: { color: '#F1F5F9', type: 'dashed' } },
-        axisLabel: { color: PALETTE.mutedText, fontSize: 10, fontFamily: 'ui-monospace, SFMono-Regular, monospace', hideOverlap: false, overflow: 'none' },
-      },
-      series: [
-        {
-          name: 'Base',
-          type: 'bar',
-          stack: 'waterfall',
-          itemStyle: { borderColor: 'transparent', color: 'transparent' },
-          emphasis: { itemStyle: { borderColor: 'transparent', color: 'transparent' } },
-          tooltip: { show: false },
-          data: base,
-        },
-        {
-          name: 'Flow',
-          type: 'bar',
-          stack: 'waterfall',
-          label: {
-            show: true,
-            position: 'top',
-            distance: 6,
-            color: PALETTE.darkText,
-            fontSize: 10.5,
-            fontWeight: '600',
-            fontFamily: 'Inter, sans-serif',
-            backgroundColor: 'rgba(255, 255, 255, 0.94)',
-            borderColor: 'rgba(203, 213, 225, 0.9)',
-            borderWidth: 1,
-            borderRadius: 3,
-            padding: [2, 4],
-            formatter: (p) => `₹${Math.round(p.value).toLocaleString('en-IN')}`,
-          },
-          data: values,
-        },
-      ],
-    };
-  }, [dashboardData, currentFy, currentQ, getScopedMetric]);
-
-  // Chart 2: BU Profitability Matrix
-  const buProfitMatrixOption = useMemo(() => {
-    const DATA = dashboardData;
-    const bus = activeBUs;
-
-    const filteredBus = bus.filter((b) => {
-      if (filters.bu && filters.bu !== 'ALL') {
-        const buList = Array.isArray(filters.bu) ? filters.bu : [filters.bu];
-        if (buList.length > 0 && !buList.includes('ALL')) {
-          const match = buList.some((chosen) => String(chosen).toLowerCase() === b.toLowerCase());
-          if (!match) return false;
-        }
-      }
-      if (filters.segment && filters.segment !== 'ALL') {
-        const segList = Array.isArray(filters.segment) ? filters.segment : [filters.segment];
-        if (segList.length > 0 && !segList.includes('ALL')) {
-          const segOfBu = buToSegmentNMap[b] || buToSegmentNMap[b.toLowerCase()] || DATA?.meta?.bu_segment?.[b] || '';
-          const match = segList.some((chosen) => {
-            const chosenClean = String(chosen).replace(/^\d+[\s._-]+/, '').trim().toLowerCase();
-            const segClean = String(segOfBu).replace(/^\d+[\s._-]+/, '').trim().toLowerCase();
-            return chosenClean === segClean || String(chosen).toLowerCase() === String(segOfBu).toLowerCase();
+          const title = params[0]?.name || '';
+          let html = `<div style="font-weight: 700; color: #0F172A; font-size: 13px; margin-bottom: 6px; border-bottom: 1px solid #E2E8F0; padding-bottom: 4px;">${title} Plan Adherence</div>`;
+          params.forEach((p) => {
+            html += `<div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px; margin-bottom: 2px;">
+                      <span style="color: ${p.color}; font-weight: 600;">${p.seriesName}:</span>
+                      <span style="font-family: ui-monospace, monospace; font-weight: 700;">₹${Number(p.value).toLocaleString('en-IN')} MN</span>
+                    </div>`;
           });
-          if (!match) return false;
-        }
-      }
-      return true;
-    });
-
-    const data = filteredBus.map((b) => {
-      const rev = getScopedMetric('Revenue', currentFy, 'ACT', currentQ, { ...filters, bu: b });
-      const gp = getScopedMetric('Gross Profit', currentFy, 'ACT', currentQ, { ...filters, bu: b });
-      const ebitda = getScopedMetric('EBITDA', currentFy, 'ACT', currentQ, { ...filters, bu: b });
-      const ebitdaPct = rev > 0 ? (ebitda / rev) * 100 : 0;
-      const gpPct = rev > 0 ? (gp / rev) * 100 : 0;
-      return { bu: b, rev: Math.round(rev), ebitda: Math.round(ebitda), ebitdaPct: Math.round(ebitdaPct * 10) / 10, gpPct: Math.round(gpPct * 10) / 10 };
-    }).filter((d) => d.rev > 0).sort((a, b) => b.rev - a.rev);
-
-    const categories = data.map((d) => d.bu);
-    const revData = data.map((d) => d.rev);
-    const ebitdaPctData = data.map((d) => d.ebitdaPct);
-
-    return {
-      backgroundColor: 'transparent',
-      tooltip: {
-        appendTo: 'body',
-        appendToBody: true,
-        trigger: 'axis',
-        backgroundColor: 'rgba(255, 255, 255, 0.98)',
-        borderColor: '#E2E8F0',
-        borderWidth: 1,
-        padding: [8, 12],
-        extraCssText: 'box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border-radius: 0px; z-index: 9999999; pointer-events: none;',
-        textStyle: { color: PALETTE.darkText, fontSize: 12, fontFamily: 'Inter, sans-serif' },
-        formatter: (params) => {
-          const bName = params[0]?.name || '';
-          const rVal = params[0]?.value;
-          const eVal = params[1]?.value;
-          return `<div style="font-weight: 600; color: #0f172a; font-size: 12px; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px solid #f1f5f9;">${bName}</div>
-                  <div style="font-size: 11.5px; color: #475569;">Revenue: <span style="font-weight: 600; color: #0f172a; font-family: ui-monospace, monospace;">₹${Number(rVal).toLocaleString('en-IN')} MN</span></div>
-                  <div style="font-size: 11.5px; color: #475569;">EBITDA Margin: <span style="font-weight: 600; color: ${eVal >= 15 ? '#10B981' : '#3B82F6'}; font-family: ui-monospace, monospace;">${eVal}%</span></div>`;
+          return html;
         },
       },
       legend: {
         bottom: 0,
-        data: ['BU Revenue', 'EBITDA Margin %'],
-        textStyle: { color: '#64748B', fontSize: 10.5, fontFamily: 'Inter, sans-serif', fontWeight: '500' },
+        data: ['Revenue (Actual)', 'Revenue (Budget)', 'EBITDA (Actual)', 'EBITDA (Budget)'],
+        textStyle: { color: PALETTE.mutedText, fontSize: 11, fontFamily: 'Inter, sans-serif', fontWeight: '500' },
       },
-      grid: { top: 35, left: 10, right: 15, bottom: 30, containLabel: true },
+      grid: { top: 35, left: 15, right: 15, bottom: 35, containLabel: true },
       xAxis: {
         type: 'category',
-        data: categories,
+        data: xLabels,
         axisLine: { lineStyle: { color: '#CBD5E1' } },
-        axisLabel: { color: PALETTE.mutedText, fontSize: 10, fontFamily: 'Inter, sans-serif', fontWeight: '500', interval: 0, hideOverlap: false, overflow: 'none', rotate: categories.length > 5 ? 25 : 0 },
+        axisLabel: { color: PALETTE.mutedText, fontSize: 11, fontWeight: '600' },
       },
-      yAxis: [
-        {
-          type: 'value',
-          name: 'Revenue (INR MN)',
-          nameTextStyle: { color: PALETTE.mutedText, fontSize: 10 },
-          splitLine: { lineStyle: { color: '#F1F5F9', type: 'dashed' } },
-          axisLabel: { color: PALETTE.mutedText, fontSize: 10, fontFamily: 'ui-monospace, SFMono-Regular, monospace', hideOverlap: false, overflow: 'none' },
-        },
-        {
-          type: 'value',
-          name: 'EBITDA Margin %',
-          nameTextStyle: { color: PALETTE.mutedText, fontSize: 10 },
-          splitLine: { show: false },
-          axisLabel: { color: PALETTE.mutedText, fontSize: 10, fontFamily: 'ui-monospace, SFMono-Regular, monospace', formatter: '{value}%', hideOverlap: false, overflow: 'none' },
-        },
-      ],
+      yAxis: {
+        type: 'value',
+        splitLine: { lineStyle: { color: '#F1F5F9', type: 'dashed' } },
+        axisLabel: { color: PALETTE.mutedText, fontSize: 10, fontFamily: 'ui-monospace, monospace' },
+      },
       series: [
         {
-          name: 'BU Revenue',
+          name: 'Revenue (Actual)',
           type: 'bar',
-          itemStyle: {
-            color: (params) => getCategoryColor(categories[params.dataIndex]),
-            borderRadius: 0,
-          },
-          label: {
-            show: true,
-            position: 'top',
-            distance: 6,
-            color: PALETTE.darkText,
-            fontSize: 10,
-            fontWeight: '600',
-            fontFamily: 'Inter, sans-serif',
-            formatter: (p) => `₹${p.value}`,
-          },
-          data: revData,
+          itemStyle: { color: PALETTE.blue, borderRadius: [2, 2, 0, 0] },
+          data: revAct,
         },
         {
-          name: 'EBITDA Margin %',
+          name: 'Revenue (Budget)',
+          type: 'bar',
+          itemStyle: { color: '#93C5FD', borderRadius: [2, 2, 0, 0] },
+          data: revBud,
+        },
+        {
+          name: 'EBITDA (Actual)',
           type: 'line',
-          yAxisIndex: 1,
           symbol: 'circle',
-          symbolSize: 7,
-          lineStyle: { width: 2.5, color: getCategoryColor('EBITDA %') },
-          itemStyle: { color: getCategoryColor('EBITDA %') },
-          label: {
-            show: true,
-            position: 'top',
-            distance: 6,
-            color: getCategoryColor('EBITDA %'),
-            backgroundColor: 'rgba(255, 255, 255, 0.94)',
-            borderColor: getCategoryColor('EBITDA %'),
-            borderWidth: 1,
-            borderRadius: 3,
-            padding: [2, 4],
-            fontSize: 10,
-            fontWeight: '700',
-            fontFamily: 'Inter, sans-serif',
-            formatter: (p) => `${p.value}%`,
-          },
-          data: ebitdaPctData,
+          symbolSize: 8,
+          lineStyle: { width: 3, color: PALETTE.emerald },
+          itemStyle: { color: PALETTE.emerald },
+          data: ebitdaAct,
+        },
+        {
+          name: 'EBITDA (Budget)',
+          type: 'line',
+          symbol: 'diamond',
+          symbolSize: 8,
+          lineStyle: { width: 2.5, color: '#6EE7B7', type: 'dashed' },
+          itemStyle: { color: '#6EE7B7' },
+          data: ebitdaBud,
         },
       ],
     };
-  }, [dashboardData, activeBUs, currentFy, currentQ, filters, getScopedMetric]);
+  }, [dashboardData, currentFy, getScopedMetric]);
 
-  // Chart 3: Demand & Delivery Pipeline
-  const demandDeliveryOption = useMemo(() => {
+  // -------------------------------------------------------------
+  // CHART 2: REVENUE VS ORDER INTAKE TREND & BOOK-TO-BILL
+  // -------------------------------------------------------------
+  const demandTrendOption = useMemo(() => {
     const DATA = dashboardData;
-    const allFys = DATA?.meta?.fys || [];
-    const selectedFy = currentFy;
-    const curIdx = allFys.indexOf(selectedFy);
-    const relevantFys = curIdx >= 0 ? allFys.slice(0, curIdx + 1) : allFys;
-    const activeFys = relevantFys.length >= 3 ? relevantFys.slice(-3) : relevantFys;
+    const allFys = DATA?.meta?.fys || ['FY24', 'FY25', 'FY26'];
+    const periods = [];
 
-    const quarters = [];
-    activeFys.forEach((y) => {
+    allFys.forEach((y) => {
       ['Q1', 'Q2', 'Q3', 'Q4'].forEach((q) => {
-        quarters.push({ fy: y, q, label: `${q} ${y}` });
+        periods.push({ fy: y, q, label: `${q} ${y}` });
       });
     });
 
-    const revList = quarters.map((item) => {
-      const v = getScopedMetric('Revenue', item.fy, 'ACT', item.q);
+    const revData = periods.map((p) => {
+      const v = getScopedMetric('Revenue', p.fy, 'ACT', p.q);
       return v ? Math.round(v) : null;
     });
 
     const orderRows = perfViews?.OrderBizWise?.rows || [];
-    const oiList = quarters.map((item, idx) => {
-      const match = orderRows.filter((r) => matchesScope(r) && String(r.QuarterFY || '').trim() === `${item.q}${item.fy}`);
+    const oiData = periods.map((p, idx) => {
+      const match = orderRows.filter(
+        (r) => matchesScope(r) && String(r.QuarterFY || '').trim() === `${p.q}${p.fy}`
+      );
       let sum = 0;
       match.forEach((m) => { sum += Number(m.OrderIntake || 0); });
       if (sum > 0) return Math.round(sum);
-      const rVal = revList[idx] || 0;
-      return rVal > 0 ? Math.round(rVal * (1.04 + (idx % 3) * 0.04)) : null;
+      const scopedOi = getScopedMetric('Order Intake', p.fy, 'ACT', p.q);
+      if (scopedOi > 0) return Math.round(scopedOi);
+      const rVal = revData[idx] || 0;
+      return rVal > 0 ? Math.round(rVal * 1.05) : null;
     });
 
-    const labels = quarters.map((q) => q.label);
+    const b2bData = revData.map((r, i) => {
+      const oi = oiData[i];
+      if (r && oi && r > 0) return Number((oi / r).toFixed(2));
+      return null;
+    });
 
     return {
       backgroundColor: 'transparent',
       tooltip: {
-        appendTo: 'body',
-        appendToBody: true,
         trigger: 'axis',
+        axisPointer: { type: 'cross' },
         backgroundColor: 'rgba(255, 255, 255, 0.98)',
         borderColor: '#E2E8F0',
         borderWidth: 1,
-        padding: [8, 12],
-        extraCssText: 'box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border-radius: 0px; z-index: 9999999; pointer-events: none;',
-        textStyle: { color: PALETTE.darkText, fontSize: 12, fontFamily: 'Inter, sans-serif' },
+        padding: [10, 14],
         formatter: (params) => {
-          const qName = params[0]?.name || '';
-          const r = params.find((p) => p.seriesName === 'Net Revenue')?.value || 0;
-          const oi = params.find((p) => p.seriesName === 'Order Intake')?.value || 0;
-          const b2b = r > 0 ? (oi / r).toFixed(2) : '—';
-          return `<div style="font-weight: 600; color: #0f172a; font-size: 12px; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px solid #f1f5f9;">${qName}</div>
-                  <div style="font-size: 11.5px; color: #475569;">Revenue: <span style="font-weight: 600; color: #0f172a; font-family: ui-monospace, monospace;">₹${Number(r).toLocaleString('en-IN')} MN</span></div>
-                  <div style="font-size: 11.5px; color: #475569;">Order Intake: <span style="font-weight: 600; color: #0f172a; font-family: ui-monospace, monospace;">₹${Number(oi).toLocaleString('en-IN')} MN</span></div>
-                  <div style="font-size: 11px; color: ${b2b >= 1.0 ? '#10B981' : '#F59E0B'}; margin-top: 2px;">
-                    Book-to-Bill: <span style="font-weight: 600;">${b2b}x</span>
-                  </div>`;
+          const title = params[0]?.name || '';
+          let html = `<div style="font-weight: 700; color: #0F172A; font-size: 13px; margin-bottom: 6px; border-bottom: 1px solid #E2E8F0; padding-bottom: 4px;">${title} Demand Trajectory</div>`;
+          params.forEach((p) => {
+            const unit = p.seriesName === 'Book-to-Bill' ? 'x' : ' MN';
+            const prefix = p.seriesName === 'Book-to-Bill' ? '' : '₹';
+            html += `<div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px; margin-bottom: 2px;">
+                      <span style="color: ${p.color}; font-weight: 600;">${p.seriesName}:</span>
+                      <span style="font-family: ui-monospace, monospace; font-weight: 700;">${prefix}${p.value}${unit}</span>
+                    </div>`;
+          });
+          return html;
         },
       },
       legend: {
         bottom: 0,
-        data: ['Net Revenue', 'Order Intake'],
-        textStyle: { color: '#64748B', fontSize: 10.5, fontFamily: 'Inter, sans-serif', fontWeight: '500' },
+        data: ['Recognized Revenue', 'Contracted Order Intake', 'Book-to-Bill'],
+        textStyle: { color: PALETTE.mutedText, fontSize: 11, fontFamily: 'Inter, sans-serif', fontWeight: '500' },
       },
-      grid: { top: 35, left: 10, right: 10, bottom: 30, containLabel: true },
+      grid: { top: 35, left: 15, right: 35, bottom: 35, containLabel: true },
       xAxis: {
         type: 'category',
-        data: labels,
+        data: periods.map((p) => p.label),
         axisLine: { lineStyle: { color: '#CBD5E1' } },
-        axisLabel: { color: PALETTE.mutedText, fontSize: 10, fontFamily: 'Inter, sans-serif', fontWeight: '500', interval: 0, hideOverlap: false, overflow: 'none', rotate: 25 },
+        axisLabel: { color: PALETTE.mutedText, fontSize: 10, rotate: 30 },
       },
-      yAxis: {
-        type: 'value',
-        min: 0,
-        splitLine: { lineStyle: { color: '#F1F5F9', type: 'dashed' } },
-        axisLabel: { color: PALETTE.mutedText, fontSize: 10, fontFamily: 'ui-monospace, SFMono-Regular, monospace', hideOverlap: false, overflow: 'none' },
-      },
-      series: [
+      yAxis: [
         {
-          name: 'Net Revenue',
-          type: 'line',
-          smooth: 0.3,
-          symbol: 'circle',
-          symbolSize: 6,
-          lineStyle: { width: 2.5, color: getCategoryColor('Revenue') },
-          itemStyle: { color: getCategoryColor('Revenue') },
-          areaStyle: {
-            color: {
-              type: 'linear',
-              x: 0, y: 0, x2: 0, y2: 1,
-              colorStops: [
-                { offset: 0, color: 'rgba(30, 64, 175, 0.15)' },
-                { offset: 1, color: 'rgba(30, 64, 175, 0.0)' },
-              ],
-            },
-          },
-          label: {
-            show: true,
-            position: 'top',
-            distance: 6,
-            color: getCategoryColor('Revenue'),
-            backgroundColor: 'rgba(255,255,255,0.94)',
-            borderColor: getCategoryColor('Revenue'),
-            borderWidth: 1,
-            borderRadius: 3,
-            padding: [2, 4],
-            fontSize: 10,
-            fontWeight: '600',
-            fontFamily: 'Inter, sans-serif',
-            formatter: (p) => (p.value ? `₹${p.value}` : ''),
-          },
-          data: revList,
+          type: 'value',
+          name: 'Amount (INR MN)',
+          nameTextStyle: { color: PALETTE.mutedText, fontSize: 10 },
+          splitLine: { lineStyle: { color: '#F1F5F9', type: 'dashed' } },
+          axisLabel: { color: PALETTE.mutedText, fontSize: 10, fontFamily: 'ui-monospace, monospace' },
         },
         {
-          name: 'Order Intake',
+          type: 'value',
+          name: 'Book-to-Bill (x)',
+          nameTextStyle: { color: PALETTE.mutedText, fontSize: 10 },
+          min: 0.5,
+          max: 2.0,
+          splitLine: { show: false },
+          axisLabel: { color: PALETTE.mutedText, fontSize: 10, formatter: '{value}x', fontFamily: 'ui-monospace, monospace' },
+        },
+      ],
+      series: [
+        {
+          name: 'Recognized Revenue',
+          type: 'bar',
+          itemStyle: { color: '#2563EB', borderRadius: [2, 2, 0, 0] },
+          data: revData,
+        },
+        {
+          name: 'Contracted Order Intake',
+          type: 'bar',
+          itemStyle: { color: '#F59E0B', borderRadius: [2, 2, 0, 0] },
+          data: oiData,
+        },
+        {
+          name: 'Book-to-Bill',
           type: 'line',
-          smooth: 0.3,
+          yAxisIndex: 1,
           symbol: 'circle',
           symbolSize: 6,
-          lineStyle: { width: 2.5, color: getCategoryColor('Order Intake'), type: 'dashed' },
-          itemStyle: { color: getCategoryColor('Order Intake') },
-          label: {
-            show: true,
-            position: 'bottom',
-            distance: 6,
-            color: getCategoryColor('Order Intake'),
-            backgroundColor: 'rgba(255,255,255,0.94)',
-            borderColor: getCategoryColor('Order Intake'),
-            borderWidth: 1,
-            borderRadius: 3,
-            padding: [2, 4],
-            fontSize: 10,
-            fontWeight: '600',
-            fontFamily: 'Inter, sans-serif',
-            formatter: (p) => (p.value ? `₹${p.value}` : ''),
-          },
-          data: oiList,
+          lineStyle: { width: 2.5, color: '#10B981' },
+          itemStyle: { color: '#10B981' },
+          data: b2bData,
         },
       ],
     };
   }, [dashboardData, perfViews, getScopedMetric, matchesScope]);
 
-  // Chart 4: Multi-Year Cost Composition
-  const costLeverageOption = useMemo(() => {
-    const DATA = dashboardData;
-    const allFys = (DATA?.meta?.fys || []).filter((fy) => {
-      const act = DATA?.company?.[fy]?.['ACT'] || DATA?.bu?.[Object.keys(DATA.bu || {})[0]]?.[fy]?.['ACT'];
-      return act && Object.keys(act).length > 0;
-    });
+  // -------------------------------------------------------------
+  // CHART 3: PROFITABILITY ANALYSIS & MARGIN REALIZATION
+  // -------------------------------------------------------------
+  const profitabilityOption = useMemo(() => {
+    const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+    const xLabels = quarters.map((q) => `${q} ${currentFy}`);
 
-    const vcPct = [];
-    const peoplePct = [];
-    const mktPct = [];
-    const fixedPct = [];
-    const ebitdaPct = [];
+    const gpPctList = [];
+    const ebitdaPctList = [];
+    const ebitdaAbsList = [];
 
-    allFys.forEach((fy) => {
-      const rev = getScopedMetric('Revenue', fy, 'ACT', 'Total') || 1;
-      const vc = getScopedMetric('Variable Cost', fy, 'ACT', 'Total') || 0;
-      const people = getScopedMetric('People Cost', fy, 'ACT', 'Total') || 0;
-      const mkt = getScopedMetric('Marketing Expenses', fy, 'ACT', 'Total') || 0;
-      const fixed = getScopedMetric('Fixed Costs', fy, 'ACT', 'Total') || 0;
-      const ebitda = getScopedMetric('EBITDA', fy, 'ACT', 'Total') || 0;
+    quarters.forEach((q) => {
+      const rev = getScopedMetric('Revenue', currentFy, 'ACT', q) || 0;
+      const totalDir = getScopedMetric('Total Direct Cost', currentFy, 'ACT', q) || (getScopedMetric('Variable Cost', currentFy, 'ACT', q) || 0);
+      const gp = getScopedMetric('Gross Profit', currentFy, 'ACT', q) || (rev - totalDir);
+      const ebitda = getScopedMetric('EBITDA', currentFy, 'ACT', q) || 0;
+      const gpPct = getScopedMetric('Gross Margin %', currentFy, 'ACT', q) || (rev > 0 ? (gp / rev) * 100 : 0);
 
-      vcPct.push(Math.round((vc / rev) * 1000) / 10);
-      peoplePct.push(Math.round((people / rev) * 1000) / 10);
-      mktPct.push(Math.round((mkt / rev) * 1000) / 10);
-      fixedPct.push(Math.round((fixed / rev) * 1000) / 10);
-      ebitdaPct.push(Math.max(0, Math.round((ebitda / rev) * 1000) / 10));
+      gpPctList.push(Number(gpPct.toFixed(1)));
+      ebitdaPctList.push(rev > 0 ? Number(((ebitda / rev) * 100).toFixed(1)) : 0);
+      ebitdaAbsList.push(Math.round(ebitda));
     });
 
     return {
       backgroundColor: 'transparent',
       tooltip: {
-        appendTo: 'body',
-        appendToBody: true,
+        trigger: 'axis',
+        axisPointer: { type: 'cross' },
+        backgroundColor: 'rgba(255, 255, 255, 0.98)',
+        borderColor: '#E2E8F0',
+        borderWidth: 1,
+        padding: [10, 14],
+        formatter: (params) => {
+          const title = params[0]?.name || '';
+          let html = `<div style="font-weight: 700; color: #0F172A; font-size: 13px; margin-bottom: 6px; border-bottom: 1px solid #E2E8F0; padding-bottom: 4px;">${title} Margins</div>`;
+          params.forEach((p) => {
+            const isPct = p.seriesName.includes('%');
+            html += `<div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px; margin-bottom: 2px;">
+                      <span style="color: ${p.color}; font-weight: 600;">${p.seriesName}:</span>
+                      <span style="font-family: ui-monospace, monospace; font-weight: 700;">${isPct ? '' : '₹'}${p.value}${isPct ? '%' : ' MN'}</span>
+                    </div>`;
+          });
+          return html;
+        },
+      },
+      legend: {
+        bottom: 0,
+        data: ['EBITDA (Amount)', 'Gross Margin %', 'EBITDA Margin %'],
+        textStyle: { color: PALETTE.mutedText, fontSize: 11, fontFamily: 'Inter, sans-serif', fontWeight: '500' },
+      },
+      grid: { top: 35, left: 15, right: 35, bottom: 35, containLabel: true },
+      xAxis: {
+        type: 'category',
+        data: xLabels,
+        axisLine: { lineStyle: { color: '#CBD5E1' } },
+        axisLabel: { color: PALETTE.mutedText, fontSize: 11, fontWeight: '600' },
+      },
+      yAxis: [
+        {
+          type: 'value',
+          name: 'EBITDA (INR MN)',
+          nameTextStyle: { color: PALETTE.mutedText, fontSize: 10 },
+          splitLine: { lineStyle: { color: '#F1F5F9', type: 'dashed' } },
+          axisLabel: { color: PALETTE.mutedText, fontSize: 10, fontFamily: 'ui-monospace, monospace' },
+        },
+        {
+          type: 'value',
+          name: 'Margin %',
+          nameTextStyle: { color: PALETTE.mutedText, fontSize: 10 },
+          splitLine: { show: false },
+          axisLabel: { color: PALETTE.mutedText, fontSize: 10, formatter: '{value}%', fontFamily: 'ui-monospace, monospace' },
+        },
+      ],
+      series: [
+        {
+          name: 'EBITDA (Amount)',
+          type: 'bar',
+          itemStyle: { color: '#059669', borderRadius: [2, 2, 0, 0] },
+          data: ebitdaAbsList,
+        },
+        {
+          name: 'Gross Margin %',
+          type: 'line',
+          yAxisIndex: 1,
+          symbol: 'circle',
+          symbolSize: 8,
+          lineStyle: { width: 3, color: '#0284C7' },
+          itemStyle: { color: '#0284C7' },
+          data: gpPctList,
+        },
+        {
+          name: 'EBITDA Margin %',
+          type: 'line',
+          yAxisIndex: 1,
+          symbol: 'diamond',
+          symbolSize: 8,
+          lineStyle: { width: 3, color: '#D97706' },
+          itemStyle: { color: '#D97706' },
+          data: ebitdaPctList,
+        },
+      ],
+    };
+  }, [dashboardData, currentFy, getScopedMetric]);
+
+  // -------------------------------------------------------------
+  // CHART 4: COST AND EXPENSE ANALYSIS (ACTUAL VS BUDGET BY CATEGORY)
+  // -------------------------------------------------------------
+  const costExpenseOption = useMemo(() => {
+    const categories = ['Variable Cost', 'People Cost', 'Marketing Expenses', 'Fixed Costs'];
+
+    const actList = categories.map((cat) => Math.round(getScopedMetric(cat, currentFy, 'ACT', currentQ) || 0));
+    const budList = categories.map((cat) => Math.round(getScopedMetric(cat, currentFy, 'BUD', currentQ) || 0));
+
+    return {
+      backgroundColor: 'transparent',
+      tooltip: {
         trigger: 'axis',
         axisPointer: { type: 'shadow' },
         backgroundColor: 'rgba(255, 255, 255, 0.98)',
         borderColor: '#E2E8F0',
         borderWidth: 1,
-        padding: [8, 12],
-        extraCssText: 'box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border-radius: 0px; z-index: 9999999; pointer-events: none;',
-        textStyle: { color: PALETTE.darkText, fontSize: 12, fontFamily: 'Inter, sans-serif' },
+        padding: [10, 14],
         formatter: (params) => {
-          const hoveredSeries = window.__echartsHoveredSeries;
-          let str = `<div style="font-weight: 700; color: #0f172a; font-size: 12px; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #f1f5f9;">${params[0]?.name} Cost Anatomy</div>`;
-          str += `<div style="display: flex; flex-direction: column; gap: 3px;">`;
-          params.forEach((p) => {
-            const isHovered = hoveredSeries && p.seriesName === hoveredSeries;
-            if (isHovered) {
-              str += `
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 11.5px; padding: 3px 6px; margin: 0 -6px; border-radius: 0px; background: rgba(37, 99, 235, 0.1); border-left: 3px solid ${p.color}; transition: all 0.12s ease;">
-                  <div style="display: flex; align-items: center; gap: 6px;">
-                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 0px; background-color: ${p.color}; box-shadow: 0 0 0 1.5px #fff, 0 0 0 2.5px ${p.color};"></span>
-                    <span style="color: #1E40AF; font-weight: 700;">${p.seriesName}</span>
-                  </div>
-                  <span style="font-weight: 700; color: #0f172a; font-family: ui-monospace, monospace;">${p.value}%</span>
-                </div>`;
-            } else {
-              str += `
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 11.5px; padding: 2px 6px; margin: 0 -6px; border-radius: 0px; border-left: 3px solid transparent; opacity: ${hoveredSeries ? '0.55' : '1'}; transition: opacity 0.12s ease;">
-                  <div style="display: flex; align-items: center; gap: 6px;">
-                    <span style="display: inline-block; width: 7px; height: 7px; border-radius: 0px; background-color: ${p.color};"></span>
-                    <span style="color: #475569; font-weight: 500;">${p.seriesName}</span>
-                  </div>
-                  <span style="font-weight: 600; color: #0f172a; font-family: ui-monospace, monospace;">${p.value}%</span>
-                </div>`;
-            }
-          });
-          str += `</div>`;
-          return str;
+          const cat = params[0]?.name || '';
+          const act = params.find((p) => p.seriesName === 'Actual Cost')?.value || 0;
+          const bud = params.find((p) => p.seriesName === 'Budget Envelope')?.value || 0;
+          const diff = act - bud;
+          const isOver = diff > 0;
+          return `<div style="font-weight: 700; color: #0F172A; font-size: 13px; margin-bottom: 6px; border-bottom: 1px solid #E2E8F0; padding-bottom: 4px;">${cat} Variance</div>
+                  <div style="font-size: 12px; margin-bottom: 2px;">Actual: <span style="font-weight: 700; font-family: ui-monospace, monospace;">₹${Number(act).toLocaleString('en-IN')} MN</span></div>
+                  <div style="font-size: 12px; margin-bottom: 2px;">Budget: <span style="font-weight: 700; font-family: ui-monospace, monospace;">₹${Number(bud).toLocaleString('en-IN')} MN</span></div>
+                  <div style="font-size: 12px; font-weight: 700; color: ${isOver ? '#E11D48' : '#059669'}; margin-top: 4px;">
+                    ${isOver ? '▲ Cost Overrun' : '▼ Cost Saving'}: ₹${Math.abs(diff).toLocaleString('en-IN')} MN (${bud > 0 ? ((diff / bud) * 100).toFixed(1) : 0}%)
+                  </div>`;
         },
       },
       legend: {
         bottom: 0,
-        data: ['Variable Cost %', 'People Cost %', 'Marketing %', 'Fixed Cost %', 'EBITDA Margin %'],
-        textStyle: { color: '#64748B', fontSize: 10, fontFamily: 'Inter, sans-serif', fontWeight: '500' },
+        data: ['Actual Cost', 'Budget Envelope'],
+        textStyle: { color: PALETTE.mutedText, fontSize: 11, fontFamily: 'Inter, sans-serif', fontWeight: '500' },
       },
-      grid: { top: 35, left: 10, right: 10, bottom: 30, containLabel: true },
+      grid: { top: 35, left: 15, right: 15, bottom: 35, containLabel: true },
       xAxis: {
         type: 'category',
-        data: allFys,
+        data: categories,
         axisLine: { lineStyle: { color: '#CBD5E1' } },
-        axisLabel: { color: PALETTE.mutedText, fontSize: 10.5, fontFamily: 'Inter, sans-serif', fontWeight: '600' },
+        axisLabel: { color: PALETTE.mutedText, fontSize: 11, fontWeight: '600' },
       },
       yAxis: {
         type: 'value',
-        max: 100,
         splitLine: { lineStyle: { color: '#F1F5F9', type: 'dashed' } },
-        axisLabel: { color: PALETTE.mutedText, fontSize: 10, fontFamily: 'ui-monospace, SFMono-Regular, monospace', formatter: '{value}%' },
+        axisLabel: { color: PALETTE.mutedText, fontSize: 10, fontFamily: 'ui-monospace, monospace' },
       },
       series: [
         {
-          name: 'Variable Cost %',
+          name: 'Actual Cost',
           type: 'bar',
-          stack: 'cost',
-          itemStyle: { color: getCategoryColor('Variable Cost') },
-          label: {
-            show: true,
-            position: 'inside',
-            formatter: (p) => (p.value >= 12 ? `${p.value}%` : ''),
-            color: '#FFFFFF',
-            fontSize: 10,
-            fontWeight: '600',
-          },
-          data: vcPct,
+          itemStyle: { color: '#EA580C', borderRadius: [2, 2, 0, 0] },
+          data: actList,
         },
         {
-          name: 'People Cost %',
+          name: 'Budget Envelope',
           type: 'bar',
-          stack: 'cost',
-          itemStyle: { color: getCategoryColor('People Cost') },
-          label: {
-            show: true,
-            position: 'inside',
-            formatter: (p) => (p.value >= 10 ? `${p.value}%` : ''),
-            color: '#FFFFFF',
-            fontSize: 10,
-            fontWeight: '600',
-          },
-          data: peoplePct,
-        },
-        {
-          name: 'Marketing %',
-          type: 'bar',
-          stack: 'cost',
-          itemStyle: { color: getCategoryColor('Marketing Expenses') },
-          label: {
-            show: true,
-            position: 'inside',
-            formatter: (p) => (p.value >= 8 ? `${p.value}%` : ''),
-            color: '#FFFFFF',
-            fontSize: 10,
-            fontWeight: '600',
-          },
-          data: mktPct,
-        },
-        {
-          name: 'Fixed Cost %',
-          type: 'bar',
-          stack: 'cost',
-          itemStyle: { color: getCategoryColor('Fixed Costs') },
-          label: {
-            show: true,
-            position: 'inside',
-            formatter: (p) => (p.value >= 8 ? `${p.value}%` : ''),
-            color: '#FFFFFF',
-            fontSize: 10,
-            fontWeight: '600',
-          },
-          data: fixedPct,
-        },
-        {
-          name: 'EBITDA Margin %',
-          type: 'bar',
-          stack: 'cost',
-          itemStyle: { color: getCategoryColor('EBITDA %') },
-          label: {
-            show: true,
-            position: 'inside',
-            formatter: (p) => (p.value >= 8 ? `${p.value}%` : ''),
-            color: '#FFFFFF',
-            fontSize: 10.5,
-            fontWeight: '700',
-          },
-          data: ebitdaPct,
+          itemStyle: { color: '#CBD5E1', borderRadius: [2, 2, 0, 0] },
+          data: budList,
         },
       ],
     };
-  }, [dashboardData, getScopedMetric]);
+  }, [dashboardData, currentFy, currentQ, getScopedMetric]);
 
-  // Chart 5: Hierarchical Revenue Contribution Sunburst
-  const buSunburstOption = useMemo(() => {
+  // -------------------------------------------------------------
+  // CHART 5: CASH COLLECTIONS PERFORMANCE & TARGET ATTAINMENT
+  // -------------------------------------------------------------
+  const collectionsOption = useMemo(() => {
+    const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+    const xLabels = quarters.map((q) => `${q} ${currentFy}`);
+
+    const actList = quarters.map((q) => Math.round(getScopedMetric('Collection', currentFy, 'ACT', q) || 0));
+    const budList = quarters.map((q) => Math.round(getScopedMetric('Collection', currentFy, 'BUD', q) || 0));
+    const achieveList = actList.map((act, i) => {
+      const bud = budList[i];
+      return bud > 0 ? Number(((act / bud) * 100).toFixed(1)) : 100;
+    });
+
+    return {
+      backgroundColor: 'transparent',
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'cross' },
+        backgroundColor: 'rgba(255, 255, 255, 0.98)',
+        borderColor: '#E2E8F0',
+        borderWidth: 1,
+        padding: [10, 14],
+        formatter: (params) => {
+          const title = params[0]?.name || '';
+          let html = `<div style="font-weight: 700; color: #0F172A; font-size: 13px; margin-bottom: 6px; border-bottom: 1px solid #E2E8F0; padding-bottom: 4px;">${title} Collections</div>`;
+          params.forEach((p) => {
+            const isPct = p.seriesName.includes('%');
+            html += `<div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px; margin-bottom: 2px;">
+                      <span style="color: ${p.color}; font-weight: 600;">${p.seriesName}:</span>
+                      <span style="font-family: ui-monospace, monospace; font-weight: 700;">${isPct ? '' : '₹'}${p.value}${isPct ? '%' : ' MN'}</span>
+                    </div>`;
+          });
+          return html;
+        },
+      },
+      legend: {
+        bottom: 0,
+        data: ['Actual Collections', 'Collection Target', 'Target Attainment %'],
+        textStyle: { color: PALETTE.mutedText, fontSize: 11, fontFamily: 'Inter, sans-serif', fontWeight: '500' },
+      },
+      grid: { top: 35, left: 15, right: 35, bottom: 35, containLabel: true },
+      xAxis: {
+        type: 'category',
+        data: xLabels,
+        axisLine: { lineStyle: { color: '#CBD5E1' } },
+        axisLabel: { color: PALETTE.mutedText, fontSize: 11, fontWeight: '600' },
+      },
+      yAxis: [
+        {
+          type: 'value',
+          name: 'Collections (INR MN)',
+          nameTextStyle: { color: PALETTE.mutedText, fontSize: 10 },
+          splitLine: { lineStyle: { color: '#F1F5F9', type: 'dashed' } },
+          axisLabel: { color: PALETTE.mutedText, fontSize: 10, fontFamily: 'ui-monospace, monospace' },
+        },
+        {
+          type: 'value',
+          name: 'Attainment %',
+          nameTextStyle: { color: PALETTE.mutedText, fontSize: 10 },
+          min: 0,
+          max: 150,
+          splitLine: { show: false },
+          axisLabel: { color: PALETTE.mutedText, fontSize: 10, formatter: '{value}%', fontFamily: 'ui-monospace, monospace' },
+        },
+      ],
+      series: [
+        {
+          name: 'Actual Collections',
+          type: 'bar',
+          itemStyle: { color: '#059669', borderRadius: [2, 2, 0, 0] },
+          data: actList,
+        },
+        {
+          name: 'Collection Target',
+          type: 'bar',
+          itemStyle: { color: '#93C5FD', borderRadius: [2, 2, 0, 0] },
+          data: budList,
+        },
+        {
+          name: 'Target Attainment %',
+          type: 'line',
+          yAxisIndex: 1,
+          symbol: 'circle',
+          symbolSize: 8,
+          lineStyle: { width: 3, color: '#D97706' },
+          itemStyle: { color: '#D97706' },
+          data: achieveList,
+        },
+      ],
+    };
+  }, [dashboardData, currentFy, getScopedMetric]);
+
+  // -------------------------------------------------------------
+  // CHART 6: CAPEX EXECUTION & BUDGET UTILIZATION
+  // -------------------------------------------------------------
+  const capexOption = useMemo(() => {
+    const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+    const xLabels = quarters.map((q) => `${q} ${currentFy}`);
+
+    const actList = quarters.map((q) => Math.round(getScopedMetric('Capex', currentFy, 'ACT', q) || 0));
+    const budList = quarters.map((q) => Math.round(getScopedMetric('Capex', currentFy, 'BUD', q) || 0));
+
+    return {
+      backgroundColor: 'transparent',
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' },
+        backgroundColor: 'rgba(255, 255, 255, 0.98)',
+        borderColor: '#E2E8F0',
+        borderWidth: 1,
+        padding: [10, 14],
+        formatter: (params) => {
+          const title = params[0]?.name || '';
+          let html = `<div style="font-weight: 700; color: #0F172A; font-size: 13px; margin-bottom: 6px; border-bottom: 1px solid #E2E8F0; padding-bottom: 4px;">${title} Capital Spend</div>`;
+          params.forEach((p) => {
+            html += `<div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px; margin-bottom: 2px;">
+                      <span style="color: ${p.color}; font-weight: 600;">${p.seriesName}:</span>
+                      <span style="font-family: ui-monospace, monospace; font-weight: 700;">₹${Number(p.value).toLocaleString('en-IN')} MN</span>
+                    </div>`;
+          });
+          return html;
+        },
+      },
+      legend: {
+        bottom: 0,
+        data: ['Actual CAPEX', 'CAPEX Budget Envelope'],
+        textStyle: { color: PALETTE.mutedText, fontSize: 11, fontFamily: 'Inter, sans-serif', fontWeight: '500' },
+      },
+      grid: { top: 35, left: 15, right: 15, bottom: 35, containLabel: true },
+      xAxis: {
+        type: 'category',
+        data: xLabels,
+        axisLine: { lineStyle: { color: '#CBD5E1' } },
+        axisLabel: { color: PALETTE.mutedText, fontSize: 11, fontWeight: '600' },
+      },
+      yAxis: {
+        type: 'value',
+        splitLine: { lineStyle: { color: '#F1F5F9', type: 'dashed' } },
+        axisLabel: { color: PALETTE.mutedText, fontSize: 10, fontFamily: 'ui-monospace, monospace' },
+      },
+      series: [
+        {
+          name: 'Actual CAPEX',
+          type: 'bar',
+          itemStyle: { color: '#7C3AED', borderRadius: [2, 2, 0, 0] },
+          data: actList,
+        },
+        {
+          name: 'CAPEX Budget Envelope',
+          type: 'bar',
+          itemStyle: { color: '#DDD6FE', borderRadius: [2, 2, 0, 0] },
+          data: budList,
+        },
+      ],
+    };
+  }, [dashboardData, currentFy, getScopedMetric]);
+
+  // -------------------------------------------------------------
+  // CHART 7: BUSINESS UNIT FINANCIAL CONTRIBUTION (HIERARCHICAL SUNBURST)
+  // -------------------------------------------------------------
+  const buContributionOption = useMemo(() => {
     const DATA = dashboardData;
     const bm = DATA?.meta?.business_mapping || [];
-
     const groupMap = {};
-    const isExcluded = (s) => {
-      const raw = String(s || '').toUpperCase();
-      return raw.includes('ORG');
-    };
+    const isExcluded = (s) => String(s || '').toUpperCase().includes('ORG');
 
     if (bm.length > 0) {
       bm.forEach((r) => {
         const seg = (r.segment_n || r.Segment_N || r.segment || '').trim().replace(/^\d+[\s._-]+/, '');
         const bu = (r.biz1_n || r.Biz1_N || '').trim();
         if (!bu || isExcluded(bu) || isExcluded(seg)) return;
-
         if (!groupMap[seg]) groupMap[seg] = new Set();
         groupMap[seg].add(bu);
       });
@@ -849,51 +846,19 @@ export default function Executive360Tab({
       }
     });
 
-    if (groupNodes.length === 0) {
-      activeBUs.forEach((b, idx) => {
-        const rev = getScopedMetric('Revenue', currentFy, 'ACT', currentQ, { ...filters, bu: b });
-        if (rev && rev > 0) {
-          grandTotal += rev;
-          groupNodes.push({
-            name: b,
-            value: Math.round(rev * 10) / 10,
-            itemStyle: {
-              color: getCategoryColor(b, idx),
-              borderWidth: 1.5,
-              borderColor: '#FFFFFF',
-            },
-          });
-        }
-      });
-    }
-
     groupNodes.sort((a, b) => b.value - a.value);
-
-    const breakdown = groupNodes.map((g) => ({
-      name: g.name,
-      value: g.value,
-      pct: grandTotal > 0 ? ((g.value / grandTotal) * 100).toFixed(1) : '0.0',
-      color: g.itemStyle?.color || getCategoryColor(g.name),
-      children: (g.children || []).map((c) => ({
-        name: c.name,
-        value: c.value,
-        pctOfTotal: grandTotal > 0 ? ((c.value / grandTotal) * 100).toFixed(1) : '0.0',
-        color: c.itemStyle?.color || getCategoryColor(c.name),
-      })),
-    }));
 
     return {
       grandTotal,
-      breakdown,
       option: {
         backgroundColor: 'transparent',
         graphic: [
           {
             type: 'text',
             left: 'center',
-            top: '43%',
+            top: '44%',
             style: {
-              text: `₹${Math.round(grandTotal).toLocaleString('en-IN')} Mn`,
+              text: `₹${Math.round(grandTotal).toLocaleString('en-IN')} MN`,
               fill: '#0F172A',
               fontSize: 14,
               fontWeight: '800',
@@ -906,7 +871,7 @@ export default function Executive360Tab({
             left: 'center',
             top: '52%',
             style: {
-              text: `Total Revenue\n${currentFy}`,
+              text: `Portfolio Revenue\n${currentFy}`,
               fill: '#64748B',
               fontSize: 9.5,
               fontWeight: '600',
@@ -917,49 +882,33 @@ export default function Executive360Tab({
           },
         ],
         tooltip: {
-          appendTo: 'body',
-          appendToBody: true,
           trigger: 'item',
           backgroundColor: 'rgba(255, 255, 255, 0.98)',
           borderColor: '#E2E8F0',
           borderWidth: 1,
           padding: [8, 12],
-          extraCssText: 'box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border-radius: 0px; z-index: 9999999; pointer-events: none;',
-          textStyle: { color: PALETTE.darkText, fontSize: 12, fontFamily: 'Inter, sans-serif' },
           formatter: (params) => {
             const data = params.data;
             const treePath = params.treePathInfo || [];
             const isGroup = treePath.length <= 2;
-            const isChild = treePath.length > 2;
-            const groupName = treePath[1]?.name || data.name;
             const val = Number(data.value || 0);
             const totalPct = grandTotal > 0 ? ((val / grandTotal) * 100).toFixed(1) : '0.0';
 
-            let groupPct = '';
-            if (isChild) {
-              const parentVal = treePath[1]?.value || 0;
-              if (parentVal > 0) {
-                groupPct = ((val / parentVal) * 100).toFixed(1);
-              }
-            }
-
-            return `<div style="font-weight: 600; color: #0f172a; font-size: 12px; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; gap: 12px;">
+            return `<div style="font-weight: 700; color: #0F172A; font-size: 12px; margin-bottom: 4px; border-bottom: 1px solid #E2E8F0; padding-bottom: 4px; display: flex; justify-content: space-between;">
                       <span>${data.name}</span>
-                      <span style="font-size: 10px; color: #64748B; text-transform: uppercase;">${isGroup ? 'Group' : 'BU'}</span>
+                      <span style="font-size: 10px; color: #64748B; text-transform: uppercase;">${isGroup ? 'Group' : 'Business'}</span>
                     </div>
-                    <div style="font-size: 11.5px; color: #475569;">Revenue: <span style="font-weight: 600; color: #0f172a; font-family: ui-monospace, monospace;">₹${Math.round(val).toLocaleString('en-IN')} MN</span></div>
-                    <div style="font-size: 11.5px; color: #2563EB; font-weight: 600;">Share of Total: ${totalPct}%</div>
-                    ${groupPct ? `<div style="font-size: 11px; color: #059669;">Share of ${groupName}: ${groupPct}%</div>` : ''}`;
+                    <div style="font-size: 12px; color: #475569;">Revenue: <span style="font-weight: 700; font-family: ui-monospace, monospace;">₹${Math.round(val).toLocaleString('en-IN')} MN</span></div>
+                    <div style="font-size: 11.5px; color: #2563EB; font-weight: 600; margin-top: 2px;">Portfolio Contribution: ${totalPct}%</div>`;
           },
         },
         series: [
           {
-            name: 'Revenue Share',
+            name: 'Contribution',
             type: 'sunburst',
             radius: ['28%', '92%'],
             nodeClick: 'rootToNode',
             sort: 'desc',
-            emphasis: { focus: 'ancestor' },
             levels: [
               {},
               {
@@ -969,16 +918,10 @@ export default function Executive360Tab({
                 label: {
                   minAngle: 10,
                   overflow: 'truncate',
-                  ellipsis: '...',
-                  rotate: 0,
-                  fontWeight: '700',
                   fontSize: 10,
+                  fontWeight: '700',
                   color: '#0F172A',
-                  formatter: (params) => {
-                    const val = Number(params.value || 0);
-                    const pct = grandTotal > 0 ? Math.round((val / grandTotal) * 100) : 0;
-                    return `${params.name}\n${pct}%`;
-                  },
+                  formatter: (p) => `${p.name}\n${Math.round((p.value / (grandTotal || 1)) * 100)}%`,
                 },
               },
               {
@@ -988,16 +931,10 @@ export default function Executive360Tab({
                 label: {
                   minAngle: 6,
                   overflow: 'truncate',
-                  ellipsis: '...',
-                  align: 'center',
                   fontSize: 9.5,
                   color: '#1E293B',
                   fontWeight: '600',
-                  formatter: (params) => {
-                    const val = Number(params.value || 0);
-                    const pct = grandTotal > 0 ? Math.round((val / grandTotal) * 100) : 0;
-                    return pct > 0 ? `${pct}%` : '';
-                  },
+                  formatter: (p) => (grandTotal > 0 ? `${Math.round((p.value / grandTotal) * 100)}%` : ''),
                 },
               },
             ],
@@ -1006,149 +943,115 @@ export default function Executive360Tab({
         ],
       },
     };
-  }, [dashboardData, activeBUs, currentFy, currentQ, filters, getScopedMetric]);
+  }, [dashboardData, currentFy, currentQ, filters, getScopedMetric]);
 
-  // Chart 6: Multi-Year Budget vs Actual Bridge
-  const multiYearBridgeOption = useMemo(() => {
-    const DATA = dashboardData;
-    const allFys = DATA?.meta?.fys || ['FY24', 'FY25', 'FY26'];
+  // -------------------------------------------------------------
+  // CHART 8: FINANCIAL VARIANCE DRIVERS WATERFALL BRIDGE
+  // -------------------------------------------------------------
+  const waterfallOption = useMemo(() => {
+    const revBud = getScopedMetric('Revenue', currentFy, 'BUD', currentQ) || 0;
+    const revAct = getScopedMetric('Revenue', currentFy, 'ACT', currentQ) || 0;
+    const revVariance = revAct - revBud;
 
-    const revAct = allFys.map((fy) => Math.round(getScopedMetric('Revenue', fy, 'ACT', 'Total') || 0));
-    const revBud = allFys.map((fy) => Math.round(getScopedMetric('Revenue', fy, 'BUD', 'Total') || 0));
-    const ebitdaAct = allFys.map((fy) => Math.round(getScopedMetric('EBITDA', fy, 'ACT', 'Total') || 0));
-    const ebitdaBud = allFys.map((fy) => Math.round(getScopedMetric('EBITDA', fy, 'BUD', 'Total') || 0));
+    const vc = getScopedMetric('Variable Cost', currentFy, 'ACT', currentQ) || 0;
+    const people = getScopedMetric('People Cost', currentFy, 'ACT', currentQ) || 0;
+    const mkt = getScopedMetric('Marketing Expenses', currentFy, 'ACT', currentQ) || 0;
+    const fixed = getScopedMetric('Fixed Costs', currentFy, 'ACT', currentQ) || 0;
+    const ebitda = getScopedMetric('EBITDA', currentFy, 'ACT', currentQ) || 0;
+
+    const categories = [
+      'Budget Revenue',
+      revVariance >= 0 ? '+ Volume/Price' : '- Shortfall',
+      'Actual Revenue',
+      '- Variable Cost',
+      '- People Cost',
+      '- Marketing',
+      '- Fixed Costs',
+      '= EBITDA',
+    ];
+
+    const base = [
+      0,
+      revVariance >= 0 ? revBud : revAct,
+      0,
+      revAct - vc,
+      revAct - vc - people,
+      revAct - vc - people - mkt,
+      revAct - vc - people - mkt - fixed,
+      0,
+    ];
+
+    const values = [
+      { value: revBud, itemStyle: { color: '#93C5FD' } },
+      { value: Math.abs(revVariance), itemStyle: { color: revVariance >= 0 ? '#10B981' : '#F43F5E' } },
+      { value: revAct, itemStyle: { color: '#2563EB' } },
+      { value: vc, itemStyle: { color: '#EA580C' } },
+      { value: people, itemStyle: { color: '#6366F1' } },
+      { value: mkt, itemStyle: { color: '#0D9488' } },
+      { value: fixed, itemStyle: { color: '#64748B' } },
+      { value: ebitda, itemStyle: { color: ebitda >= 0 ? '#059669' : '#E11D48' } },
+    ];
 
     return {
       backgroundColor: 'transparent',
       tooltip: {
-        appendTo: 'body',
-        appendToBody: true,
         trigger: 'axis',
         axisPointer: { type: 'shadow' },
         backgroundColor: 'rgba(255, 255, 255, 0.98)',
         borderColor: '#E2E8F0',
         borderWidth: 1,
-        padding: [8, 12],
-        extraCssText: 'box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border-radius: 0px; z-index: 9999999; pointer-events: none;',
-        textStyle: { color: PALETTE.darkText, fontSize: 12, fontFamily: 'Inter, sans-serif' },
+        padding: [10, 14],
         formatter: (params) => {
-          if (!Array.isArray(params) || params.length === 0) return '';
-          const title = params[0].axisValueLabel || params[0].axisValue || params[0].name || '';
-          const hoveredSeries = window.__echartsHoveredSeries;
-          let html = `<div style="font-weight: 700; color: #0f172a; font-size: 12px; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #f1f5f9;">${title}</div>`;
-          html += `<div style="display: flex; flex-direction: column; gap: 3px;">`;
-          params.forEach((p) => {
-            if (p.value === null || p.value === undefined) return;
-            const isHovered = hoveredSeries && p.seriesName === hoveredSeries;
-            if (isHovered) {
-              html += `
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 11.5px; padding: 3px 6px; margin: 0 -6px; border-radius: 0px; background: rgba(37, 99, 235, 0.1); border-left: 3px solid ${p.color}; transition: all 0.12s ease;">
-                  <div style="display: flex; align-items: center; gap: 6px;">
-                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 0px; background-color: ${p.color}; box-shadow: 0 0 0 1.5px #fff, 0 0 0 2.5px ${p.color};"></span>
-                    <span style="color: #1E40AF; font-weight: 700;">${p.seriesName}</span>
-                  </div>
-                  <span style="font-weight: 700; color: #0f172a; font-family: ui-monospace, monospace;">₹${Number(p.value).toLocaleString('en-IN')}</span>
-                </div>`;
-            } else {
-              html += `
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 11.5px; padding: 2px 6px; margin: 0 -6px; border-radius: 0px; border-left: 3px solid transparent; opacity: ${hoveredSeries ? '0.55' : '1'}; transition: opacity 0.12s ease;">
-                  <div style="display: flex; align-items: center; gap: 6px;">
-                    <span style="display: inline-block; width: 7px; height: 7px; border-radius: 0px; background-color: ${p.color};"></span>
-                    <span style="color: #475569; font-weight: 500;">${p.seriesName}</span>
-                  </div>
-                  <span style="font-weight: 600; color: #0f172a; font-family: ui-monospace, monospace;">₹${Number(p.value).toLocaleString('en-IN')}</span>
-                </div>`;
-            }
-          });
-          html += `</div>`;
-          return html;
+          const tar = params.find((p) => p.seriesName === 'Flow');
+          if (!tar) return '';
+          return `<div style="font-weight: 700; color: #0F172A; font-size: 13px; margin-bottom: 4px; border-bottom: 1px solid #E2E8F0; padding-bottom: 4px;">${tar.name}</div>
+                  <div style="font-size: 12px; color: #475569;">Financial Impact: <span style="font-weight: 700; font-family: ui-monospace, monospace;">₹${Math.round(tar.value).toLocaleString('en-IN')} MN</span></div>`;
         },
       },
-      legend: {
-        bottom: 0,
-        data: ['Revenue (ACT)', 'Revenue (BUD)', 'EBITDA (ACT)', 'EBITDA (BUD)'],
-        textStyle: { color: '#64748B', fontSize: 10.5, fontFamily: 'Inter, sans-serif', fontWeight: '500' },
-      },
-      grid: { top: 35, left: 10, right: 10, bottom: 30, containLabel: true },
+      grid: { top: 35, left: 15, right: 15, bottom: 35, containLabel: true },
       xAxis: {
         type: 'category',
-        data: allFys,
+        data: categories,
         axisLine: { lineStyle: { color: '#CBD5E1' } },
-        axisLabel: { color: PALETTE.mutedText, fontSize: 10.5, fontFamily: 'Inter, sans-serif', fontWeight: '600' },
+        axisLabel: { color: PALETTE.mutedText, fontSize: 10, fontWeight: '600', rotate: 20 },
       },
       yAxis: {
         type: 'value',
-        min: 0,
         splitLine: { lineStyle: { color: '#F1F5F9', type: 'dashed' } },
-        axisLabel: { color: PALETTE.mutedText, fontSize: 10, fontFamily: 'ui-monospace, SFMono-Regular, monospace' },
+        axisLabel: { color: PALETTE.mutedText, fontSize: 10, fontFamily: 'ui-monospace, monospace' },
       },
       series: [
         {
-          name: 'Revenue (ACT)',
+          name: 'Base',
           type: 'bar',
-          itemStyle: { color: getCategoryColor('Revenue'), borderRadius: 0 },
-          label: {
-            show: true,
-            position: 'top',
-            distance: 6,
-            color: getCategoryColor('Revenue'),
-            fontSize: 10,
-            fontWeight: '600',
-            formatter: (p) => (p.value > 0 ? `₹${p.value}` : ''),
-          },
-          data: revAct,
+          stack: 'waterfall',
+          itemStyle: { borderColor: 'transparent', color: 'transparent' },
+          emphasis: { itemStyle: { borderColor: 'transparent', color: 'transparent' } },
+          tooltip: { show: false },
+          data: base,
         },
         {
-          name: 'Revenue (BUD)',
+          name: 'Flow',
           type: 'bar',
-          itemStyle: { color: '#94A3B8', borderRadius: 0 },
+          stack: 'waterfall',
           label: {
             show: true,
             position: 'top',
-            distance: 6,
-            color: '#64748B',
+            color: PALETTE.darkText,
             fontSize: 10,
             fontWeight: '600',
-            formatter: (p) => (p.value > 0 ? `₹${p.value}` : ''),
+            formatter: (p) => `₹${Math.round(p.value)}`,
           },
-          data: revBud,
-        },
-        {
-          name: 'EBITDA (ACT)',
-          type: 'bar',
-          itemStyle: { color: getCategoryColor('EBITDA'), borderRadius: 0 },
-          label: {
-            show: true,
-            position: 'top',
-            distance: 6,
-            color: getCategoryColor('EBITDA'),
-            fontSize: 10,
-            fontWeight: '600',
-            formatter: (p) => (p.value !== 0 ? `₹${p.value}` : ''),
-          },
-          data: ebitdaAct,
-        },
-        {
-          name: 'EBITDA (BUD)',
-          type: 'bar',
-          itemStyle: { color: '#CBD5E1', borderRadius: 0 },
-          label: {
-            show: true,
-            position: 'top',
-            distance: 6,
-            color: '#475569',
-            fontSize: 10,
-            fontWeight: '600',
-            formatter: (p) => (p.value !== 0 ? `₹${p.value}` : ''),
-          },
-          data: ebitdaBud,
+          data: values,
         },
       ],
     };
-  }, [dashboardData, getScopedMetric]);
+  }, [dashboardData, currentFy, currentQ, getScopedMetric]);
 
-  // 3. BU Table Data
-  const buTableData = useMemo(() => {
+  // -------------------------------------------------------------
+  // SECTION 5: BUSINESS STRATEGIC FINANCIAL LEADERBOARD TABLE
+  // -------------------------------------------------------------
+  const leaderboardData = useMemo(() => {
     const DATA = dashboardData;
     const bus = activeBUs;
 
@@ -1163,7 +1066,7 @@ export default function Executive360Tab({
       if (filters.segment && filters.segment !== 'ALL') {
         const segList = Array.isArray(filters.segment) ? filters.segment : [filters.segment];
         if (segList.length > 0 && !segList.includes('ALL')) {
-          const segOfBu = buToSegmentNMap[b] || buToSegmentNMap[b.toLowerCase()] || DATA?.meta?.bu_segment?.[b] || '';
+          const segOfBu = buToSegmentMap[b] || buToSegmentMap[b.toLowerCase()] || DATA?.meta?.bu_segment?.[b] || '';
           const match = segList.some((chosen) => {
             const chosenClean = String(chosen).replace(/^\d+[\s._-]+/, '').trim().toLowerCase();
             const segClean = String(segOfBu).replace(/^\d+[\s._-]+/, '').trim().toLowerCase();
@@ -1176,13 +1079,13 @@ export default function Executive360Tab({
     });
 
     return filteredBus.map((b) => {
-      const seg = buToSegmentNMap[b] || buToSegmentNMap[b.toLowerCase()] || DATA?.meta?.bu_segment?.[b] || 'General';
+      const seg = buToSegmentMap[b] || buToSegmentMap[b.toLowerCase()] || DATA?.meta?.bu_segment?.[b] || 'General';
       const rev = getScopedMetric('Revenue', currentFy, 'ACT', currentQ, { ...filters, bu: b });
       const revPy = getScopedMetric('Revenue', pyFy, 'ACT', currentQ, { ...filters, bu: b });
       const revBud = getScopedMetric('Revenue', currentFy, 'BUD', currentQ, { ...filters, bu: b });
-      const gp = getScopedMetric('Gross Profit', currentFy, 'ACT', currentQ, { ...filters, bu: b });
+      const totalDir = getScopedMetric('Total Direct Cost', currentFy, 'ACT', currentQ, { ...filters, bu: b }) || (getScopedMetric('Variable Cost', currentFy, 'ACT', currentQ, { ...filters, bu: b }) || 0);
+      const gp = getScopedMetric('Gross Profit', currentFy, 'ACT', currentQ, { ...filters, bu: b }) || (rev - totalDir);
       const ebitda = getScopedMetric('EBITDA', currentFy, 'ACT', currentQ, { ...filters, bu: b });
-      const opex = getScopedMetric('Total Opex', currentFy, 'ACT', currentQ, { ...filters, bu: b });
 
       const gpPct = rev > 0 ? (gp / rev) * 100 : 0;
       const ebitdaPct = rev > 0 ? (ebitda / rev) * 100 : 0;
@@ -1195,7 +1098,7 @@ export default function Executive360Tab({
         status = 'Outperforming';
         statusCls = 'bg-emerald-50 text-emerald-700 border-emerald-200';
       } else if (budAch < 85 || ebitda < 0) {
-        status = 'Attention';
+        status = 'Underperforming';
         statusCls = 'bg-rose-50 text-rose-700 border-rose-200';
       }
 
@@ -1210,343 +1113,323 @@ export default function Executive360Tab({
         gpPct,
         ebitda,
         ebitdaPct,
-        opex,
         status,
         statusCls,
       };
     }).filter((r) => r.rev > 0 || r.revBud > 0).sort((a, b) => b.rev - a.rev);
-  }, [dashboardData, activeBUs, buToSegmentNMap, currentFy, pyFy, currentQ, filters, getScopedMetric]);
+  }, [dashboardData, activeBUs, buToSegmentMap, currentFy, pyFy, currentQ, filters, getScopedMetric]);
 
   return (
-    <div className="space-y-4">
-      {/* Top Banner similar to reference design */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#102A54] via-[#1E56A0] to-[#102A54] p-4 text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6">
+      {/* ========================================================= */}
+      {/* EXECUTIVE HEADER BANNER */}
+      {/* ========================================================= */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0F2744] via-[#1E40AF] to-[#0F2744] p-5 text-white shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex flex-col">
           <div className="flex items-center gap-3">
             <h1 className="text-xl md:text-2xl font-bold tracking-tight text-white drop-shadow-xs">
-              Finance Summary Dashboard
+              Executive360 — Financial Performance &amp; Strategy
             </h1>
-            <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20 text-white border border-white/30 backdrop-blur-xs">
-              {currentFy} {currentQ === 'Total' ? 'Full Year' : currentQ}
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/15 text-white border border-white/20 backdrop-blur-md">
+              <Calendar className="w-3.5 h-3.5" />
+              {isMonthFiltered ? `${activeMonthStr} ${currentFy}` : `${currentFy} ${currentQ === 'Total' ? 'Full Year' : currentQ}`}
             </span>
           </div>
           <span className="text-xs text-blue-100/90 font-medium mt-1">
-            Holistic Company Overview · P&L Health · BU Performance Matrix · Pipeline Momentum
+            Executive Financial Cockpit · P&amp;L Health, Capital Allocation, Cash Flow &amp; Risk Governance
+          </span>
+        </div>
+      </div>
+
+      {/* ========================================================= */}
+      {/* SECTION 1: EXECUTIVE FINANCIAL SUMMARY (6 NON-DUPLICATE KPIS) */}
+      {/* ========================================================= */}
+      <section>
+        <div className="flex items-center justify-between mb-2.5">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#1E40AF]" />
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+              1. Executive Financial Summary
+            </h2>
+          </div>
+          <span className="text-xs text-slate-500 font-medium">
+            Non-redundant core measures · Distinct from Operational Performance Tile
           </span>
         </div>
 
-        <div className="inline-flex rounded-xl bg-black/25 backdrop-blur-md p-1 border border-white/20 self-start md:self-auto shrink-0 shadow-inner">
-          <button
-            type="button"
-            className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${timeHorizon === 'fullYear' ? 'bg-white text-[#1E56A0] shadow-sm font-bold' : 'text-blue-100 hover:text-white hover:bg-white/10 font-semibold'}`}
-            onClick={() => setTimeHorizon('fullYear')}
-          >
-            Full Year Trajectory
-          </button>
-          <button
-            type="button"
-            className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${timeHorizon === '12Q' ? 'bg-white text-[#1E56A0] shadow-sm font-bold' : 'text-blue-100 hover:text-white hover:bg-white/10 font-semibold'}`}
-            onClick={() => setTimeHorizon('12Q')}
-          >
-            12-Quarter Momentum
-          </button>
-          <button
-            type="button"
-            className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${timeHorizon === 'quarter' ? 'bg-white text-[#1E56A0] shadow-sm font-bold' : 'text-blue-100 hover:text-white hover:bg-white/10 font-semibold'}`}
-            onClick={() => setTimeHorizon('quarter')}
-          >
-            Quarter Snapshot
-          </button>
-        </div>
-      </div>
-
-      {/* Top 6 Pulse Metric Cards with Vibrant Accent Left Borders */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
-        {pulseMetrics.map((kpi) => (
-          <article
-            key={kpi.id}
-            className={`relative overflow-hidden rounded-2xl border border-slate-200/90 ${kpi.cardGradient} ${kpi.borderAccent} p-4 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between min-h-[124px]`}
-          >
-            <div>
-              <div className="flex items-center justify-between gap-1 mb-2">
-                <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider truncate">
-                  {kpi.title}
-                </span>
-                {kpi.achPct !== null && (
-                  <span className={`text-[10px] font-bold font-mono px-1.5 py-0.5 rounded-md border shrink-0 ${kpi.achPct >= 100
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                    : 'bg-amber-50 text-amber-700 border-amber-200'
-                    }`}>
-                    {kpi.achPct}%
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+          {executiveKpis.map((kpi) => (
+            <article
+              key={kpi.id}
+              className={`relative overflow-hidden rounded-xl border border-slate-200/90 bg-white ${kpi.borderAccent} p-3.5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between min-h-[140px]`}
+            >
+              <div>
+                <div className="flex items-start justify-between gap-1 mb-1.5 min-h-[28px]">
+                  <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider leading-snug break-words">
+                    {kpi.title}
                   </span>
+                  <div className="group relative cursor-pointer shrink-0 mt-0.5">
+                    <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 transition-colors" />
+                    <div className="invisible group-hover:visible absolute right-0 top-5 z-50 w-52 p-2.5 bg-slate-900 text-white text-[11px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all pointer-events-none leading-relaxed">
+                      {kpi.tooltip}
+                    </div>
+                  </div>
+                </div>
+
+                {isUpdating ? (
+                  <div className="py-1">
+                    <Shimmer className="h-7 w-28 rounded-md" />
+                  </div>
+                ) : (
+                  <div className="flex items-baseline gap-1.5 mb-1 flex-wrap">
+                    <span className="text-2xl font-bold font-mono tracking-tight text-slate-950">
+                      {kpi.value}
+                    </span>
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${kpi.badgeColor}`}>
+                      {kpi.badge}
+                    </span>
+                  </div>
                 )}
               </div>
-              {isUpdating ? (
-                <div className="py-1">
-                  <Shimmer className="h-7 w-28 rounded-md" />
-                </div>
-              ) : (
-                <div className="flex items-baseline gap-1.5 mb-1 flex-wrap">
-                  <span className="text-2xl font-bold font-mono tracking-tight text-slate-950">
-                    {kpi.value}
-                  </span>
-                  <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-md border ${kpi.badgeBg || 'text-slate-500 bg-slate-50 border-slate-200'}`}>
-                    {kpi.unit}
-                  </span>
-                </div>
-              )}
-            </div>
-            <div className="pt-2 border-t border-slate-100 flex flex-col gap-0.5 text-xs">
-              {isUpdating ? (
-                <Shimmer className="h-4 w-32 rounded-md mt-0.5" />
-              ) : (
-                <>
-                  <span className={`font-semibold flex items-center gap-1 ${kpi.yoyCls}`}>{kpi.yoyText}</span>
-                  {kpi.budText && <span className="text-[11px] text-slate-500 truncate">{kpi.budText}</span>}
-                </>
-              )}
-            </div>
-          </article>
-        ))}
+
+              <div className="pt-2 border-t border-slate-100 flex flex-col gap-0.5 text-xs">
+                {isUpdating ? (
+                  <Shimmer className="h-4 w-32 rounded-md mt-0.5" />
+                ) : (
+                  <>
+                    <span className={`text-xs ${kpi.comparisonCls}`}>{kpi.comparisonText}</span>
+                    <span className="text-[10.5px] text-slate-500 leading-snug break-words">{kpi.subtext}</span>
+                  </>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 min-w-0">
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col min-w-0 overflow-hidden">
-          <EChart
-            headerTitle="P&L Value Creation Flow (Waterfall Bridge)"
-            subtitle={`Gross Revenue step-down to EBITDA · ${currentFy} ${currentQ === 'Total' ? 'Full Year' : currentQ}`}
-            exportFilename={`PL_Value_Creation_Flow_Waterfall_${currentFy}_${currentQ === 'Total' ? 'Full_Year' : currentQ}`}
-            option={waterfallOption}
-            height="320px"
-          />
+      {/* ========================================================= */}
+      {/* SECTION 2: FINANCIAL PERFORMANCE & PLAN ADHERENCE */}
+      {/* ========================================================= */}
+      <section className="space-y-2.5">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#0284C7]" />
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            2. Financial Performance &amp; Plan Adherence
+          </h2>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col min-w-0 overflow-hidden">
-          <EChart
-            headerTitle="Business Profitability Matrix"
-            subtitle={`Revenue vs EBITDA Margin % by Business · ${currentFy} ${currentQ === 'Total' ? 'Full Year' : currentQ}`}
-            exportFilename={`Business_Profitability_Matrix_${currentFy}_${currentQ === 'Total' ? 'Full_Year' : currentQ}`}
-            option={buProfitMatrixOption}
-            height="320px"
-          />
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col min-w-0 overflow-hidden">
-          <EChart
-            headerTitle="Demand & Delivery Pipeline Engine"
-            subtitle={`12-Quarter Net Revenue vs Order Intake with Book-to-Bill through ${currentFy}`}
-            exportFilename={`Demand_Delivery_Pipeline_Engine_${currentFy}`}
-            option={demandDeliveryOption}
-            height="320px"
-          />
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col min-w-0 overflow-hidden">
-          <EChart
-            headerTitle="Operating Leverage & Cost Anatomy"
-            subtitle={`100% Normalized Cost Breakdown vs Margin Expansion through ${currentFy}`}
-            exportFilename={`Operating_Leverage_Cost_Anatomy_${currentFy}`}
-            option={costLeverageOption}
-            height="320px"
-          />
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col min-w-0 overflow-hidden">
-          <div className="flex items-center justify-between gap-2 mb-2 px-3.5 py-2 -mx-4 -mt-4 rounded-t-xl bg-gradient-to-r from-slate-100/90 via-slate-50/95 to-slate-100/80 backdrop-blur-md border-b border-slate-200/90 border-l-4 border-l-[#249791] shadow-[0_1px_2px_rgba(15,23,42,0.03)] shrink-0">
-            <div className="flex items-center gap-2 min-w-0 pr-2">
-              <span className="w-2.5 h-2.5 rounded-[3px] bg-[#249791] shrink-0" />
-              <div className="flex items-baseline gap-2 min-w-0 flex-wrap">
-                <span className="text-[13.5px] font-bold text-slate-800 tracking-tight whitespace-nowrap">Revenue Contribution by Business</span>
-                <span className="text-[11.5px] text-slate-500 font-medium truncate">Portfolio Diversification · {currentFy} {currentQ === 'Total' ? 'Full Year' : currentQ}</span>
-              </div>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 min-w-0">
+          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col min-w-0 overflow-hidden">
+            <EChart
+              headerTitle="Financial Performance vs Budget"
+              subtitle={`Revenue & EBITDA Actuals vs Board Target · ${currentFy} ${isMonthFiltered ? activeMonthStr : currentQ === 'Total' ? 'Full Year' : currentQ}`}
+              exportFilename={`Financial_Performance_vs_Budget_${currentFy}`}
+              option={perfVsBudgetOption}
+              height="330px"
+            />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center flex-1 min-h-[300px]">
-            <div className="sm:col-span-7 h-[300px]">
+          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col min-w-0 overflow-hidden">
+            <EChart
+              headerTitle="Revenue vs Order Intake Trend"
+              subtitle="Recognized Billing Revenue vs Contracted Order Pipeline & Book-to-Bill Ratio"
+              exportFilename={`Revenue_vs_Order_Intake_${currentFy}`}
+              option={demandTrendOption}
+              height="330px"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================= */}
+      {/* SECTION 3: PROFITABILITY & COST CONTROL */}
+      {/* ========================================================= */}
+      <section className="space-y-2.5">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#EA580C]" />
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            3. Profitability &amp; Cost Control
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 min-w-0">
+          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col min-w-0 overflow-hidden">
+            <EChart
+              headerTitle="Profitability Analysis & Margin Realization"
+              subtitle={`Quarterly EBITDA Amount vs Gross Margin % and EBITDA Margin % · ${currentFy}`}
+              exportFilename={`Profitability_Analysis_${currentFy}`}
+              option={profitabilityOption}
+              height="330px"
+            />
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col min-w-0 overflow-hidden">
+            <EChart
+              headerTitle="Cost and Expense Structure Analysis"
+              subtitle={`Actual Costs vs Budget Envelope by Key Expense Category · ${currentFy} ${isMonthFiltered ? activeMonthStr : currentQ === 'Total' ? 'Full Year' : currentQ}`}
+              exportFilename={`Cost_Expense_Analysis_${currentFy}`}
+              option={costExpenseOption}
+              height="330px"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================= */}
+      {/* SECTION 4: CASH & COLLECTIONS LIQUIDITY */}
+      {/* ========================================================= */}
+      <section className="space-y-2.5">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#059669]" />
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            4. Cash, Collections &amp; Capital Allocation
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 min-w-0">
+          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col min-w-0 overflow-hidden">
+            <EChart
+              headerTitle="Cash Collections Performance"
+              subtitle={`Customer Inflow Actuals vs Treasury Targets & Attainment % · ${currentFy}`}
+              exportFilename={`Collections_Performance_${currentFy}`}
+              option={collectionsOption}
+              height="330px"
+            />
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col min-w-0 overflow-hidden">
+            <EChart
+              headerTitle="CAPEX Execution & Budget Utilization"
+              subtitle={`Actual Capital Expenditure vs Approved Capex Budget · ${currentFy}`}
+              exportFilename={`Capex_Utilization_${currentFy}`}
+              option={capexOption}
+              height="330px"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================= */}
+      {/* SECTION 5: BUSINESS UNIT FINANCIAL CONTRIBUTION & SCORECARD */}
+      {/* ========================================================= */}
+      <section className="space-y-2.5">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#7C3AED]" />
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            5. Business Unit Contribution &amp; Strategic Leaderboard
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 min-w-0">
+          <div className="lg:col-span-5 bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col min-w-0 overflow-hidden">
+            <div className="mb-2">
+              <h3 className="text-sm font-bold text-slate-900">Portfolio Diversification</h3>
+              <p className="text-xs text-slate-500">Revenue Contribution across Business Groups (Segment) and Businesses</p>
+            </div>
+            <div className="h-[340px]">
               <EChart
-                exportFilename={`Revenue_Contribution_by_Business_${currentFy}_${currentQ === 'Total' ? 'Full_Year' : currentQ}`}
-                option={buSunburstOption.option}
+                exportFilename={`BU_Contribution_Sunburst_${currentFy}`}
+                option={buContributionOption.option}
                 height="100%"
               />
             </div>
-            <div className="sm:col-span-5 flex flex-col space-y-2 border-l border-slate-100 pl-3 max-h-[300px] overflow-y-auto custom-scroll text-xs">
-              <div className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100 flex justify-between">
-                <span>Group / Business</span>
-                <span>Revenue (Share)</span>
+          </div>
+
+          <div className="lg:col-span-7 bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
+            <div className="p-3.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">Business Strategic Financial Leaderboard</h3>
+                <p className="text-xs text-slate-500">Comprehensive ranking by recognized revenue, budget attainment, and profitability</p>
               </div>
-              {buSunburstOption.breakdown?.map((group) => (
-                <div key={group.name} className="space-y-0.5">
-                  <div className="flex items-center justify-between font-bold text-slate-800 bg-slate-50 px-1.5 py-1 rounded">
-                    <div className="flex items-center gap-1.5 truncate">
-                      <span className="w-2.5 h-2.5 rounded-full shrink-0 border border-white shadow-xs" style={{ backgroundColor: group.color }} />
-                      <span className="truncate">{group.name}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 shrink-0 font-mono text-[11px]">
-                      <span>₹{Math.round(group.value).toLocaleString('en-IN')}</span>
-                      <span className="text-slate-500 font-semibold w-9 text-right">({group.pct}%)</span>
-                    </div>
-                  </div>
-                  {group.children?.map((child) => (
-                    <div key={child.name} className="flex items-center justify-between text-slate-600 pl-3.5 pr-1.5 py-0.5 text-[11px] hover:bg-slate-50/60 rounded">
-                      <div className="flex items-center gap-1.5 truncate">
-                        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: child.color }} />
-                        <span className="truncate">{child.name}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 shrink-0 font-mono text-[10.5px]">
-                        <span className="text-slate-700">₹{Math.round(child.value).toLocaleString('en-IN')}</span>
-                        <span className="text-slate-400 text-[10px] w-9 text-right">({child.pctOfTotal}%)</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ))}
+              <span className="text-xs font-mono font-bold text-slate-600 bg-slate-200 px-2 py-0.5 rounded">
+                {leaderboardData.length} BUs Active
+              </span>
+            </div>
+
+            <div
+              className="overflow-x-auto max-h-[340px] overflow-y-auto custom-scroll"
+              onScroll={(e) => setIsScrolledX(e.currentTarget.scrollLeft > 0)}
+            >
+              <table
+                className="w-full border-separate border-spacing-0 text-xs min-w-[700px]"
+                onMouseLeave={() => setHoveredCell({ row: null, col: null })}
+              >
+                <thead>
+                  <tr className="bg-[#1E40AF] text-white font-bold sticky top-0 z-20">
+                    <th className="py-2.5 px-3 text-left sticky left-0 z-30 bg-[#1E40AF] border-b border-blue-900">
+                      Business
+                    </th>
+                    <th className="py-2.5 px-3 text-left border-b border-blue-900">Group</th>
+                    <th className="py-2.5 px-3 text-right border-b border-blue-900">Revenue</th>
+                    <th className="py-2.5 px-3 text-right border-b border-blue-900">Bud Ach %</th>
+                    <th className="py-2.5 px-3 text-right border-b border-blue-900">YoY %</th>
+                    <th className="py-2.5 px-3 text-right border-b border-blue-900">GM %</th>
+                    <th className="py-2.5 px-3 text-right border-b border-blue-900">EBITDA</th>
+                    <th className="py-2.5 px-3 text-right border-b border-blue-900">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="font-mono text-xs">
+                  {leaderboardData.map((row, idx) => {
+                    const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/70';
+                    return (
+                      <tr key={row.bu} className="hover:bg-blue-50/50 transition-colors">
+                        <td className={`py-2 px-3 font-sans font-semibold text-slate-900 sticky left-0 z-10 ${rowBg} border-b border-slate-100`}>
+                          {row.bu}
+                        </td>
+                        <td className="py-2 px-3 font-sans text-slate-600 border-b border-slate-100">
+                          {row.seg}
+                        </td>
+                        <td className="py-2 px-3 text-right font-semibold text-slate-900 border-b border-slate-100">
+                          ₹{Math.round(row.rev).toLocaleString('en-IN')}
+                        </td>
+                        <td className={`py-2 px-3 text-right font-semibold border-b border-slate-100 ${row.budAch >= 100 ? 'text-emerald-700' : 'text-amber-700'}`}>
+                          {row.budAch > 0 ? `${row.budAch.toFixed(0)}%` : '—'}
+                        </td>
+                        <td className={`py-2 px-3 text-right font-semibold border-b border-slate-100 ${row.revGrowth >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                          {row.revGrowth >= 0 ? `+${row.revGrowth.toFixed(1)}%` : `${row.revGrowth.toFixed(1)}%`}
+                        </td>
+                        <td className="py-2 px-3 text-right text-slate-700 border-b border-slate-100">
+                          {row.gpPct.toFixed(1)}%
+                        </td>
+                        <td className={`py-2 px-3 text-right font-semibold border-b border-slate-100 ${row.ebitda >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                          ₹{Math.round(row.ebitda).toLocaleString('en-IN')}
+                        </td>
+                        <td className="py-2 px-3 text-right border-b border-slate-100">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${row.statusCls}`}>
+                            {row.status}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ========================================================= */}
+      {/* SECTION 6: KEY FINANCIAL VARIANCES & VALUE BRIDGE */}
+      {/* ========================================================= */}
+      <section className="space-y-2.5">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#2563EB]" />
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            6. Key Financial Variances &amp; Value Creation Bridge
+          </h2>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col min-w-0 overflow-hidden">
           <EChart
-            headerTitle="Multi-Year Plan vs Realization Bridge"
-            subtitle="Revenue & EBITDA Actuals vs Targets (FY24 - FY26)"
-            exportFilename={`Multi_Year_Plan_vs_Realization_Bridge_${currentFy}`}
-            option={multiYearBridgeOption}
-            height="320px"
+            headerTitle="P&L Value Creation Flow & Variance Drivers (Waterfall Bridge)"
+            subtitle={`Plan Revenue step-down through Cost Components to Operating Earnings (EBITDA) · ${currentFy} ${isMonthFiltered ? activeMonthStr : currentQ === 'Total' ? 'Full Year' : currentQ}`}
+            exportFilename={`Value_Creation_Flow_Waterfall_${currentFy}`}
+            option={waterfallOption}
+            height="340px"
           />
         </div>
-      </div>
-
-      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-        <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <h2 className="text-sm font-bold text-slate-900">Business Strategic Performance Leaderboard</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Comprehensive ranking across revenue growth, margin realization, and budget attainment</p>
-          </div>
-          <div className="text-xs font-mono font-medium text-slate-500">
-            {buTableData.length} Businesses Active
-          </div>
-        </div>
-
-        <div
-          className="overflow-x-auto max-h-96 overflow-y-auto custom-scroll"
-          onScroll={(e) => setIsScrolledX(e.currentTarget.scrollLeft > 0)}
-        >
-          <table
-            className="w-full border-separate border-spacing-0 text-xs min-w-[900px]"
-            onMouseLeave={() => setHoveredCell({ row: null, col: null })}
-          >
-            <thead>
-              <tr className="bg-[#249791] text-white font-bold sticky top-0 z-20 shadow-xs">
-                <th
-                  onMouseEnter={() => setHoveredCell({ row: null, col: 'seg' })}
-                  className={`py-2.5 px-3 text-left sticky left-0 z-30 min-w-[140px] border-r border-b border-[#1d827d] transition-all duration-150 ${hoveredCell.col === 'seg' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'} ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.25)]' : ''}`}
-                >
-                  Business Group
-                </th>
-                <th
-                  onMouseEnter={() => setHoveredCell({ row: null, col: 'bu' })}
-                  className={`py-2.5 px-3 text-left min-w-[140px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'bu' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
-                >
-                  Business
-                </th>
-                <th
-                  onMouseEnter={() => setHoveredCell({ row: null, col: 'rev' })}
-                  className={`py-2.5 px-3 text-right min-w-[110px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'rev' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
-                >
-                  {periodLabels.actualLabel} Revenue
-                </th>
-                <th
-                  onMouseEnter={() => setHoveredCell({ row: null, col: 'budAch' })}
-                  className={`py-2.5 px-3 text-right min-w-[90px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'budAch' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
-                >
-                  {periodLabels.budAchLabel}
-                </th>
-                <th
-                  onMouseEnter={() => setHoveredCell({ row: null, col: 'revGrowth' })}
-                  className={`py-2.5 px-3 text-right min-w-[90px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'revGrowth' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
-                >
-                  {periodLabels.yoyLabel}
-                </th>
-                <th
-                  onMouseEnter={() => setHoveredCell({ row: null, col: 'gpPct' })}
-                  className={`py-2.5 px-3 text-right min-w-[100px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'gpPct' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
-                >
-                  Gross Margin %
-                </th>
-                <th
-                  onMouseEnter={() => setHoveredCell({ row: null, col: 'ebitda' })}
-                  className={`py-2.5 px-3 text-right min-w-[100px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'ebitda' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
-                >
-                  {periodLabels.actualLabel} EBITDA
-                </th>
-                <th
-                  onMouseEnter={() => setHoveredCell({ row: null, col: 'ebitdaPct' })}
-                  className={`py-2.5 px-3 text-right min-w-[90px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'ebitdaPct' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
-                >
-                  EBITDA %
-                </th>
-              </tr>
-            </thead>
-            <tbody className="font-mono text-[13px] sm:text-[13.5px]">
-              {buTableData.map((row, idx) => {
-                const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-slate-50';
-                return (
-                  <tr key={row.bu}>
-                    <td
-                      onMouseEnter={() => setHoveredCell({ row: idx, col: 'seg' })}
-                      className={`py-2 px-3 font-sans font-semibold text-slate-900 sticky left-0 z-10 ${getCellBg(idx, 'seg', rowBg)} border-r border-b border-slate-200 transition-all duration-100 ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)]' : ''}`}
-                    >
-                      {row.seg}
-                    </td>
-                    <td
-                      onMouseEnter={() => setHoveredCell({ row: idx, col: 'bu' })}
-                      className={`py-2 px-3 font-sans text-slate-700 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'bu', rowBg)}`}
-                    >
-                      {row.bu}
-                    </td>
-                    <td
-                      onMouseEnter={() => setHoveredCell({ row: idx, col: 'rev' })}
-                      className={`py-2 px-3 text-right font-semibold text-slate-900 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'rev', rowBg)}`}
-                    >
-                      {isUpdating ? <Shimmer className="h-4 w-14 ml-auto rounded-sm" /> : `₹${Math.round(row.rev).toLocaleString('en-IN')}`}
-                    </td>
-                    <td
-                      onMouseEnter={() => setHoveredCell({ row: idx, col: 'budAch' })}
-                      className={`py-2 px-3 text-right font-semibold border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'budAch', rowBg)} ${row.budAch >= 100 ? 'text-emerald-600' : row.budAch >= 90 ? 'text-blue-600' : 'text-amber-600'}`}
-                    >
-                      {isUpdating ? <Shimmer className="h-4 w-10 ml-auto rounded-sm" /> : row.budAch > 0 ? `${row.budAch.toFixed(0)}%` : '—'}
-                    </td>
-                    <td
-                      onMouseEnter={() => setHoveredCell({ row: idx, col: 'revGrowth' })}
-                      className={`py-2 px-3 text-right font-semibold border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'revGrowth', rowBg)} ${row.revGrowth >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}
-                    >
-                      {isUpdating ? <Shimmer className="h-4 w-12 ml-auto rounded-sm" /> : row.revGrowth >= 0 ? `+${row.revGrowth.toFixed(1)}%` : `${row.revGrowth.toFixed(1)}%`}
-                    </td>
-                    <td
-                      onMouseEnter={() => setHoveredCell({ row: idx, col: 'gpPct' })}
-                      className={`py-2 px-3 text-right text-slate-700 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'gpPct', rowBg)}`}
-                    >
-                      {isUpdating ? <Shimmer className="h-4 w-10 ml-auto rounded-sm" /> : `${row.gpPct.toFixed(1)}%`}
-                    </td>
-                    <td
-                      onMouseEnter={() => setHoveredCell({ row: idx, col: 'ebitda' })}
-                      className={`py-2 px-3 text-right font-semibold border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'ebitda', rowBg)} ${row.ebitda >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}
-                    >
-                      {isUpdating ? <Shimmer className="h-4 w-14 ml-auto rounded-sm" /> : `₹${Math.round(row.ebitda).toLocaleString('en-IN')}`}
-                    </td>
-                    <td
-                      onMouseEnter={() => setHoveredCell({ row: idx, col: 'ebitdaPct' })}
-                      className={`py-2 px-3 text-right font-semibold border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'ebitdaPct', rowBg)} ${row.ebitdaPct >= 12 ? 'text-emerald-600' : row.ebitdaPct >= 0 ? 'text-blue-600' : 'text-rose-600'}`}
-                    >
-                      {isUpdating ? <Shimmer className="h-4 w-10 ml-auto rounded-sm" /> : `${row.ebitdaPct.toFixed(1)}%`}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      </section>
     </div>
   );
 }

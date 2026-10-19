@@ -76,6 +76,7 @@ const TREND_DIS_ROWS = [
   { key: 'Premises_S&M', label: 'Premises_S&M', level: 2, group: 'trendSm', bullet: true },
   { key: 'Travel_S&M', label: 'Travel_S&M', level: 2, group: 'trendSm', bullet: true },
   { key: 'Telecom_S&M', label: 'Telecom_S&M', level: 2, group: 'trendSm', bullet: true },
+  { key: 'Legal & Professional - S&M', label: 'Legal & Professional - S&M', level: 2, group: 'trendSm', bullet: true },
   {
     key: 'Indirect Cost',
     label: 'Indirect Cost',
@@ -85,6 +86,7 @@ const TREND_DIS_ROWS = [
     group: 'trendIndirect',
   },
   { key: 'People_Indirect', label: 'People_Indirect', level: 2, group: 'trendIndirect', bullet: true },
+  { key: 'Marketing Expenses_Ind', label: 'Marketing Expenses_Ind', level: 2, group: 'trendIndirect', bullet: true },
   { key: 'Travel_Indirect', label: 'Travel_Indirect', level: 2, group: 'trendIndirect', bullet: true },
   { key: 'Premises_Indirect', label: 'Premises_Indirect', level: 2, group: 'trendIndirect', bullet: true },
   { key: 'Telecom_Ind', label: 'Telecom_Ind', level: 2, group: 'trendIndirect', bullet: true },
@@ -310,7 +312,7 @@ export default function PnLTrendTab({
                 <th
                   rowSpan={2}
                   onMouseEnter={() => setHoveredCell({ row: null, col: 'particulars' })}
-                  className={`py-2 px-3 text-left sticky top-0 left-0 z-40 min-w-[220px] w-[220px] border-r border-b border-[#1d827d] align-middle bg-[#249791] text-white font-bold transition-all duration-150 ${hoveredCell.col === 'particulars' ? 'bg-[#1c7b76]' : ''} ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.25)]' : ''}`}
+                  className={`py-2 px-3 text-left sticky top-0 left-0 z-20 min-w-[220px] w-[220px] border-r border-b border-[#1d827d] align-middle bg-[#249791] text-white font-bold transition-all duration-150 ${hoveredCell.col === 'particulars' ? 'bg-[#1c7b76]' : ''} ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.25)]' : ''}`}
                 >
                   Particulars (INR Mn)
                 </th>

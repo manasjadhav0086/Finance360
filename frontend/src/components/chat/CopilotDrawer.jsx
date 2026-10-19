@@ -28,7 +28,7 @@ const PROMPT_SUGGESTIONS = [
     title: 'Investigate Variances',
     description: 'Find primary drivers behind budget and forecast deviations',
     icon: AlertTriangle,
-    prompt: 'Investigate the major budget variances across business units and highlight top drivers.',
+    prompt: 'Investigate the major budget variances across businesses and highlight top drivers.',
   },
   {
     title: 'Margin & Cost Analysis',
@@ -40,7 +40,7 @@ const PROMPT_SUGGESTIONS = [
     title: 'Chart Breakdown',
     description: 'Plot revenue and EBITDA comparison with interactive charts',
     icon: BarChart2,
-    prompt: 'Show revenue and EBITDA breakdown by business unit with an interactive chart.',
+    prompt: 'Show revenue and EBITDA breakdown by business with an interactive chart.',
   },
 ];
 

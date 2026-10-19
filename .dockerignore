@@ -7,3 +7,6 @@ backend/node_modules
 frontend/node_modules
 key.json
 .env
+docs/
+*.md
+*.txt

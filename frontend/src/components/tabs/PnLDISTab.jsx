@@ -39,6 +39,7 @@ const PNL_DIS_ROWS = [
   { key: 'Premises_S&M', label: 'Premises_S&M', level: 2, group: 'smCost', bullet: true },
   { key: 'Travel_S&M', label: 'Travel_S&M', level: 2, group: 'smCost', bullet: true },
   { key: 'Telecom_S&M', label: 'Telecom_S&M', level: 2, group: 'smCost', bullet: true },
+  { key: 'Legal & Professional - S&M', label: 'Legal & Professional - S&M', level: 2, group: 'smCost', bullet: true },
   {
     key: 'Indirect Cost',
     label: 'Indirect Cost',
@@ -48,6 +49,7 @@ const PNL_DIS_ROWS = [
     group: 'indirectCost',
   },
   { key: 'People_Indirect', label: 'People_Indirect', level: 2, group: 'indirectCost', bullet: true },
+  { key: 'Marketing Expenses_Ind', label: 'Marketing Expenses_Ind', level: 2, group: 'indirectCost', bullet: true },
   { key: 'Travel_Indirect', label: 'Travel_Indirect', level: 2, group: 'indirectCost', bullet: true },
   { key: 'Premises_Indirect', label: 'Premises_Indirect', level: 2, group: 'indirectCost', bullet: true },
   { key: 'Telecom_Ind', label: 'Telecom_Ind', level: 2, group: 'indirectCost', bullet: true },
@@ -417,10 +419,6 @@ export default function PnLDISTab({
             </tbody>
           </table>
         </div>
-      </div>
-
-      <div className="text-xs text-slate-400 italic">
-        Note: Learners count under Budget contains data for B2C business units only.
       </div>
     </div>
   );

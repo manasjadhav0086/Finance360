@@ -19,7 +19,7 @@ const QUARTERS = {
 
 /**
  * OtherMetricsTab
- * Displays Learner Count and Headcount quarterly (Q1, Q2, Q3, Q4, Total)
+ * Displays Collection and Order Intake quarterly (Q1, Q2, Q3, Q4, Total)
  * with collapsible Business Group hierarchy, sorted high to low by default.
  */
 export default function OtherMetricsTab({
@@ -28,8 +28,8 @@ export default function OtherMetricsTab({
   getScopedMetric = () => 0,
   isUpdating = false,
 }) {
-  // Metric Mode: 'learners' (Learner Count) | 'headcount' (Headcount) | 'collection' (Collection) | 'oi' (Order Intake)
-  const [metricMode, setMetricMode] = useState('learners');
+  // Metric Mode: 'collection' (Collection) | 'oi' (Order Intake)
+  const [metricMode, setMetricMode] = useState('collection');
   const [isScrolledX, setIsScrolledX] = useState(false);
   const { setHoveredCell } = useTableHover();
 
@@ -142,10 +142,7 @@ export default function OtherMetricsTab({
 
   // Group by Business Group and calculate Q1, Q2, Q3, Q4, Total (Actual & Budget) with high-to-low sorting
   const groupedData = useMemo(() => {
-    let metricKey = 'Learners Count';
-    if (metricMode === 'headcount') metricKey = 'Headcount';
-    if (metricMode === 'collection') metricKey = 'Collection';
-    if (metricMode === 'oi') metricKey = 'Order Intake';
+    const metricKey = metricMode === 'collection' ? 'Collection' : 'Order Intake';
 
     const groupsMap = new Map();
 
@@ -177,13 +174,6 @@ export default function OtherMetricsTab({
         if (monthNode[metricKey] !== undefined && monthNode[metricKey] !== null && !isNaN(monthNode[metricKey])) {
           return Number(monthNode[metricKey]);
         }
-        if (metricKey === 'Learners Count') {
-          for (const alias of ['Learner Count', 'Enrollment', 'Learners', 'Learners_Count', 'Amount']) {
-            if (monthNode[alias] !== undefined && monthNode[alias] !== null && !isNaN(monthNode[alias])) {
-              return Number(monthNode[alias]);
-            }
-          }
-        }
         if (metricKey === 'Collection') {
           for (const alias of ['Collection', 'Collections', 'Amount']) {
             if (monthNode[alias] !== undefined && monthNode[alias] !== null && !isNaN(monthNode[alias])) {
@@ -193,13 +183,6 @@ export default function OtherMetricsTab({
         }
         if (metricKey === 'Order Intake') {
           for (const alias of ['Order Intake', 'OI', 'Total Order Intake', 'Order_Intake', 'OrderIntake', 'Amount']) {
-            if (monthNode[alias] !== undefined && monthNode[alias] !== null && !isNaN(monthNode[alias])) {
-              return Number(monthNode[alias]);
-            }
-          }
-        }
-        if (metricKey === 'Headcount') {
-          for (const alias of ['Headcount', 'HC', 'Head Count', 'Head_Count']) {
             if (monthNode[alias] !== undefined && monthNode[alias] !== null && !isNaN(monthNode[alias])) {
               return Number(monthNode[alias]);
             }
@@ -220,54 +203,30 @@ export default function OtherMetricsTab({
         const tree = scenKey === 'act' ? buTreeAct : buTreeBud;
         const scenUpper = scenKey.toUpperCase();
 
-        if (metricMode === 'headcount') {
-          let latestOverall = null;
+        // Collection and Order Intake: sum across months for each quarter
+        let totalSum = 0;
 
-          ['Q1', 'Q2', 'Q3', 'Q4'].forEach((qKey) => {
-            let qVal = null;
-            QUARTERS[qKey].forEach((mShort) => {
-              const val = getMonthValFromTree(tree, mShort);
-              if (val !== undefined && val !== null && !isNaN(val)) {
-                qVal = Number(val);
-                latestOverall = Number(val);
-              }
-            });
-
-            if (qVal === null && typeof getScopedMetric === 'function') {
-              const fallback = getScopedMetric(metricKey, fy, scenUpper, qKey, { ...filters, bu, quarter: qKey });
-              if (fallback > 0) qVal = fallback;
+        ['Q1', 'Q2', 'Q3', 'Q4'].forEach((qKey) => {
+          let qSum = 0;
+          let hasData = false;
+          QUARTERS[qKey].forEach((mShort) => {
+            const val = getMonthValFromTree(tree, mShort);
+            if (val !== undefined && val !== null && !isNaN(val)) {
+              qSum += Number(val);
+              hasData = true;
             }
-
-            qValues[`${qKey}_${scenKey}`] = qVal || 0;
           });
 
-          qValues[`Total_${scenKey}`] = latestOverall ?? qValues[`Q4_${scenKey}`] ?? qValues[`Q3_${scenKey}`] ?? qValues[`Q2_${scenKey}`] ?? qValues[`Q1_${scenKey}`] ?? 0;
-        } else {
-          // Learner Count, Collection, and Order Intake: sum across months for each quarter
-          let totalSum = 0;
+          if (!hasData && typeof getScopedMetric === 'function') {
+            const fallback = getScopedMetric(metricKey, fy, scenUpper, qKey, { ...filters, bu, quarter: qKey });
+            if (fallback > 0) qSum = fallback;
+          }
 
-          ['Q1', 'Q2', 'Q3', 'Q4'].forEach((qKey) => {
-            let qSum = 0;
-            let hasData = false;
-            QUARTERS[qKey].forEach((mShort) => {
-              const val = getMonthValFromTree(tree, mShort);
-              if (val !== undefined && val !== null && !isNaN(val)) {
-                qSum += Number(val);
-                hasData = true;
-              }
-            });
+          qValues[`${qKey}_${scenKey}`] = qSum;
+          totalSum += qSum;
+        });
 
-            if (!hasData && typeof getScopedMetric === 'function') {
-              const fallback = getScopedMetric(metricKey, fy, scenUpper, qKey, { ...filters, bu, quarter: qKey });
-              if (fallback > 0) qSum = fallback;
-            }
-
-            qValues[`${qKey}_${scenKey}`] = qSum;
-            totalSum += qSum;
-          });
-
-          qValues[`Total_${scenKey}`] = totalSum;
-        }
+        qValues[`Total_${scenKey}`] = totalSum;
       });
 
       groupsMap.get(groupName).push({
@@ -382,28 +341,18 @@ export default function OtherMetricsTab({
     return totals;
   }, [groupedData]);
 
-  // Format metric values with support for counts and currency amounts
+  // Format metric values (currency amounts in INR Mn)
   const formatMetricVal = (val) => {
     if (val === null || val === undefined || isNaN(val)) return '—';
-    if (val === 0) return '0';
-    if (metricMode === 'collection' || metricMode === 'oi') {
-      const isFrac = Number(val) % 1 !== 0;
-      return Number(val).toLocaleString('en-IN', {
-        minimumFractionDigits: isFrac ? 2 : 0,
-        maximumFractionDigits: 2,
-      });
-    }
-    return Math.round(val).toLocaleString('en-IN');
+    if (val === 0) return '0.00';
+    const num = Number(val);
+    return num.toLocaleString('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   };
 
-  const metricLabel =
-    metricMode === 'headcount'
-      ? 'Headcount'
-      : metricMode === 'collection'
-        ? 'Collection (INR Mn)'
-        : metricMode === 'oi'
-          ? 'Order Intake (INR Mn)'
-          : 'Learner Count';
+  const metricLabel = metricMode === 'collection' ? 'Collection (INR Mn)' : 'Order Intake (INR Mn)';
 
   const totalBusinessesCount = groupedData.reduce((acc, g) => acc + g.businesses.length, 0);
 
@@ -432,28 +381,8 @@ export default function OtherMetricsTab({
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* Metric Switcher: Learner Count | Headcount | Collection | Order Intake */}
+          {/* Metric Switcher: Collection | Order Intake */}
           <div className="inline-flex rounded-lg bg-slate-100 p-1 border border-slate-200">
-            <button
-              type="button"
-              className={`px-3.5 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${metricMode === 'learners'
-                ? 'bg-[#249791] text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 font-semibold'
-                }`}
-              onClick={() => setMetricMode('learners')}
-            >
-              Learner Count
-            </button>
-            <button
-              type="button"
-              className={`px-3.5 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${metricMode === 'headcount'
-                ? 'bg-[#249791] text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 font-semibold'
-                }`}
-              onClick={() => setMetricMode('headcount')}
-            >
-              Headcount
-            </button>
             <button
               type="button"
               className={`px-3.5 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${metricMode === 'collection'
@@ -538,7 +467,7 @@ export default function OtherMetricsTab({
                     rowSpan={2}
                     onClick={() => handleSort('groupName')}
                     className={`py-2 px-2.5 text-left border-b border-r border-[#1d827d] ${hasAnyExpanded ? 'min-w-[140px] sm:min-w-[160px] w-[180px]' : 'min-w-[160px] sm:min-w-[180px] w-[200px]'
-                      } bg-[#249791] text-white font-bold sticky top-0 left-0 z-40 transition-colors cursor-pointer group hover:bg-[#1c7b76] select-none ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.25)]' : ''
+                      } bg-[#249791] text-white font-bold sticky top-0 left-0 z-20 transition-colors cursor-pointer group hover:bg-[#1c7b76] select-none ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.25)]' : ''
                       }`}
                   >
                     <div className="flex items-center gap-1.5">
@@ -551,7 +480,7 @@ export default function OtherMetricsTab({
                     <th
                       rowSpan={2}
                       onClick={() => handleSort('business')}
-                      className="py-2 px-2.5 text-left border-b border-r border-[#1d827d] min-w-[130px] sm:min-w-[150px] w-1/6 bg-[#249791] text-white font-bold sticky top-0 z-30 cursor-pointer group hover:bg-[#1c7b76] select-none"
+                      className="py-2 px-2.5 text-left border-b border-r border-[#1d827d] min-w-[130px] sm:min-w-[150px] w-1/6 bg-[#249791] text-white font-bold sticky top-0 z-20 cursor-pointer group hover:bg-[#1c7b76] select-none"
                     >
                       <div className="flex items-center gap-1.5">
                         <span>Business</span>
@@ -564,7 +493,7 @@ export default function OtherMetricsTab({
                     <th
                       key={qKey}
                       colSpan={2}
-                      className="py-1.5 px-2 text-center sticky top-0 z-20 border-b border-r border-[#1d827d] bg-[#249791] font-bold text-white select-none"
+                      className="py-1.5 px-2 text-center sticky top-0 z-10 border-b border-r border-[#1d827d] bg-[#249791] font-bold text-white select-none"
                     >
                       {qKey}
                     </th>
@@ -572,7 +501,7 @@ export default function OtherMetricsTab({
 
                   <th
                     colSpan={2}
-                    className="py-1.5 px-2 text-center sticky top-0 z-20 border-b border-[#1d827d] bg-[#1c7b76] font-bold text-white select-none"
+                    className="py-1.5 px-2 text-center sticky top-0 z-10 border-b border-[#1d827d] bg-[#1c7b76] font-bold text-white select-none"
                   >
                     Total
                   </th>
@@ -584,7 +513,7 @@ export default function OtherMetricsTab({
                     <Fragment key={qKey}>
                       <th
                         onClick={() => handleSort(`${qKey}_bud`)}
-                        className="py-1.5 px-2 text-right sticky top-[32px] z-20 border-b border-r border-[#176a66] bg-[#23928c] text-teal-50 font-semibold cursor-pointer group hover:bg-[#1c7b76] select-none w-[70px]"
+                        className="py-1.5 px-2 text-right sticky top-[32px] z-10 border-b border-r border-[#176a66] bg-[#23928c] text-teal-50 font-semibold cursor-pointer group hover:bg-[#1c7b76] select-none w-[70px]"
                       >
                         <div className="flex items-center justify-end gap-1">
                           <span className="text-teal-50">Bud</span>
@@ -593,7 +522,7 @@ export default function OtherMetricsTab({
                       </th>
                       <th
                         onClick={() => handleSort(`${qKey}_act`)}
-                        className="py-1.5 px-2 text-right sticky top-[32px] z-20 border-b border-r border-[#176a66] bg-[#1e8580] text-white font-bold cursor-pointer group hover:bg-[#176a66] select-none w-[70px]"
+                        className="py-1.5 px-2 text-right sticky top-[32px] z-10 border-b border-r border-[#176a66] bg-[#1e8580] text-white font-bold cursor-pointer group hover:bg-[#176a66] select-none w-[70px]"
                       >
                         <div className="flex items-center justify-end gap-1">
                           <span className="text-white font-bold">Act</span>
@@ -606,7 +535,7 @@ export default function OtherMetricsTab({
                   {/* Total Bud | Act */}
                   <th
                     onClick={() => handleSort('Total_bud')}
-                    className="py-1.5 px-2 text-right sticky top-[32px] z-20 border-b border-r border-[#176a66] bg-[#1c7873] text-teal-50 font-bold cursor-pointer group hover:bg-[#166460] select-none w-[80px]"
+                    className="py-1.5 px-2 text-right sticky top-[32px] z-10 border-b border-r border-[#176a66] bg-[#1c7873] text-teal-50 font-bold cursor-pointer group hover:bg-[#166460] select-none w-[80px]"
                   >
                     <div className="flex items-center justify-end gap-1">
                       <span className="text-teal-50 font-bold">Bud</span>
@@ -615,7 +544,7 @@ export default function OtherMetricsTab({
                   </th>
                   <th
                     onClick={() => handleSort('Total_act')}
-                    className="py-1.5 px-2 text-right sticky top-[32px] z-20 border-b border-[#176a66] bg-[#176a66] text-white font-bold cursor-pointer group hover:bg-[#125552] select-none w-[80px]"
+                    className="py-1.5 px-2 text-right sticky top-[32px] z-10 border-b border-[#176a66] bg-[#176a66] text-white font-bold cursor-pointer group hover:bg-[#125552] select-none w-[80px]"
                   >
                     <div className="flex items-center justify-end gap-1">
                       <span className="text-white font-bold">Act</span>
@@ -731,7 +660,7 @@ export default function OtherMetricsTab({
                 <tfoot>
                   <tr className="bg-slate-100 font-bold text-slate-900 sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)]">
                     <td
-                      className={`py-2.5 px-2.5 border-t border-r border-slate-300 sticky left-0 z-30 bg-slate-100 text-sm sm:text-base font-bold ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)]' : ''
+                      className={`py-2.5 px-2.5 border-t border-r border-slate-300 sticky left-0 z-20 bg-slate-100 text-sm sm:text-base font-bold ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)]' : ''
                         }`}
                     >
                       Total

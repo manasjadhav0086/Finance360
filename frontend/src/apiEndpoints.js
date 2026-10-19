@@ -8,12 +8,20 @@ export const apiEndpoints = {
   // Health check & connection status
   HEALTH_CHECK: '/health',
 
+  // Authentication & Password Management
+  LOGIN: '/user/login',
+  FORGOT_PASSWORD: '/user/forgot-password',
+  VERIFY_RESET_TOKEN: '/user/verify-reset-token',
+  RESET_PASSWORD: '/user/reset-password',
+  CHANGE_PASSWORD: '/user/change-password',
+
   // Current logged in user (self profile)
   USER: '/user/me',
 
   // User Administration
   GET_ALL_USERS: '/user/all',
   CREATE_USER: '/user/create',
+  SEND_INVITE: (userId) => `/user/send-invite/${userId}`,
   GET_BUSINESS_OPTIONS: '/user/business-options',
   UPDATE_USER: (userId) => `/user/${userId}`,
   DELETE_USER: (userId) => `/user/${userId}`,

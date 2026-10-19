@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { ChevronDown, Check, Search, RotateCcw, CheckCheck, RefreshCw, X, Sparkles } from 'lucide-react';
-import Tooltip from './ui/Tooltip';
+import { ChevronDown, Check, Search, RotateCcw, CheckCheck, X, Sparkles } from 'lucide-react';
 import { getMonthsForQuarter } from '../utils/periodUtils';
 
 function CustomDropdown({
@@ -262,12 +261,6 @@ export default function Topbar({
   user,
   onOpenAi,
 }) {
-  const [draftFilters, setDraftFilters] = useState(filters);
-
-  useEffect(() => {
-    setDraftFilters(filters);
-  }, [filters]);
-
   const fys = dashboardData?.meta?.fys || [];
   const quarters = [
     { value: 'Q1', label: 'Q1' },
@@ -277,15 +270,15 @@ export default function Topbar({
   ];
 
   const monthOptions = useMemo(() => {
-    const availableMonths = getMonthsForQuarter(draftFilters.quarter);
+    const availableMonths = getMonthsForQuarter(filters.quarter);
     return availableMonths.map((m) => ({ value: m, label: m }));
-  }, [draftFilters.quarter]);
+  }, [filters.quarter]);
 
   const handleQuarterChange = (val) => {
     const normQ = val === 'ALL' || (Array.isArray(val) && val.length === quarters.length) ? 'Total' : val;
     const availableMonths = getMonthsForQuarter(normQ);
 
-    let nextMonth = draftFilters.month;
+    let nextMonth = filters.month;
     if (nextMonth && nextMonth !== 'ALL') {
       if (Array.isArray(nextMonth)) {
         const validMonths = nextMonth.filter((m) => availableMonths.includes(m));
@@ -295,19 +288,17 @@ export default function Topbar({
       }
     }
 
-    setDraftFilters((prev) => ({
-      ...prev,
+    updateFilters({
       quarter: normQ,
       month: nextMonth,
-    }));
+    });
   };
 
   const handleYearChange = (val) => {
     const fyVal = Array.isArray(val) ? val[0] : val;
-    setDraftFilters((prev) => ({
-      ...prev,
+    updateFilters({
       fy: fyVal,
-    }));
+    });
   };
 
   const cleanLabel = (text) => {
@@ -341,7 +332,7 @@ export default function Topbar({
     let rawList = [];
     if (typeof getActiveBusinesses === 'function') {
       try {
-        rawList = getActiveBusinesses(draftFilters.segment) || [];
+        rawList = getActiveBusinesses(filters.segment) || [];
       } catch {
         // Fall back to mapping
       }
@@ -349,10 +340,10 @@ export default function Topbar({
     if (!rawList.length) {
       const meta = dashboardData?.meta;
       if (meta?.business_mapping && Array.isArray(meta.business_mapping)) {
-        const selectedSegs = Array.isArray(draftFilters.segment)
-          ? draftFilters.segment
-          : draftFilters.segment && draftFilters.segment !== 'ALL'
-            ? [draftFilters.segment]
+        const selectedSegs = Array.isArray(filters.segment)
+          ? filters.segment
+          : filters.segment && filters.segment !== 'ALL'
+            ? [filters.segment]
             : [];
         const seen = {};
         meta.business_mapping.forEach((r) => {
@@ -383,7 +374,7 @@ export default function Topbar({
         label: cleanLabel(lbl),
       };
     });
-  }, [getActiveBusinesses, draftFilters.segment, dashboardData]);
+  }, [getActiveBusinesses, filters.segment, dashboardData]);
 
   const segmentOptions = useMemo(() => {
     return segments.filter((s) => (typeof s === 'object' ? s.value : s) !== 'ALL');
@@ -392,43 +383,6 @@ export default function Topbar({
   const businessOptions = useMemo(() => {
     return businesses.filter((b) => (typeof b === 'object' ? b.value : b) !== 'ALL');
   }, [businesses]);
-
-  const hasEmptySelection = useMemo(() => {
-    const isEmpty = (v) => {
-      if (Array.isArray(v) && v.length === 0) return true;
-      if (v === '' || v === null || v === undefined) return true;
-      return false;
-    };
-    return (
-      isEmpty(draftFilters.fy) ||
-      isEmpty(draftFilters.quarter) ||
-      isEmpty(draftFilters.month) ||
-      isEmpty(draftFilters.segment) ||
-      isEmpty(draftFilters.bu)
-    );
-  }, [draftFilters]);
-
-  const hasPendingChanges = useMemo(() => {
-    const isDifferent = (a, b) => {
-      if (Array.isArray(a) && Array.isArray(b)) {
-        if (a.length !== b.length) return true;
-        return a.some((val) => !b.includes(val));
-      }
-      return a !== b;
-    };
-    return (
-      isDifferent(draftFilters.fy, filters.fy) ||
-      isDifferent(draftFilters.quarter, filters.quarter) ||
-      isDifferent(draftFilters.month, filters.month) ||
-      isDifferent(draftFilters.segment, filters.segment) ||
-      isDifferent(draftFilters.bu, filters.bu)
-    );
-  }, [draftFilters, filters]);
-
-  const handleApply = () => {
-    if (hasEmptySelection || !hasPendingChanges) return;
-    updateFilters(draftFilters);
-  };
 
   const resetFilters = () => {
     const defaultFy =
@@ -443,7 +397,6 @@ export default function Topbar({
       segment: 'ALL',
       bu: 'ALL',
     };
-    setDraftFilters(resetValues);
     updateFilters(resetValues);
   };
 
@@ -454,7 +407,7 @@ export default function Topbar({
           <CustomDropdown
             label="Year"
             options={fys}
-            value={draftFilters.fy}
+            value={filters.fy}
             onChange={handleYearChange}
             multi={false}
             searchable={true}
@@ -463,7 +416,7 @@ export default function Topbar({
           <CustomDropdown
             label="Quarter"
             options={quarters}
-            value={draftFilters.quarter}
+            value={filters.quarter}
             onChange={handleQuarterChange}
             multi={true}
             allOptionLabel="Full Year"
@@ -472,8 +425,8 @@ export default function Topbar({
           <CustomDropdown
             label="Month"
             options={monthOptions}
-            value={draftFilters.month || 'ALL'}
-            onChange={(val) => setDraftFilters((prev) => ({ ...prev, month: val }))}
+            value={filters.month || 'ALL'}
+            onChange={(val) => updateFilters({ month: val })}
             multi={true}
             searchable={true}
             allOptionLabel="All Months"
@@ -482,24 +435,22 @@ export default function Topbar({
           <CustomDropdown
             label="Business Group"
             options={segmentOptions}
-            value={draftFilters.segment}
-            onChange={(val) =>
-              setDraftFilters((prev) => {
-                let nextBu = prev.bu;
-                if (nextBu && nextBu !== 'ALL') {
-                  const validBUs = typeof getActiveBusinesses === 'function' ? getActiveBusinesses(val) : [];
-                  if (validBUs.length > 0) {
-                    const isStillValid = Array.isArray(nextBu)
-                      ? nextBu.every((b) => validBUs.includes(b))
-                      : validBUs.includes(nextBu);
-                    if (!isStillValid) {
-                      nextBu = 'ALL';
-                    }
+            value={filters.segment}
+            onChange={(val) => {
+              let nextBu = filters.bu;
+              if (nextBu && nextBu !== 'ALL') {
+                const validBUs = typeof getActiveBusinesses === 'function' ? getActiveBusinesses(val) : [];
+                if (validBUs.length > 0) {
+                  const isStillValid = Array.isArray(nextBu)
+                    ? nextBu.every((b) => validBUs.includes(b))
+                    : validBUs.includes(nextBu);
+                  if (!isStillValid) {
+                    nextBu = 'ALL';
                   }
                 }
-                return { ...prev, segment: val, bu: nextBu };
-              })
-            }
+              }
+              updateFilters({ segment: val, bu: nextBu });
+            }}
             multi={true}
             searchable={true}
             allOptionLabel="All Business Groups"
@@ -508,8 +459,8 @@ export default function Topbar({
           <CustomDropdown
             label="Business"
             options={businessOptions}
-            value={draftFilters.bu}
-            onChange={(val) => setDraftFilters((prev) => ({ ...prev, bu: val }))}
+            value={filters.bu}
+            onChange={(val) => updateFilters({ bu: val })}
             multi={true}
             searchable={true}
             allOptionLabel="All Businesses"
@@ -538,36 +489,6 @@ export default function Topbar({
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Reset</span>
           </button>
-
-          <Tooltip
-            content={
-              hasEmptySelection
-                ? 'Please select at least one value for each filter before applying.'
-                : !hasPendingChanges
-                  ? 'No filter changes to apply'
-                  : ''
-            }
-            position="bottom"
-            className={hasEmptySelection || !hasPendingChanges || loading ? 'cursor-not-allowed' : ''}
-          >
-            <button
-              type="button"
-              className={`flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold rounded-md transition-all shadow-xs ${hasEmptySelection || !hasPendingChanges || loading
-                ? 'bg-slate-200 text-slate-400 border border-slate-300 cursor-not-allowed pointer-events-none'
-                : 'bg-blue-600 hover:bg-blue-700 cursor-pointer text-white shadow-xs'
-                }`}
-              id="applyFiltersBtn"
-              onClick={handleApply}
-              disabled={loading || hasEmptySelection || !hasPendingChanges}
-            >
-              {loading ? (
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Check className="w-3.5 h-3.5" />
-              )}
-              <span>{loading ? 'Applying...' : 'Apply'}</span>
-            </button>
-          </Tooltip>
         </div>
       </div>
     </header>

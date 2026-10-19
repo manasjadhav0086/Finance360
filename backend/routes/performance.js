@@ -14,38 +14,28 @@ const segToBizs = new Map();
 async function ensureAliases() {
   if (mappingLoaded) return;
   const sql = `
-    SELECT DISTINCT Segment, Biz1, Segment_N, Biz1_N 
+    SELECT DISTINCT Segment, Biz1 
     FROM dataai
     WHERE Segment IS NOT NULL AND Biz1 IS NOT NULL
   `;
   const rows = await mysqlService.executeQuery(sql);
-  bmRawRecords = rows || [];
+  bmRawRecords = (rows || []).map((r) => ({
+    segment: String(r.Segment || '').trim(),
+    biz1: String(r.Biz1 || '').trim(),
+    segment_n: String(r.Segment || '').trim(),
+    biz1_n: String(r.Biz1 || '').trim(),
+  }));
 
   for (const r of rows || []) {
-    const sOld = String(r.Segment || '').trim();
-    const sNew = String(r.Segment_N || '').trim();
-    const bOld = String(r.Biz1 || '').trim();
-    const bNew = String(r.Biz1_N || '').trim();
+    const s = String(r.Segment || '').trim();
+    const b = String(r.Biz1 || '').trim();
 
-    if (bOld && bNew) {
-      if (!bizAliases.has(bOld)) bizAliases.set(bOld, new Set());
-      if (!bizAliases.has(bNew)) bizAliases.set(bNew, new Set());
-      bizAliases.get(bOld).add(bNew);
-      bizAliases.get(bNew).add(bOld);
-    }
-
-    [sNew, sOld].filter(Boolean).forEach((s) => {
+    if (s && b) {
       if (!segToBizs.has(s)) segToBizs.set(s, new Set());
       if (!segToBizs.has(s.toUpperCase())) segToBizs.set(s.toUpperCase(), new Set());
-      if (bNew) {
-        segToBizs.get(s).add(bNew);
-        segToBizs.get(s.toUpperCase()).add(bNew);
-      }
-      if (bOld) {
-        segToBizs.get(s).add(bOld);
-        segToBizs.get(s.toUpperCase()).add(bOld);
-      }
-    });
+      segToBizs.get(s).add(b);
+      segToBizs.get(s.toUpperCase()).add(b);
+    }
   }
 
   mappingLoaded = true;
@@ -54,7 +44,7 @@ async function ensureAliases() {
 async function fetchView(viewKey, segment, biz1, userScope = { isUnrestricted: true }) {
   let sql = '';
   const params = [];
-  const hasSegmentCol = ['dataai', 'dataai_view', 'orderintake_view', 'capex_view', 'collection_view', 'enrollment_view'].includes(viewKey);
+  const hasSegmentCol = ['dataai', 'dataai_view', 'orderintake_view', 'capex_view', 'collection_view'].includes(viewKey);
 
   if (viewKey === 'RevBizWise') {
     sql = `
@@ -80,12 +70,12 @@ async function fetchView(viewKey, segment, biz1, userScope = { isUnrestricted: t
       }
     }
     if (segment && segment.toUpperCase() !== 'ALL') {
-      filterClauses.push('(Segment = ? OR Segment_N = ?)');
-      params.push(segment.trim(), segment.trim());
+      filterClauses.push('Segment = ?');
+      params.push(segment.trim());
     }
     if (biz1 && biz1.toUpperCase() !== 'ALL') {
-      filterClauses.push('(Biz1 = ? OR Biz1_N = ?)');
-      params.push(biz1.trim(), biz1.trim());
+      filterClauses.push('Biz1 = ?');
+      params.push(biz1.trim());
     }
     if (filterClauses.length > 0) {
       sql += ' AND ' + filterClauses.join(' AND ');
@@ -142,15 +132,30 @@ async function fetchView(viewKey, segment, biz1, userScope = { isUnrestricted: t
     return (rows || []).map(serializeRow);
   }
 
-  let tableName = 'dataai';
-  if (viewKey === 'orderintake_view') tableName = 'order_intake';
-  else if (viewKey === 'capex_view') tableName = 'capex';
-  else if (viewKey === 'collection_view') tableName = 'collection';
+  if (viewKey === 'dataai') {
+    sql = `
+      SELECT 
+        FYs,
+        QuarterFY,
+        Biz1,
+        Segment,
+        \`SG&A\`,
+        \`SG&A Base\`,
+        Nature,
+        ROUND(SUM(Mn), 4) AS Mn
+      FROM dataai 
+      WHERE 1=1 
+    `;
+  } else {
+    let tableName = 'order_intake';
+    if (viewKey === 'capex_view') tableName = 'capex';
+    else if (viewKey === 'collection_view') tableName = 'collection';
 
-  sql = `
-    SELECT * FROM ${tableName} 
-    WHERE 1=1 
-  `;
+    sql = `
+      SELECT * FROM ${tableName} 
+      WHERE 1=1 
+    `;
+  }
 
   if (!userScope.isUnrestricted) {
     if (userScope.allowedBizs?.length) {
@@ -187,6 +192,10 @@ async function fetchView(viewKey, segment, biz1, userScope = { isUnrestricted: t
     params.push(matchingAliases);
   }
 
+  if (viewKey === 'dataai') {
+    sql += ' GROUP BY FYs, QuarterFY, Biz1, Segment, `SG&A`, `SG&A Base`, Nature';
+  }
+
   const rawRows = await mysqlService.executeQuery(sql, params);
   return (rawRows || []).map(serializeRow);
 }
@@ -204,7 +213,6 @@ router.get('/', verifyUser, async (req, res) => {
       orderintake_view: 'orderintake_view',
       capex_view: 'capex_view',
       collection_view: 'collection_view',
-      enrollment_view: 'enrollment_view',
     };
 
     const entries = await Promise.all(

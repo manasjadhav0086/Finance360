@@ -1,24 +1,135 @@
-dist/
+# ==========================================
+# Finance360 - Git Ignore Configuration
+# ==========================================
 
-# Environment Variables & Secrets
+# ------------------------------------------
+# 1. Documentation & Specification Files
+# (Exclude all docs, specs, notes, and manuals from Git)
+# ------------------------------------------
+docs/
+**/docs/
+*.md
+*.txt
+*.pdf
+*.doc
+*.docx
+*.ppt
+*.pptx
+*.rtf
+*.odt
+README.md
+LOGIN_ISSUES_AND_FIXES.txt
+LOGIN_ISSUES_AND_FIXES.TXT
+API_DOCUMENTATION.md
+Finance360_Data_Mapping_and_Calculation_Logic.txt
+
+# ------------------------------------------
+# 2. Dependencies & Package Managers
+# ------------------------------------------
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+
+# ------------------------------------------
+# 3. Build Artifacts & Caches
+# ------------------------------------------
+dist/
+**/dist/
+build/
+**/build/
+.output/
+.vite/
+.cache/
+.turbo/
+.next/
+*.tsbuildinfo
+
+# ------------------------------------------
+# 4. Database Dumps, SQL Files & Data Exports
+# ------------------------------------------
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+dump/
+dumps/
+*.csv
+*.xlsx
+*.xls
+backend/finance_data_dump.sql
+*Data
+
+# ------------------------------------------
+# 5. Environment Variables & Secrets
+# ------------------------------------------
 .env
 .env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 !.env.example
-*.json
-!package.json
-*.key
 *.pem
+*.key
+*.crt
 *credentials*.json
 *service_account*.json
+secrets/
 
-# IDE
+# ------------------------------------------
+# 6. JSON Config Restrictions
+# ------------------------------------------
+*.json
+!package.json
+!package-lock.json
+
+# ------------------------------------------
+# 7. IDE & Editor Files
+# ------------------------------------------
 .vscode/
 .idea/
 *.sublime-project
 *.sublime-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+*~
 
-# OS files
+# ------------------------------------------
+# 8. AI Agent Workspaces & Scratchpad
+# ------------------------------------------
+.agents/
+.gemini/
+scratch/
+tmp/
+temp/
+.temp/
+
+# ------------------------------------------
+# 9. Test & Scratch Scripts
+# ------------------------------------------
+trace_*.js
+verify_*.js
+test_*.js
+temp_*.js
+
+# ------------------------------------------
+# 10. Operating System & System Files
+# ------------------------------------------
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
-*Data
-node_modules
+desktop.ini

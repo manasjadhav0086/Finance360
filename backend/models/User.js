@@ -8,6 +8,8 @@ class UserDocument {
     this.email = (data.email || '').toLowerCase().trim();
     this.name = data.name || '';
     this.role = data.role === 'admin' ? 'admin' : 'user';
+    this.status = ['active', 'pending_setup', 'disabled'].includes(data.status) ? data.status : 'active';
+    this.must_change_password = Boolean(data.must_change_password === 1 || data.must_change_password === true);
 
     this.business_groups = Array.isArray(data.business_groups)
       ? data.business_groups
@@ -21,6 +23,11 @@ class UserDocument {
           ? (() => { try { return JSON.parse(data.businesses); } catch { return []; } })()
           : []);
 
+    this.password_hash = data.password_hash || null;
+    this.temp_password_expires_at = data.temp_password_expires_at ? new Date(data.temp_password_expires_at) : null;
+    this.reset_token_hash = data.reset_token_hash || null;
+    this.reset_token_expires_at = data.reset_token_expires_at ? new Date(data.reset_token_expires_at) : null;
+
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
   }
@@ -32,6 +39,9 @@ class UserDocument {
       email: this.email,
       name: this.name,
       role: this.role,
+      status: this.status,
+      must_change_password: this.must_change_password,
+      temp_password_expires_at: this.temp_password_expires_at,
       business_groups: this.business_groups,
       businesses: this.businesses,
       createdAt: this.createdAt,
@@ -46,15 +56,25 @@ class UserDocument {
   async save() {
     this.updatedAt = new Date();
     await mysqlService.executeQuery(
-      `INSERT INTO users (_id, user_id, email, name, role, business_groups, businesses, createdAt, updatedAt)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO users (
+         _id, user_id, email, name, role, status, must_change_password,
+         business_groups, businesses, password_hash, temp_password_expires_at,
+         reset_token_hash, reset_token_expires_at, createdAt, updatedAt
+       )
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE
          user_id = VALUES(user_id),
          email = VALUES(email),
          name = VALUES(name),
          role = VALUES(role),
+         status = VALUES(status),
+         must_change_password = VALUES(must_change_password),
          business_groups = VALUES(business_groups),
          businesses = VALUES(businesses),
+         password_hash = VALUES(password_hash),
+         temp_password_expires_at = VALUES(temp_password_expires_at),
+         reset_token_hash = VALUES(reset_token_hash),
+         reset_token_expires_at = VALUES(reset_token_expires_at),
          updatedAt = VALUES(updatedAt)`,
       [
         this._id,
@@ -62,8 +82,14 @@ class UserDocument {
         this.email,
         this.name,
         this.role,
+        this.status,
+        this.must_change_password ? 1 : 0,
         JSON.stringify(this.business_groups || []),
         JSON.stringify(this.businesses || []),
+        this.password_hash,
+        this.temp_password_expires_at,
+        this.reset_token_hash,
+        this.reset_token_expires_at,
         this.createdAt,
         this.updatedAt,
       ]
@@ -117,22 +143,36 @@ export const User = {
       params.push(String(filter.user_id));
     }
 
-    if (filter.email) {
+    if (filter.email !== undefined && filter.email !== null) {
       // In case regex was passed, extract the raw string if possible or do exact match
       let emailStr = filter.email;
       if (typeof emailStr === 'object' && emailStr.source) {
         // extract string from RegExp e.g. ^foo$ -> foo
         emailStr = emailStr.source.replace(/^\^|\$$/g, '').replace(/\\/g, '');
       }
+      const cleanEmail = String(emailStr || '').toLowerCase().trim();
+      if (!cleanEmail) {
+        // Empty or whitespace-only email lookup should never match any user
+        return null;
+      }
       conditions.push('LOWER(email) = LOWER(?)');
-      params.push(String(emailStr).trim());
+      params.push(cleanEmail);
     }
 
-    if (conditions.length === 0) {
-      return null;
+    if (filter.role) {
+      conditions.push('role = ?');
+      params.push(String(filter.role));
     }
 
-    sql += conditions.join(' AND ') + ' LIMIT 1';
+    if (conditions.length > 0) {
+      sql += conditions.join(' AND ') + ' LIMIT 1';
+    } else {
+      // If a filter object was provided but produced no valid criteria, return null
+      if (filter && typeof filter === 'object' && Object.keys(filter).length > 0) {
+        return null;
+      }
+      sql = 'SELECT * FROM users LIMIT 1';
+    }
     const rows = await mysqlService.executeQuery(sql, params);
     if (!rows || rows.length === 0) return null;
     return new UserDocument(rows[0]);
@@ -184,9 +224,15 @@ export const User = {
     if (fields.name !== undefined) user.name = fields.name;
     if (fields.email !== undefined) user.email = fields.email.toLowerCase().trim();
     if (fields.role !== undefined) user.role = fields.role === 'admin' ? 'admin' : 'user';
+    if (fields.status !== undefined && ['active', 'pending_setup', 'disabled'].includes(fields.status)) user.status = fields.status;
+    if (fields.must_change_password !== undefined) user.must_change_password = Boolean(fields.must_change_password);
+    if (fields.temp_password_expires_at !== undefined) user.temp_password_expires_at = fields.temp_password_expires_at ? new Date(fields.temp_password_expires_at) : null;
     if (fields.user_id !== undefined) user.user_id = fields.user_id;
     if (fields.business_groups !== undefined) user.business_groups = fields.business_groups;
     if (fields.businesses !== undefined) user.businesses = fields.businesses;
+    if (fields.password_hash !== undefined) user.password_hash = fields.password_hash;
+    if (fields.reset_token_hash !== undefined) user.reset_token_hash = fields.reset_token_hash;
+    if (fields.reset_token_expires_at !== undefined) user.reset_token_expires_at = fields.reset_token_expires_at;
 
     await user.save();
     return user;
@@ -220,9 +266,15 @@ export const User = {
     if (fields.name !== undefined) user.name = fields.name;
     if (fields.email !== undefined) user.email = fields.email.toLowerCase().trim();
     if (fields.role !== undefined) user.role = fields.role === 'admin' ? 'admin' : 'user';
+    if (fields.status !== undefined && ['active', 'pending_setup', 'disabled'].includes(fields.status)) user.status = fields.status;
+    if (fields.must_change_password !== undefined) user.must_change_password = Boolean(fields.must_change_password);
+    if (fields.temp_password_expires_at !== undefined) user.temp_password_expires_at = fields.temp_password_expires_at ? new Date(fields.temp_password_expires_at) : null;
     if (fields.user_id !== undefined) user.user_id = fields.user_id;
     if (fields.business_groups !== undefined) user.business_groups = fields.business_groups;
     if (fields.businesses !== undefined) user.businesses = fields.businesses;
+    if (fields.password_hash !== undefined) user.password_hash = fields.password_hash;
+    if (fields.reset_token_hash !== undefined) user.reset_token_hash = fields.reset_token_hash;
+    if (fields.reset_token_expires_at !== undefined) user.reset_token_expires_at = fields.reset_token_expires_at;
     await user.save();
     return user;
   }

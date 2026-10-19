@@ -13,28 +13,80 @@ const router = express.Router();
 
 export const METRIC_ORDER = [
   'Order Intake', 'Revenue', 'Variable Cost', 'VC%', 'Throughput',
+  'Other Direct Cost', 'Total Direct Cost',
+  'Gross Profit', 'Gross Margin %', 'GM %',
+  'S&M Cost', 'Indirect Cost',
   'People Cost', 'Marketing Expenses', 'Fixed Costs', 'SG&A Cost', 'SG&A Cost %',
   'Premises', 'Travel', 'Telecom', 'Legal & Professional', 'Administration',
-  'PICA', 'Corp Allocation', 'Total Opex', 'EBITDA Contribution',
+  'PICA', 'Corp Allocation', 'Total Operating Expenses', 'Total Opex', 'EBITDA Contribution',
   'EBITDA Contribution %', 'IPR Creation', 'EBITDA', 'EBITDA %', 'OM %',
-  'Gross Profit', 'Gross Margin %', 'GM %', 'Headcount', 'Sales Headcount', 'Learners Count',
-  'Collection', 'Capex', 'Net Cash'
+  'Gross Profit', 'Gross Margin %', 'GM %',
+  'Collection', 'Capex', 'Net Cash',
+  'People_Dir', 'Marketing Expenses_Dir', 'Premises_Dir', 'Travel_Dir', 'Telecom_Dir', 'Legal & Professional_Dir',
+  'People_S&M', 'Marketing Expenses_S&M', 'Premises_S&M', 'Travel_S&M', 'Telecom_S&M', 'Legal & Professional - S&M',
+  'People_Indirect', 'Marketing Expenses_Ind', 'Travel_Indirect', 'Premises_Indirect', 'Telecom_Ind', 'Legal & Professional - Ind'
 ];
 
 export const METRIC_TYPES = {
   'Order Intake': 'Amount', 'Revenue': 'Amount', 'Variable Cost': 'Amount',
-  'VC%': 'Percentage', 'Throughput': 'Amount', 'People Cost': 'Amount',
-  'Marketing Expenses': 'Amount', 'Fixed Costs': 'Amount', 'SG&A Cost': 'Amount',
-  'SG&A Cost %': 'Percentage', 'Premises': 'Amount',
-  'Travel': 'Amount', 'Telecom': 'Amount', 'Legal & Professional': 'Amount',
-  'Administration': 'Amount', 'PICA': 'Amount', 'Corp Allocation': 'Amount',
-  'Total Opex': 'Amount', 'EBITDA Contribution': 'Amount',
-  'EBITDA Contribution %': 'Percentage', 'IPR Creation': 'Amount',
-  'EBITDA': 'Amount', 'EBITDA %': 'Percentage', 'OM %': 'Percentage',
-  'Gross Profit': 'Amount', 'Gross Margin %': 'Percentage', 'GM %': 'Percentage',
-  'Headcount': 'Amount', 'Sales Headcount': 'Amount', 'Learners Count': 'Amount', 'Collection': 'Amount',
-  'Capex': 'Amount', 'Net Cash': 'Amount'
+  'VC%': 'Percentage', 'Throughput': 'Amount',
+  'Other Direct Cost': 'Amount', 'Total Direct Cost': 'Amount',
+  'Gross Profit': 'Amount', 'Gross Margin %': 'Percentage', 'GM %': 'Percentage', 'GP %': 'Percentage',
+  'S&M Cost': 'Amount', 'Indirect Cost': 'Amount',
+  'People Cost': 'Amount', 'Marketing Expenses': 'Amount', 'Fixed Costs': 'Amount', 'Fixed Cost': 'Amount',
+  'SG&A Cost': 'Amount', 'SG&A Cost %': 'Percentage', 'SG&A %': 'Percentage',
+  'Premises': 'Amount', 'Premise Expenses': 'Amount',
+  'Travel': 'Amount', 'Travel Expenses': 'Amount',
+  'Telecom': 'Amount', 'Telecom Expenses': 'Amount',
+  'Legal & Professional': 'Amount', 'Administration': 'Amount',
+  'PICA': 'Amount', 'Corp Allocation': 'Amount',
+  'Total Operating Expenses': 'Amount', 'Total Opex': 'Amount',
+  'EBITDA Contribution': 'Amount', 'EBITDA Contribution %': 'Percentage',
+  'IPR Creation': 'Amount', 'IPR': 'Amount',
+  'EBITDA': 'Amount', 'EBITDA %': 'Percentage', 'OM %': 'Percentage', 'OM%': 'Percentage',
+  'Collection': 'Amount', 'Capex': 'Amount', 'Net Cash': 'Amount',
+  'People_Dir': 'Amount', 'Marketing Expenses_Dir': 'Amount', 'Premises_Dir': 'Amount', 'Travel_Dir': 'Amount', 'Telecom_Dir': 'Amount', 'Legal & Professional_Dir': 'Amount',
+  'People_S&M': 'Amount', 'Marketing Expenses_S&M': 'Amount', 'Premises_S&M': 'Amount', 'Travel_S&M': 'Amount', 'Telecom_S&M': 'Amount', 'Legal & Professional - S&M': 'Amount',
+  'People_Indirect': 'Amount', 'Marketing Expenses_Ind': 'Amount', 'Travel_Indirect': 'Amount', 'Premises_Indirect': 'Amount', 'Telecom_Ind': 'Amount', 'Legal & Professional - Ind': 'Amount'
 };
+
+/**
+ * Standardized Cost Classification Rule Engine
+ * Classifies SG&A Base into Other Direct Cost, S&M Cost, or Indirect Cost using suffix matching.
+ */
+export function classifySgaBase(rawSgaBase) {
+  if (!rawSgaBase) return null;
+  const trimmed = String(rawSgaBase).trim();
+
+  // 1. Other Direct Cost: _dir, _direct, - dir (case-insensitive, optional spaces around hyphen)
+  if (/_dir$/i.test(trimmed) || /_direct$/i.test(trimmed) || /\s*-\s*dir$/i.test(trimmed)) {
+    return 'Other Direct Cost';
+  }
+
+  // 2. S&M Cost: _s&m, __s&m, - s&m (case-insensitive, optional spaces around hyphen)
+  if (/__s&m$/i.test(trimmed) || /_s&m$/i.test(trimmed) || /\s*-\s*s&m$/i.test(trimmed)) {
+    return 'S&M Cost';
+  }
+
+  // 3. Indirect Cost: _ind, _indirect, - ind (case-insensitive, optional spaces around hyphen)
+  if (/_ind$/i.test(trimmed) || /_indirect$/i.test(trimmed) || /\s*-\s*ind$/i.test(trimmed)) {
+    return 'Indirect Cost';
+  }
+
+  return null;
+}
+
+/**
+ * Derives base-category label by stripping matched suffixes.
+ */
+export function deriveBaseCategoryLabel(rawSgaBase) {
+  if (!rawSgaBase) return '';
+  let s = String(rawSgaBase).trim();
+  s = s.replace(/(_dir|_direct|\s*-\s*dir)$/i, '');
+  s = s.replace(/(__s&m|_s&m|\s*-\s*s&m)$/i, '');
+  s = s.replace(/(_ind|_indirect|\s*-\s*ind)$/i, '');
+  return s.trim();
+}
 
 const MONTH_TO_QTR = {
   'Apr': 'Q1', 'April': 'Q1', 'May': 'Q1', 'Jun': 'Q1', 'June': 'Q1',
@@ -45,7 +97,7 @@ const MONTH_TO_QTR = {
 
 async function fetchBusinessMappingRecords() {
   const bmQuery = `
-    SELECT DISTINCT Segment, Biz1, Segment_N, Biz1_N 
+    SELECT DISTINCT Segment, Biz1
     FROM dataai
     WHERE Segment IS NOT NULL AND Biz1 IS NOT NULL
   `;
@@ -53,26 +105,28 @@ async function fetchBusinessMappingRecords() {
   const businessMappingRecords = [];
 
   for (const bmr of bmRaw || []) {
-    const s_n = String(bmr.Segment_N || bmr.segment_n || '').trim();
-    const s_old = String(bmr.Segment || bmr.segment || '').trim();
-    const b_n = String(bmr.Biz1_N || bmr.biz1_n || '').trim();
-    const b_old = String(bmr.Biz1 || bmr.biz1 || '').trim();
+    const s = String(bmr.Segment || bmr.segment || '').trim();
+    const b = String(bmr.Biz1 || bmr.biz1 || '').trim();
 
-    const s_effective = s_n || s_old;
-    const b_effective = b_n || b_old;
-    if (s_effective && b_effective) {
+    if (s && b) {
       businessMappingRecords.push({
-        segment_n: s_n || s_effective,
-        segment: s_old || s_effective,
-        biz1_n: b_n || b_effective,
-        biz1: b_old || b_effective
+        segment: s,
+        biz1: b,
+        segment_n: s,
+        biz1_n: b
       });
     }
   }
   return businessMappingRecords;
 }
 
-async function fetchAndNormalize(options = {}) {
+let cachedMonthlyPnlRaw = null;
+let cachedCapexRaw = null;
+let cachedCollRaw = null;
+let cachedOiRaw = null;
+let lastMonthlyCacheTime = 0;
+
+export async function fetchAndNormalize(options = {}) {
   const {
     fy = null,
     quarter = null,
@@ -124,37 +178,38 @@ async function fetchAndNormalize(options = {}) {
   }
 
   if (quarter && !['Total', 'ALL'].includes(quarter)) {
-    const cleanQ = quarter.trim();
-    whereClauses.push("SUBSTRING_INDEX(`QuarterFY`, ' ', 1) = ?");
-    queryParams.push(cleanQ);
+    const qParts = String(quarter).split(/[+,\s]+/).map(s => s.trim()).filter(Boolean);
+    if (qParts.length === 1) {
+      whereClauses.push("SUBSTRING_INDEX(`QuarterFY`, ' ', 1) = ?");
+      queryParams.push(qParts[0]);
+    } else if (qParts.length > 1) {
+      whereClauses.push(`SUBSTRING_INDEX(\`QuarterFY\`, ' ', 1) IN (${qParts.map(() => '?').join(', ')})`);
+      queryParams.push(...qParts);
+    }
   }
 
   if (segment && segment.toUpperCase() !== 'ALL') {
     const cleanSeg = segment.trim();
     const matchingBus = new Set();
     for (const bmr of bmRecords || []) {
-      if (
-        (bmr.segment_n || '').toLowerCase() === cleanSeg.toLowerCase() ||
-        (bmr.segment || '').toLowerCase() === cleanSeg.toLowerCase()
-      ) {
-        if (bmr.biz1_n) matchingBus.add(bmr.biz1_n);
+      if ((bmr.segment || '').toLowerCase() === cleanSeg.toLowerCase()) {
         if (bmr.biz1) matchingBus.add(bmr.biz1);
       }
     }
 
     if (matchingBus.size > 0) {
-      whereClauses.push('(`Segment` = ? OR `Segment_N` = ? OR `Biz1` IN (?))');
-      queryParams.push(cleanSeg, cleanSeg, Array.from(matchingBus));
+      whereClauses.push('(`Segment` = ? OR `Biz1` IN (?))');
+      queryParams.push(cleanSeg, Array.from(matchingBus));
     } else {
-      whereClauses.push('(`Segment` = ? OR `Segment_N` = ?)');
-      queryParams.push(cleanSeg, cleanSeg);
+      whereClauses.push('`Segment` = ?');
+      queryParams.push(cleanSeg);
     }
   }
 
   if (biz1 && biz1.toUpperCase() !== 'ALL') {
     const cleanBu = biz1.trim();
-    whereClauses.push('(`Biz1` = ? OR `Biz1_N` = ?)');
-    queryParams.push(cleanBu, cleanBu);
+    whereClauses.push('`Biz1` = ?');
+    queryParams.push(cleanBu);
   }
 
   const whereSql = whereClauses.length > 0 ? whereClauses.join(' AND ') : '1=1';
@@ -166,43 +221,67 @@ async function fetchAndNormalize(options = {}) {
       Biz1 AS biz,
       Segment AS segment,
       \`SG&A\` AS metric,
+      \`SG&A Base\` AS sga_base,
       'Amount' AS metric_type,
       ROUND(SUM(CASE WHEN Nature = 'Actuals' THEN Mn ELSE 0 END), 4) AS act_val,
       ROUND(SUM(CASE WHEN Nature = 'Budget' THEN Mn ELSE 0 END), 4) AS bud_val
     FROM dataai
     WHERE ${whereSql}
-    GROUP BY FYs, SUBSTRING_INDEX(QuarterFY, ' ', 1), Biz1, Segment, \`SG&A\`
+    GROUP BY FYs, SUBSTRING_INDEX(QuarterFY, ' ', 1), Biz1, Segment, \`SG&A\`, \`SG&A Base\`
   `;
 
   const monthlyPnlQuery = `
     SELECT
       FYs AS fy,
-      DATE_FORMAT(\`Posting Date\`, '%b') AS month,
+      SUBSTRING(\`Posting Date\`, 4, 2) AS month,
       Biz1 AS biz,
       Segment AS segment,
       \`SG&A\` AS metric,
+      \`SG&A Base\` AS sga_base,
       ROUND(SUM(CASE WHEN Nature = 'Actuals' THEN Mn ELSE 0 END), 4) AS act_val,
       ROUND(SUM(CASE WHEN Nature = 'Budget' THEN Mn ELSE 0 END), 4) AS bud_val
     FROM dataai
-    GROUP BY FYs, DATE_FORMAT(\`Posting Date\`, '%b'), Biz1, Segment, \`SG&A\`
+    WHERE FYs IS NOT NULL AND \`SG&A\` IS NOT NULL AND \`Posting Date\` IS NOT NULL
+    GROUP BY FYs, SUBSTRING(\`Posting Date\`, 4, 2), Biz1, Segment, \`SG&A\`, \`SG&A Base\`
   `;
 
-  const [rawResult, heatmapRaw, capexRaw, collRaw, oiRaw] = await Promise.all([
-    mysqlService.executeQuery(mainPnlQuery, queryParams),
-    mysqlService.executeQuery(monthlyPnlQuery),
-    mysqlService.executeQuery(`
-      SELECT Year as fy, Month as month, Biz1 as biz, Segment as segment, Nature, ROUND(Amount, 4) as Amount
-      FROM capex
-    `),
-    mysqlService.executeQuery(`
-      SELECT Year as fy, Month as month, Biz1 as biz, Segment as segment, Nature, ROUND(Amount, 4) as Amount
-      FROM collection
-    `),
-    mysqlService.executeQuery(`
-      SELECT Year as fy, Month as month, Biz1 as biz, Segment as segment, Nature, ROUND(Amount, 4) as Amount
-      FROM order_intake
-    `),
-  ]);
+  // Fetch or retrieve from in-memory cache
+  const forceRefresh = Boolean(options.force_refresh);
+  const now = Date.now();
+  const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+  let rawResult, heatmapRaw, capexRaw, collRaw, oiRaw;
+
+  if (forceRefresh || !cachedMonthlyPnlRaw || (now - lastMonthlyCacheTime > CACHE_TTL_MS)) {
+    [rawResult, heatmapRaw, capexRaw, collRaw, oiRaw] = await Promise.all([
+      mysqlService.executeQuery(mainPnlQuery, queryParams),
+      mysqlService.executeQuery(monthlyPnlQuery),
+      mysqlService.executeQuery(`
+        SELECT Year as fy, Month as month, Biz1 as biz, Segment as segment, Nature, ROUND(Amount, 4) as Amount
+        FROM capex
+      `),
+      mysqlService.executeQuery(`
+        SELECT Year as fy, Month as month, Biz1 as biz, Segment as segment, Nature, ROUND(Amount, 4) as Amount
+        FROM collection
+      `),
+      mysqlService.executeQuery(`
+        SELECT Year as fy, Month as month, Biz1 as biz, Segment as segment, Nature, ROUND(Amount, 4) as Amount
+        FROM order_intake
+      `),
+    ]);
+
+    cachedMonthlyPnlRaw = heatmapRaw;
+    cachedCapexRaw = capexRaw;
+    cachedCollRaw = collRaw;
+    cachedOiRaw = oiRaw;
+    lastMonthlyCacheTime = now;
+  } else {
+    rawResult = await mysqlService.executeQuery(mainPnlQuery, queryParams);
+    heatmapRaw = cachedMonthlyPnlRaw;
+    capexRaw = cachedCapexRaw;
+    collRaw = cachedCollRaw;
+    oiRaw = cachedOiRaw;
+  }
 
   const isRowAllowed = (rSeg, rBiz) => {
     if (userScope.isUnrestricted) return true;
@@ -246,27 +325,14 @@ async function fetchAndNormalize(options = {}) {
   const buAccum = new Map();
 
   for (const bmr of bmRecords || []) {
-    const sEffective = bmr.segment_n || bmr.segment;
-    const bEffective = bmr.biz1_n || bmr.biz1;
+    const s = bmr.segment;
+    const b = bmr.biz1;
 
-    buSegmentMap[bEffective] = sEffective;
-    if (bmr.biz1) {
-      buSegmentMap[bmr.biz1] = sEffective;
-      if (bmr.biz1_n) buBiz1NMap[bmr.biz1] = bmr.biz1_n;
+    if (b && s) {
+      buSegmentMap[b] = s;
+      bizUnitsSet.add(b);
+      segmentsSet.add(s);
     }
-    if (bmr.biz1_n) {
-      buSegmentMap[bmr.biz1_n] = sEffective;
-      buBiz1NMap[bmr.biz1_n] = bmr.biz1_n;
-      bizUnitsSet.add(bmr.biz1_n);
-    }
-    if (bmr.biz1) {
-      bizUnitsSet.add(bmr.biz1);
-    }
-    if (bmr.segment && bmr.segment_n) {
-      segSegmentNMap[bmr.segment] = bmr.segment_n;
-    }
-    if (bmr.segment_n) segmentsSet.add(bmr.segment_n);
-    if (bmr.segment) segmentsSet.add(bmr.segment);
   }
 
   const businessMappingRecords = bmRecords || [];
@@ -338,8 +404,20 @@ async function fetchAndNormalize(options = {}) {
     const biz = r.biz;
     const seg = r.segment;
     const metric = r.metric;
+    const sgaBase = r.sga_base;
 
     recordQuarterlyMetric(rowFy, q, biz, seg, metric, r.act_val, r.bud_val);
+
+    // Record the specific SG&A Base item (e.g. People_Dir, Legal & Professional - S&M, etc.)
+    if (sgaBase && sgaBase !== metric) {
+      recordQuarterlyMetric(rowFy, q, biz, seg, sgaBase, r.act_val, r.bud_val);
+    }
+
+    // Classify into Other Direct Cost, S&M Cost, Indirect Cost
+    const bucket = classifySgaBase(sgaBase);
+    if (bucket) {
+      recordQuarterlyMetric(rowFy, q, biz, seg, bucket, r.act_val, r.bud_val);
+    }
 
     // Provide standard metric aliases for UI consistency
     if (metric === 'Premise Expenses') {
@@ -474,6 +552,13 @@ async function fetchAndNormalize(options = {}) {
   // 1. Process Monthly P&L rows
   for (const r of heatmapRows || []) {
     addMonthlyRecord(r.fy, r.month, r.biz, r.segment, r.metric, r.act_val, r.bud_val);
+    if (r.sga_base && r.sga_base !== r.metric) {
+      addMonthlyRecord(r.fy, r.month, r.biz, r.segment, r.sga_base, r.act_val, r.bud_val);
+    }
+    const bucket = classifySgaBase(r.sga_base);
+    if (bucket) {
+      addMonthlyRecord(r.fy, r.month, r.biz, r.segment, bucket, r.act_val, r.bud_val);
+    }
     if (r.metric === 'Premise Expenses') {
       addMonthlyRecord(r.fy, r.month, r.biz, r.segment, 'Premises', r.act_val, r.bud_val);
     } else if (r.metric === 'Travel Expenses') {
@@ -511,63 +596,82 @@ async function fetchAndNormalize(options = {}) {
     if (node['Telecom'] === undefined && node['Telecom Expenses'] !== undefined) node['Telecom'] = node['Telecom Expenses'];
     if (node['IPR Creation'] === undefined && node['IPR'] !== undefined) node['IPR Creation'] = node['IPR'];
 
-    const fcSum = (node['Premises'] || node['Premise Expenses'] || 0.0)
-      + (node['Travel'] || node['Travel Expenses'] || 0.0)
-      + (node['Telecom'] || node['Telecom Expenses'] || 0.0)
+    const fcSum = (node['Premises'] || 0.0)
+      + (node['Travel'] || 0.0)
+      + (node['Telecom'] || 0.0)
       + (node['Legal & Professional'] || 0.0)
       + (node['Administration'] || 0.0);
 
-    if (node['Fixed Costs'] === undefined || node['Fixed Costs'] === 0) {
-      node['Fixed Costs'] = Number(fcSum.toFixed(4));
+    if (node['Fixed Cost'] !== undefined && node['Fixed Costs'] === undefined) {
+      node['Fixed Costs'] = node['Fixed Cost'];
+    } else if (node['Fixed Costs'] !== undefined && node['Fixed Cost'] === undefined) {
       node['Fixed Cost'] = node['Fixed Costs'];
+    } else if (fcSum > 0 && (node['Fixed Costs'] === undefined || node['Fixed Costs'] === 0)) {
+      node['Fixed Costs'] = Number(fcSum.toFixed(4));
+      node['Fixed Cost'] = Number(fcSum.toFixed(4));
     }
 
-    const people = node['People Cost'] || 0.0;
-    const mktg = node['Marketing Expenses'] || 0.0;
+    const rev = node['Revenue'] || 0.0;
+    const vc = node['Variable Cost'] || 0.0;
+    const otherDir = node['Other Direct Cost'] || 0.0;
+    const totalDirectCost = vc + otherDir;
+    const throughput = rev - vc;
+    const gp = rev - totalDirectCost;
+
+    node['Throughput'] = Number(throughput.toFixed(4));
+    node['Other Direct Cost'] = Number(otherDir.toFixed(4));
+    node['other_direct_cost'] = node['Other Direct Cost'];
+    node['Total Direct Cost'] = Number(totalDirectCost.toFixed(4));
+    node['total_direct_cost'] = node['Total Direct Cost'];
+    node['Gross Profit'] = Number(gp.toFixed(4));
+
+    const smCost = node['S&M Cost'] || 0.0;
+    const indCost = node['Indirect Cost'] || 0.0;
+    node['sm_cost'] = Number(smCost.toFixed(4));
+    node['indirect_cost'] = Number(indCost.toFixed(4));
+    const admin = node['Administration'] || 0.0;
     const pica = node['PICA'] || 0.0;
     const corpAlloc = node['Corp Allocation'] || 0.0;
+    const ipr = node['IPR Creation'] || 0.0;
+
+    const people = node['People Cost'] || ((node['People_Dir'] || 0.0) + (node['People_S&M'] || 0.0) + (node['People_Indirect'] || 0.0));
+    const mktg = node['Marketing Expenses'] || ((node['Marketing Expenses_Dir'] || 0.0) + (node['Marketing Expenses_S&M'] || 0.0) + (node['Marketing Expenses_Ind'] || 0.0));
     const fixedCosts = node['Fixed Costs'] || fcSum;
 
+    const totalOperatingExpenses = smCost + indCost + admin + pica + corpAlloc;
+    node['Total Operating Expenses'] = Number(totalOperatingExpenses.toFixed(4));
+
     const totalOpexCalc = people + mktg + fixedCosts + pica + corpAlloc;
-    if (node['Total Opex'] === undefined || node['Total Opex'] === 0) {
-      node['Total Opex'] = Number(totalOpexCalc.toFixed(4));
-      node['SG&A Cost'] = node['Total Opex'];
-      node['Total Operating Expenses'] = node['Total Opex'];
-    }
+    node['Total Opex'] = Number(totalOpexCalc.toFixed(4));
+    node['SG&A Cost'] = node['Total Operating Expenses'];
 
-    const rev = node['Revenue'] || 0;
-    const vc = node['Variable Cost'] || 0;
-    let gp = node['Gross Profit'] !== undefined ? node['Gross Profit'] : (rev - vc);
-    node['Gross Profit'] = Number(gp.toFixed(4));
-    node['Throughput'] = Number((rev - vc).toFixed(4));
+    const ebitdaContrib = gp - smCost;
+    node['EBITDA Contribution'] = Number(ebitdaContrib.toFixed(4));
 
-    if (node['EBITDA'] === undefined || node['EBITDA'] === 0) {
-      node['EBITDA'] = Number((gp - (node['Total Opex'] || totalOpexCalc)).toFixed(4));
-    }
-    if (node['EBITDA Contribution'] === undefined || node['EBITDA Contribution'] === 0) {
-      node['EBITDA Contribution'] = Number((gp - mktg).toFixed(4));
-    }
+    const ebitda = gp - totalOperatingExpenses + ipr;
+    node['EBITDA'] = Number(ebitda.toFixed(4));
 
     if (node['Collection'] !== undefined && node['Total Opex'] !== undefined) {
       node['Net Cash'] = Number(((node['Collection'] || 0) - (node['Total Opex'] || 0) - (node['Capex'] || 0)).toFixed(4));
     }
 
-    if (rev > 0) {
+    if (rev && Math.abs(rev) > 0.0001) {
       node['VC%'] = Number(((vc / rev) * 100).toFixed(4));
       node['Gross Margin %'] = Number(((gp / rev) * 100).toFixed(4));
       node['GM %'] = node['Gross Margin %'];
       node['GM%'] = node['Gross Margin %'];
-      if (node['SG&A Cost'] !== undefined) {
-        node['SG&A Cost %'] = Number(((node['SG&A Cost'] / rev) * 100).toFixed(4));
-        node['SG&A %'] = node['SG&A Cost %'];
+      node['GP %'] = node['Gross Margin %'];
+      node['SG&A Cost %'] = Number(((node['SG&A Cost'] / rev) * 100).toFixed(4));
+      node['SG&A %'] = node['SG&A Cost %'];
+      node['EBITDA Contribution %'] = Number(((ebitdaContrib / rev) * 100).toFixed(4));
+      node['EBITDA %'] = Number(((ebitda / rev) * 100).toFixed(4));
+      node['OM %'] = node['EBITDA %'];
+      node['OM%'] = node['EBITDA %'];
+      if (node['Order Intake'] !== undefined) {
+        node['Book-to-Bill'] = Number((node['Order Intake'] / rev).toFixed(2));
       }
-      if (node['EBITDA Contribution'] !== undefined) {
-        node['EBITDA Contribution %'] = Number(((node['EBITDA Contribution'] / rev) * 100).toFixed(4));
-      }
-      if (node['EBITDA'] !== undefined) {
-        node['EBITDA %'] = Number(((node['EBITDA'] / rev) * 100).toFixed(4));
-        node['OM %'] = node['EBITDA %'];
-        node['OM%'] = node['EBITDA %'];
+      if (Math.abs(node['Gross Margin %']) > 0.0001) {
+        node['Operating Leverage Index'] = Number(((node['EBITDA %'] / node['Gross Margin %']) * 100).toFixed(4));
       }
     }
   }
@@ -624,9 +728,9 @@ async function fetchAndNormalize(options = {}) {
     if (node['Telecom'] === undefined && node['Telecom Expenses'] !== undefined) node['Telecom'] = node['Telecom Expenses'];
     if (node['IPR Creation'] === undefined && node['IPR'] !== undefined) node['IPR Creation'] = node['IPR'];
 
-    const fcSum = (node['Premises'] || node['Premise Expenses'] || 0.0)
-      + (node['Travel'] || node['Travel Expenses'] || 0.0)
-      + (node['Telecom'] || node['Telecom Expenses'] || 0.0)
+    const fcSum = (node['Premises'] || 0.0)
+      + (node['Travel'] || 0.0)
+      + (node['Telecom'] || 0.0)
       + (node['Legal & Professional'] || 0.0)
       + (node['Administration'] || 0.0);
 
@@ -639,54 +743,67 @@ async function fetchAndNormalize(options = {}) {
       node['Fixed Cost'] = Number(fcSum.toFixed(4));
     }
 
-    const people = node['People Cost'] || (node['People_Dir'] || 0.0) + (node['People_S&M'] || 0.0) + (node['People_Indirect'] || 0.0);
-    const mktg = node['Marketing Expenses'] || (node['Marketing Expenses_Dir'] || 0.0) + (node['Marketing Expenses_S&M'] || 0.0) + (node['Marketing Expenses_Ind'] || 0.0);
-    const pica = node['PICA'] || 0.0;
-    const corpAlloc = node['Corp Allocation'] || 0.0;
-    const fixedCosts = node['Fixed Costs'] || fcSum;
-
-    const totalOpexCalc = people + mktg + fixedCosts + pica + corpAlloc;
-    if (node['Total Opex'] === undefined || node['Total Opex'] === 0) {
-      node['Total Opex'] = Number(totalOpexCalc.toFixed(4));
-      node['Total Operating Expenses'] = node['Total Opex'];
-      node['SG&A Cost'] = node['Total Opex'];
-    }
-
     const rev = node['Revenue'] || 0.0;
     const vc = node['Variable Cost'] || 0.0;
-    const gp = node['Gross Profit'] !== undefined ? node['Gross Profit'] : (rev - vc);
-    node['Gross Profit'] = Number(gp.toFixed(4));
-    node['Throughput'] = Number((rev - vc).toFixed(4));
+    const otherDir = node['Other Direct Cost'] || 0.0;
+    const totalDirectCost = vc + otherDir;
+    const throughput = rev - vc;
+    const gp = rev - totalDirectCost;
 
-    if (node['EBITDA'] === undefined || node['EBITDA'] === 0) {
-      node['EBITDA'] = Number((gp - (node['Total Opex'] || totalOpexCalc)).toFixed(4));
-    }
-    if (node['EBITDA Contribution'] === undefined || node['EBITDA Contribution'] === 0) {
-      node['EBITDA Contribution'] = Number((gp - mktg).toFixed(4));
-    }
+    node['Throughput'] = Number(throughput.toFixed(4));
+    node['Other Direct Cost'] = Number(otherDir.toFixed(4));
+    node['other_direct_cost'] = node['Other Direct Cost'];
+    node['Total Direct Cost'] = Number(totalDirectCost.toFixed(4));
+    node['total_direct_cost'] = node['Total Direct Cost'];
+    node['Gross Profit'] = Number(gp.toFixed(4));
+
+    const smCost = node['S&M Cost'] || 0.0;
+    const indCost = node['Indirect Cost'] || 0.0;
+    node['sm_cost'] = Number(smCost.toFixed(4));
+    node['indirect_cost'] = Number(indCost.toFixed(4));
+    const admin = node['Administration'] || 0.0;
+    const pica = node['PICA'] || 0.0;
+    const corpAlloc = node['Corp Allocation'] || 0.0;
+    const ipr = node['IPR Creation'] || 0.0;
+
+    const people = node['People Cost'] || ((node['People_Dir'] || 0.0) + (node['People_S&M'] || 0.0) + (node['People_Indirect'] || 0.0));
+    const mktg = node['Marketing Expenses'] || ((node['Marketing Expenses_Dir'] || 0.0) + (node['Marketing Expenses_S&M'] || 0.0) + (node['Marketing Expenses_Ind'] || 0.0));
+    const fixedCosts = node['Fixed Costs'] || fcSum;
+
+    const totalOperatingExpenses = smCost + indCost + admin + pica + corpAlloc;
+    node['Total Operating Expenses'] = Number(totalOperatingExpenses.toFixed(4));
+
+    const totalOpexCalc = people + mktg + fixedCosts + pica + corpAlloc;
+    node['Total Opex'] = Number(totalOpexCalc.toFixed(4));
+    node['SG&A Cost'] = node['Total Operating Expenses'];
+
+    const ebitdaContrib = gp - smCost;
+    node['EBITDA Contribution'] = Number(ebitdaContrib.toFixed(4));
+
+    const ebitda = gp - totalOperatingExpenses + ipr;
+    node['EBITDA'] = Number(ebitda.toFixed(4));
 
     if (node['Collection'] !== undefined && node['Total Opex'] !== undefined) {
       node['Net Cash'] = Number(((node['Collection'] || 0) - (node['Total Opex'] || 0) - (node['Capex'] || 0)).toFixed(4));
     }
 
     if (rev && Math.abs(rev) > 0.0001) {
-      if (node['Variable Cost'] !== undefined) {
-        node['VC%'] = Number(((node['Variable Cost'] / rev) * 100).toFixed(4));
-      }
+      node['VC%'] = Number(((vc / rev) * 100).toFixed(4));
       node['Gross Margin %'] = Number(((gp / rev) * 100).toFixed(4));
       node['GM %'] = node['Gross Margin %'];
       node['GM%'] = node['Gross Margin %'];
-      if (node['SG&A Cost'] !== undefined) {
-        node['SG&A Cost %'] = Number(((node['SG&A Cost'] / rev) * 100).toFixed(4));
-        node['SG&A %'] = node['SG&A Cost %'];
+      node['GP %'] = node['Gross Margin %'];
+      node['SG&A Cost %'] = Number(((node['SG&A Cost'] / rev) * 100).toFixed(4));
+      node['SG&A %'] = node['SG&A Cost %'];
+      node['EBITDA Contribution %'] = Number(((ebitdaContrib / rev) * 100).toFixed(4));
+      node['EBITDA %'] = Number(((ebitda / rev) * 100).toFixed(4));
+      node['OM %'] = node['EBITDA %'];
+      node['OM%'] = node['EBITDA %'];
+      if (node['Order Intake'] !== undefined) {
+        node['Book-to-Bill'] = Number((node['Order Intake'] / rev).toFixed(2));
       }
-      if (node['EBITDA'] !== undefined) {
-        node['EBITDA %'] = Number(((node['EBITDA'] / rev) * 100).toFixed(4));
-        node['OM %'] = node['EBITDA %'];
-        node['OM%'] = node['EBITDA %'];
-      }
-      if (node['EBITDA Contribution'] !== undefined) {
-        node['EBITDA Contribution %'] = Number(((node['EBITDA Contribution'] / rev) * 100).toFixed(4));
+      if (Math.abs(node['Gross Margin %']) > 0.0001) {
+        node['Operating Leverage Index'] = Number(((node['EBITDA %'] / node['Gross Margin %']) * 100).toFixed(4));
       }
     }
   }
@@ -723,15 +840,7 @@ async function fetchAndNormalize(options = {}) {
           }
 
           for (const m of allMetrics) {
-            if (m === 'Headcount' || m === 'Sales Headcount') {
-              for (let qi = availQs.length - 1; qi >= 0; qi--) {
-                const lq = availQs[qi];
-                if (qNodes[lq][m] !== undefined && qNodes[lq][m] !== null) {
-                  totNode[m] = qNodes[lq][m];
-                  break;
-                }
-              }
-            } else if (METRIC_TYPES[m] === 'Percentage') {
+            if (METRIC_TYPES[m] === 'Percentage') {
               continue;
             } else {
               let sumVal = 0.0;
@@ -809,7 +918,7 @@ async function fetchAndNormalize(options = {}) {
 router.get('/', verifyUser, async (req, res) => {
   try {
     const startTime = performance.now();
-    const { fy = null, quarter = null, segment = null, bu = null } = req.query;
+    const { fy = null, quarter = null, segment = null, bu = null, force_refresh = null } = req.query;
 
     const data = await fetchAndNormalize({
       fy,
@@ -817,6 +926,7 @@ router.get('/', verifyUser, async (req, res) => {
       segment,
       biz1: bu,
       user: req.dbUser,
+      force_refresh: force_refresh === 'true' || force_refresh === true,
     });
 
     const elapsedMs = Math.round((performance.now() - startTime) * 100) / 100;

@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
+const JWT_SECRET = process.env.JWT_SECRET || 'finance360-jwt-secret-key-production-ready-2025';
 const AUTH_CACHE = new Map();
 
 export function clearAuthCache(targetIdOrEmail) {
@@ -24,7 +25,7 @@ export function clearAuthCache(targetIdOrEmail) {
 
 /**
  * Enterprise Standalone Authentication & RBAC Middleware
- * Independent MySQL-backed authentication for zero-cost operation.
+ * Independent MySQL-backed authentication verifying signed JWT tokens.
  */
 export const verifyUser = async (req, res, next) => {
   let token = null;
@@ -36,51 +37,62 @@ export const verifyUser = async (req, res, next) => {
     token = req.query.token;
   }
 
+  if (!token) {
+    return res.status(401).json({ error: 'Authentication required. Please log in.' });
+  }
+
   try {
-    // 1. Try to find an existing user from the database
-    let user = await User.findOne({ role: 'admin' });
-    if (!user) {
-      user = await User.findOne({});
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (!decoded || (!decoded.email && !decoded.id)) {
+      return res.status(401).json({ error: 'Invalid authentication token.' });
     }
 
-    // 2. If no user exists yet in MySQL, initialize standard Finance360 administrator
-    if (!user) {
-      user = {
-        _id: 'usr_admin',
-        user_id: 'usr_admin',
-        email: 'admin@finance360.internal',
-        name: 'Finance360 Administrator',
-        role: 'admin',
-        business_groups: [],
-        businesses: [],
-      };
+    const email = decoded.email ? decoded.email.toLowerCase().trim() : null;
+    let user = null;
+
+    if (decoded.id) {
+      user = await User.findById(decoded.id);
+    }
+    if (!user && email) {
+      user = await User.findOne({ email });
     }
 
-    // 3. If token is a custom JWT with email/sub claim, sync user
-    if (token && token !== 'local-finance360-token') {
-      try {
-        const decoded = jwt.decode(token);
-        if (decoded && decoded.email) {
-          const email = decoded.email.toLowerCase().trim();
-          const dbUser = await User.findOne({ email });
-          if (dbUser) {
-            user = dbUser;
-          }
-        }
-      } catch {
-        // Fallback to default user
-      }
+    if (!user) {
+      return res.status(401).json({ error: 'User account not found or access revoked.' });
+    }
+
+    // 1. Enforce account status
+    if (user.status === 'disabled') {
+      return res.status(403).json({
+        error: 'Your user account has been disabled. Please contact an administrator.',
+        code: 'ACCOUNT_DISABLED',
+      });
     }
 
     req.user = typeof user.toObject === 'function' ? user.toObject() : user;
-    req.user_id = user.user_id || user._id || 'usr_admin';
+    req.user_id = user.user_id || user._id;
     req.dbUser = user;
-    req.role = user.role || 'admin';
+    req.role = user.role || 'user';
+
+    // 2. Enforce mandatory password setup before accessing any dashboard or data APIs
+    const isChangePasswordRoute =
+      (req.baseUrl === '/fin/api/user' || req.baseUrl?.endsWith('/user')) &&
+      (req.path === '/change-password' || req.path === '/me' || req.path === '/logout');
+
+    if (user.must_change_password && !isChangePasswordRoute) {
+      return res.status(403).json({
+        error: 'Password configuration required before accessing platform features.',
+        code: 'PASSWORD_CHANGE_REQUIRED',
+        must_change_password: true,
+      });
+    }
 
     next();
   } catch (err) {
-    console.error('[Auth Middleware] Verification error:', err.message);
-    return res.status(500).json({ error: 'Authentication internal error' });
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Session expired. Please log in again.' });
+    }
+    return res.status(401).json({ error: 'Invalid or corrupted session token.' });
   }
 };
 
@@ -89,6 +101,6 @@ export const verifyAdmin = (req, res, next) => {
     if (req.role === 'admin') {
       return next();
     }
-    return res.status(403).json({ error: 'Access denied: Admin privileges required' });
+    return res.status(403).json({ error: 'Access denied: Admin privileges required.' });
   });
 };

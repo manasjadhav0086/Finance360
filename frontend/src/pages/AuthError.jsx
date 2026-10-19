@@ -34,6 +34,7 @@ export default function AuthError() {
 
   const handleLogout = () => {
     logout();
+    navigate('/login', { replace: true });
   };
 
 

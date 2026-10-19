@@ -13,12 +13,17 @@ async function getBmRecords() {
   if (mappingLoaded && bmRawRecords.length) return bmRawRecords;
   try {
     const sql = `
-      SELECT DISTINCT Segment, Biz1, Segment_N, Biz1_N 
+      SELECT DISTINCT Segment, Biz1 
       FROM dataai
       WHERE Segment IS NOT NULL AND Biz1 IS NOT NULL
     `;
     const rows = await mysqlService.executeQuery(sql);
-    bmRawRecords = rows || [];
+    bmRawRecords = (rows || []).map((r) => ({
+      segment: String(r.Segment || '').trim(),
+      biz1: String(r.Biz1 || '').trim(),
+      segment_n: String(r.Segment || '').trim(),
+      biz1_n: String(r.Biz1 || '').trim(),
+    }));
     mappingLoaded = true;
   } catch (err) {
     console.warn('[AI Route] Failed to fetch business mapping for scoping from MySQL:', err.message);

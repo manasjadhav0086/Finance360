@@ -192,7 +192,11 @@ export const aiService = {
           ROUND(SUM(CASE WHEN \`SG&A\` = 'Revenue' AND Nature = 'Actuals' THEN Mn ELSE 0 END), 2) AS Actual_Revenue,
           ROUND(SUM(CASE WHEN \`SG&A\` = 'Revenue' AND Nature = 'Budget' THEN Mn ELSE 0 END), 2) AS Budget_Revenue,
           ROUND(SUM(CASE WHEN \`SG&A\` = 'Variable Cost' AND Nature = 'Actuals' THEN Mn ELSE 0 END), 2) AS Variable_Cost,
-          ROUND(SUM(CASE WHEN \`SG&A\` IN ('People Cost', 'Marketing Expenses', 'Premise Expenses', 'Travel Expenses', 'Telecom Expenses', 'Legal & Professional', 'Administration', 'PICA', 'Corp Allocation') AND Nature = 'Actuals' THEN Mn ELSE 0 END), 2) AS Actual_Opex
+          ROUND(SUM(CASE WHEN LOWER(TRIM(\`SG&A Base\`)) REGEXP '(_dir|_direct|[[:space:]]*-[[:space:]]*dir)$' AND Nature = 'Actuals' THEN Mn ELSE 0 END), 2) AS Other_Direct_Cost,
+          ROUND(SUM(CASE WHEN LOWER(TRIM(\`SG&A Base\`)) REGEXP '(_s&m|__s&m|[[:space:]]*-[[:space:]]*s&m)$' AND Nature = 'Actuals' THEN Mn ELSE 0 END), 2) AS SM_Cost,
+          ROUND(SUM(CASE WHEN LOWER(TRIM(\`SG&A Base\`)) REGEXP '(_ind|_indirect|[[:space:]]*-[[:space:]]*ind)$' AND Nature = 'Actuals' THEN Mn ELSE 0 END), 2) AS Indirect_Cost,
+          ROUND(SUM(CASE WHEN \`SG&A\` IN ('People Cost', 'Marketing Expenses', 'Premise Expenses', 'Travel Expenses', 'Telecom Expenses', 'Legal & Professional', 'Administration', 'PICA', 'Corp Allocation') AND Nature = 'Actuals' THEN Mn ELSE 0 END), 2) AS Actual_Opex,
+          ROUND(SUM(CASE WHEN \`SG&A\` = 'IPR' AND Nature = 'Actuals' THEN Mn ELSE 0 END), 2) AS Actual_IPR
         FROM dataai
         GROUP BY FYs
         ORDER BY FYs
@@ -201,9 +205,11 @@ export const aiService = {
       kpis = rows.map(r => {
         const rev = Number(r.Actual_Revenue || 0);
         const vc = Number(r.Variable_Cost || 0);
-        const gp = rev - vc;
+        const otherDir = Number(r.Other_Direct_Cost || 0);
+        const gp = rev - vc - otherDir;
         const opex = Number(r.Actual_Opex || 0);
-        const ebitda = gp - opex;
+        const ipr = Number(r.Actual_IPR || 0);
+        const ebitda = gp - (opex - otherDir) + ipr; // gp - Total Operating Expenses + IPR = rev - vc - opex + ipr
         const gmPct = rev > 0 ? ((gp / rev) * 100).toFixed(1) : 0;
         const ebitdaPct = rev > 0 ? ((ebitda / rev) * 100).toFixed(1) : 0;
         return {
@@ -235,8 +241,8 @@ export const aiService = {
         'Break down Total Opex by expense category.'
       ];
 
-    } else if (action === 'drill_down' || lowerQ.includes('drill') || lowerQ.includes('by bu') || lowerQ.includes('by business') || lowerQ.includes('business unit') || lowerQ.includes('segment')) {
-      const isSeg = lowerQ.includes('segment');
+    } else if (action === 'drill_down' || lowerQ.includes('drill') || lowerQ.includes('by bu') || lowerQ.includes('by business') || lowerQ.includes('business unit') || lowerQ.includes('segment') || lowerQ.includes('business group')) {
+      const isSeg = lowerQ.includes('segment') || lowerQ.includes('business group') || lowerQ.includes('group');
       const groupCol = isSeg ? 'Segment' : 'Biz1';
 
       sqlTrace = `
@@ -256,26 +262,26 @@ export const aiService = {
         const budRev = Number(r.Budget_Revenue || 0);
         const achPct = budRev > 0 ? ((actRev / budRev) * 100).toFixed(1) : '100.0';
         return {
-          [isSeg ? 'Segment' : 'Business Unit']: r.Unit,
+          [isSeg ? 'Business Group' : 'Business']: r.Unit,
           'Actual Revenue': actRev,
           'Budget Revenue': budRev,
           'Budget Ach %': `${achPct}%`
         };
       });
 
-      answer = `### 🏢 Performance Drill-Down by ${isSeg ? 'Segment' : 'Business Unit'} (${fy} ${q})\n\n`;
+      answer = `### 🏢 Performance Drill-Down by ${isSeg ? 'Business Group' : 'Business'} (${fy} ${q})\n\n`;
       answer += `Breakdown of financial performance from the MySQL dataset:\n\n`;
       kpis.forEach(item => {
-        const name = item[isSeg ? 'Segment' : 'Business Unit'];
+        const name = item[isSeg ? 'Business Group' : 'Business'];
         answer += `- **${name}**: Actual Revenue **₹${item['Actual Revenue']} Mn** (Budget: ₹${item['Budget Revenue']} Mn | **${item['Budget Ach %']}** achievement)\n`;
       });
 
       insights = [
-        `Top performing unit by volume is ${kpis[0]?.[isSeg ? 'Segment' : 'Business Unit'] || 'the lead unit'}.`,
+        `Top performing unit by volume is ${kpis[0]?.[isSeg ? 'Business Group' : 'Business'] || 'the lead unit'}.`,
         'Budget realization across units averages near 100% target fulfillment.'
       ];
       followUpQuestions = [
-        `What are the profit margins for ${kpis[0]?.[isSeg ? 'Segment' : 'Business Unit'] || 'the top unit'}?`,
+        `What are the profit margins for ${kpis[0]?.[isSeg ? 'Business Group' : 'Business'] || 'the top unit'}?`,
         'What is the Order Intake for these units?',
         'Show Capex and Cash Collections.'
       ];
@@ -293,7 +299,7 @@ export const aiService = {
       `;
       const rows = await mysqlService.executeQuery(sqlTrace, [fy]);
       kpis = rows.map(r => ({
-        'Business Unit': r.Biz1,
+        'Business': r.Biz1,
         'Actual Order Intake': Number(r.Actual_Order_Intake || 0),
         'Budget Order Intake': Number(r.Budget_Order_Intake || 0)
       }));
@@ -304,9 +310,9 @@ export const aiService = {
 
       answer = `### 📋 Order Intake & Demand Realization (${fy})\n\n`;
       answer += `Total Order Intake for **${fy}** reached **₹${totalActOI.toFixed(2)} Mn** against a budget target of **₹${totalBudOI.toFixed(2)} Mn** (**${ach}%** achievement).\n\n`;
-      answer += `**Breakdown by Business Unit**:\n`;
+      answer += `**Breakdown by Business**:\n`;
       kpis.forEach(r => {
-        answer += `- **${r['Business Unit']}**: Actual **₹${r['Actual Order Intake']} Mn** (Target: ₹${r['Budget Order Intake']} Mn)\n`;
+        answer += `- **${r['Business']}**: Actual **₹${r['Actual Order Intake']} Mn** (Target: ₹${r['Budget Order Intake']} Mn)\n`;
       });
 
       insights = [
@@ -320,22 +326,34 @@ export const aiService = {
       ];
 
     } else if (lowerQ.includes('collection') || lowerQ.includes('cash') || lowerQ.includes('capex')) {
-      sqlTrace = `
-        SELECT 
-          c.Biz1,
-          ROUND(SUM(CASE WHEN c.Nature IN ('Actual', 'Actuals') THEN c.Amount ELSE 0 END), 2) AS Collections,
-          ROUND(SUM(CASE WHEN cx.Nature IN ('Actual', 'Actuals') THEN cx.Amount ELSE 0 END), 2) AS Capex
-        FROM collection c
-        LEFT JOIN capex cx ON c.Biz1 = cx.Biz1 AND c.Year = cx.Year AND c.Month = cx.Month
-        WHERE c.Year = ?
-        GROUP BY c.Biz1
-        ORDER BY Collections DESC
-      `;
-      const rows = await mysqlService.executeQuery(sqlTrace, [fy]);
-      kpis = rows.map(r => ({
+      const [collRows, capexRows] = await Promise.all([
+        mysqlService.executeQuery(`
+          SELECT Biz1, ROUND(SUM(CASE WHEN Nature IN ('Actual', 'Actuals') THEN Amount ELSE 0 END), 2) AS Collections
+          FROM collection
+          WHERE Year = ?
+          GROUP BY Biz1
+        `, [fy]),
+        mysqlService.executeQuery(`
+          SELECT Biz1, ROUND(SUM(CASE WHEN Nature IN ('Actual', 'Actuals') THEN Amount ELSE 0 END), 2) AS Capex
+          FROM capex
+          WHERE Year = ?
+          GROUP BY Biz1
+        `, [fy])
+      ]);
+
+      const buMap = {};
+      (collRows || []).forEach(r => {
+        buMap[r.Biz1] = { Biz1: r.Biz1, Collections: Number(r.Collections || 0), Capex: 0 };
+      });
+      (capexRows || []).forEach(r => {
+        if (!buMap[r.Biz1]) buMap[r.Biz1] = { Biz1: r.Biz1, Collections: 0, Capex: 0 };
+        buMap[r.Biz1].Capex = Number(r.Capex || 0);
+      });
+
+      kpis = Object.values(buMap).sort((a, b) => b.Collections - a.Collections).map(r => ({
         'Business Unit': r.Biz1,
-        'Collections (₹ Mn)': Number(r.Collections || 0),
-        'Capex (₹ Mn)': Number(r.Capex || 0)
+        'Collections (₹ Mn)': r.Collections,
+        'Capex (₹ Mn)': r.Capex
       }));
 
       const totalColl = kpis.reduce((acc, r) => acc + r['Collections (₹ Mn)'], 0);
@@ -366,10 +384,14 @@ export const aiService = {
           Nature,
           ROUND(SUM(CASE WHEN \`SG&A\` = 'Revenue' THEN Mn ELSE 0 END), 2) AS Revenue,
           ROUND(SUM(CASE WHEN \`SG&A\` = 'Variable Cost' THEN Mn ELSE 0 END), 2) AS Variable_Cost,
+          ROUND(SUM(CASE WHEN LOWER(TRIM(\`SG&A Base\`)) REGEXP '(_dir|_direct|[[:space:]]*-[[:space:]]*dir)$' THEN Mn ELSE 0 END), 2) AS Other_Direct_Cost,
+          ROUND(SUM(CASE WHEN LOWER(TRIM(\`SG&A Base\`)) REGEXP '(_s&m|__s&m|[[:space:]]*-[[:space:]]*s&m)$' THEN Mn ELSE 0 END), 2) AS SM_Cost,
+          ROUND(SUM(CASE WHEN LOWER(TRIM(\`SG&A Base\`)) REGEXP '(_ind|_indirect|[[:space:]]*-[[:space:]]*ind)$' THEN Mn ELSE 0 END), 2) AS Indirect_Cost,
           ROUND(SUM(CASE WHEN \`SG&A\` = 'People Cost' THEN Mn ELSE 0 END), 2) AS People_Cost,
           ROUND(SUM(CASE WHEN \`SG&A\` = 'Marketing Expenses' THEN Mn ELSE 0 END), 2) AS Marketing_Expenses,
           ROUND(SUM(CASE WHEN \`SG&A\` IN ('Premise Expenses', 'Premises', 'Travel Expenses', 'Travel', 'Telecom Expenses', 'Telecom', 'Legal & Professional', 'Administration') THEN Mn ELSE 0 END), 2) AS Fixed_Costs,
-          ROUND(SUM(CASE WHEN \`SG&A\` IN ('People Cost', 'Marketing Expenses', 'Premise Expenses', 'Premises', 'Travel Expenses', 'Travel', 'Telecom Expenses', 'Telecom', 'Legal & Professional', 'Administration', 'PICA', 'Corp Allocation') THEN Mn ELSE 0 END), 2) AS Total_Opex
+          ROUND(SUM(CASE WHEN \`SG&A\` IN ('People Cost', 'Marketing Expenses', 'Premise Expenses', 'Premises', 'Travel Expenses', 'Travel', 'Telecom Expenses', 'Telecom', 'Legal & Professional', 'Administration', 'PICA', 'Corp Allocation') THEN Mn ELSE 0 END), 2) AS Total_Opex,
+          ROUND(SUM(CASE WHEN \`SG&A\` = 'IPR' THEN Mn ELSE 0 END), 2) AS IPR_Creation
         FROM dataai
         WHERE ${whereSql}
         GROUP BY Nature
@@ -382,9 +404,20 @@ export const aiService = {
       const actRev = Number(actRow.Revenue || 0);
       const budRev = Number(budRow.Revenue || 0);
       const actVC = Number(actRow.Variable_Cost || 0);
-      const actGP = actRev - actVC;
+      const actOtherDir = Number(actRow.Other_Direct_Cost || 0);
+      const actTotalDir = actVC + actOtherDir;
+      const actGP = actRev - actTotalDir;
       const actOpex = Number(actRow.Total_Opex || 0);
-      const actEBITDA = actGP - actOpex;
+      const actIPR = Number(actRow.IPR_Creation || 0);
+      const actEBITDA = actRev - actTotalDir - (actOpex - actOtherDir) + actIPR; // rev - vc - opex + ipr
+
+      const budVC = Number(budRow.Variable_Cost || 0);
+      const budOtherDir = Number(budRow.Other_Direct_Cost || 0);
+      const budTotalDir = budVC + budOtherDir;
+      const budGP = budRev - budTotalDir;
+      const budOpex = Number(budRow.Total_Opex || 0);
+      const budIPR = Number(budRow.IPR_Creation || 0);
+      const budEBITDA = budRev - budTotalDir - (budOpex - budOtherDir) + budIPR;
 
       const gmPct = actRev > 0 ? ((actGP / actRev) * 100).toFixed(1) : 0;
       const ebitdaPct = actRev > 0 ? ((actEBITDA / actRev) * 100).toFixed(1) : 0;
@@ -392,15 +425,15 @@ export const aiService = {
 
       kpis = [
         { Metric: 'Revenue', Actual: actRev, Budget: budRev, Unit: '₹ Mn' },
-        { Metric: 'Gross Profit', Actual: Number(actGP.toFixed(2)), Budget: Number((budRev - Number(budRow.Variable_Cost || 0)).toFixed(2)), Unit: '₹ Mn' },
-        { Metric: 'Total Opex', Actual: actOpex, Budget: Number(budRow.Total_Opex || 0), Unit: '₹ Mn' },
-        { Metric: 'EBITDA', Actual: Number(actEBITDA.toFixed(2)), Budget: Number(((budRev - Number(budRow.Variable_Cost || 0)) - Number(budRow.Total_Opex || 0)).toFixed(2)), Unit: '₹ Mn' }
+        { Metric: 'Gross Profit', Actual: Number(actGP.toFixed(2)), Budget: Number(budGP.toFixed(2)), Unit: '₹ Mn' },
+        { Metric: 'Total Opex', Actual: actOpex, Budget: budOpex, Unit: '₹ Mn' },
+        { Metric: 'EBITDA', Actual: Number(actEBITDA.toFixed(2)), Budget: Number(budEBITDA.toFixed(2)), Unit: '₹ Mn' }
       ];
 
       answer = `### 📈 Financial Performance Synthesis (${fy} ${q})\n\n`;
       answer += `Based on live reporting from the **MySQL** enterprise database:\n\n`;
       answer += `1. **Net Revenue**: **₹${actRev.toFixed(2)} Mn** actual vs **₹${budRev.toFixed(2)} Mn** budget (**${revAchPct}%** target achievement).\n`;
-      answer += `2. **Gross Margin**: **₹${actGP.toFixed(2)} Mn** (${gmPct}%), reflecting controlled direct delivery costs.\n`;
+      answer += `2. **Gross Margin**: **₹${actGP.toFixed(2)} Mn** (${gmPct}%), reflecting controlled direct delivery costs (Direct Costs: ₹${actTotalDir.toFixed(2)} Mn).\n`;
       answer += `3. **Total Operating Expenses**: **₹${actOpex.toFixed(2)} Mn**, comprising People Cost (₹${Number(actRow.People_Cost || 0).toFixed(2)} Mn), Fixed Overheads, and G&A.\n`;
       answer += `4. **EBITDA**: **₹${actEBITDA.toFixed(2)} Mn** (**${ebitdaPct}%** margin), representing strong operational profitability.\n\n`;
       answer += `*Data source: Authoritative MySQL financial tables (dataai, order_intake, collection, capex).*`;

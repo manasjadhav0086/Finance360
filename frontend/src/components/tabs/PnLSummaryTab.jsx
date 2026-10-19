@@ -381,10 +381,6 @@ export default function PnLSummaryTab({
           </table>
         </div>
       </div>
-
-      <div className="text-xs text-slate-400 italic">
-        Note: Learners count under Budget contains data for B2C business units only.
-      </div>
     </div>
   );
 }

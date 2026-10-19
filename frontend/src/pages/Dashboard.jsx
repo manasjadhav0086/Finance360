@@ -380,7 +380,7 @@ export default function Dashboard({ isAdmin, user }) {
             const mNode = tree[entityKey]?.[fy]?.[scenario]?.[m];
             if (!mNode) return;
             Object.entries(mNode).forEach(([k, val]) => {
-              if (val === null || val === undefined || isNaN(val) || k === 'Headcount' || k === 'Learners Count') return;
+              if (val === null || val === undefined || isNaN(val)) return;
               if (DATA?.meta?.metric_type?.[k] === 'Percentage' || k.endsWith('%')) return;
               agg[k] = Number(((agg[k] || 0) + Number(val)).toFixed(4));
             });
@@ -478,14 +478,13 @@ export default function Dashboard({ isAdmin, user }) {
         if (matchedBUs.length === 0) return null;
 
         const aggNode = {};
-        let latestHc = null;
 
         matchedBUs.forEach((b) => {
           applicableMonths.forEach((m) => {
             const mNode = DATA?.monthly?.bu?.[b]?.[fy]?.[scenario]?.[m];
             if (!mNode) return;
             Object.entries(mNode).forEach(([k, val]) => {
-              if (val === null || val === undefined || isNaN(val) || k === 'Headcount' || k === 'Learners Count') return;
+              if (val === null || val === undefined || isNaN(val)) return;
               if (DATA?.meta?.metric_type?.[k] === 'Percentage' || k.endsWith('%')) return;
               aggNode[k] = Number(((aggNode[k] || 0) + Number(val)).toFixed(4));
             });
@@ -562,13 +561,12 @@ export default function Dashboard({ isAdmin, user }) {
 
       if (qList && qList.length > 0) {
         const aggQuarterNode = {};
-        let latestHc = null;
 
         qList.forEach((subQ) => {
           const subNode = getScopedDataNode(fy, scenario, subQ, activeFilters);
           if (!subNode) return;
           Object.entries(subNode).forEach(([k, val]) => {
-            if (val === null || val === undefined || isNaN(val) || k === 'Headcount' || k === 'Learners Count') return;
+            if (val === null || val === undefined || isNaN(val)) return;
             if (DATA?.meta?.metric_type?.[k] === 'Percentage' || k.endsWith('%')) return;
             aggQuarterNode[k] = Number(((aggQuarterNode[k] || 0) + Number(val)).toFixed(4));
           });
@@ -728,6 +726,25 @@ export default function Dashboard({ isAdmin, user }) {
         return Number(val);
       }
       // Aliases and derived ratio fallbacks
+      if (metricName === 'Other Direct Cost' || metricName === 'other_direct_cost' || metricName === 'Other_Direct_Cost') {
+        const odc = node['Other Direct Cost'] ?? node['other_direct_cost'] ?? node['Other_Direct_Cost'];
+        if (odc !== undefined && odc !== null) return Number(odc);
+      }
+      if (metricName === 'S&M Cost' || metricName === 'sm_cost' || metricName === 'SM_Cost' || metricName === 'S&M') {
+        const sm = node['S&M Cost'] ?? node['sm_cost'] ?? node['SM_Cost'] ?? node['S&M'];
+        if (sm !== undefined && sm !== null) return Number(sm);
+      }
+      if (metricName === 'Indirect Cost' || metricName === 'indirect_cost' || metricName === 'Indirect_Cost') {
+        const ind = node['Indirect Cost'] ?? node['indirect_cost'] ?? node['Indirect_Cost'];
+        if (ind !== undefined && ind !== null) return Number(ind);
+      }
+      if (metricName === 'Total Direct Cost' || metricName === 'total_direct_cost' || metricName === 'Total_Direct_Cost') {
+        const tdc = node['Total Direct Cost'] ?? node['total_direct_cost'] ?? node['Total_Direct_Cost'];
+        if (tdc !== undefined && tdc !== null) return Number(tdc);
+        const vc = Number(node['Variable Cost'] ?? node['variable_cost'] ?? 0);
+        const odc = Number(node['Other Direct Cost'] ?? node['other_direct_cost'] ?? 0);
+        return vc + odc;
+      }
       if (metricName === 'Total Opex' && node['Total Operating Expenses'] !== undefined) {
         return Number(node['Total Operating Expenses']);
       }
@@ -758,8 +775,8 @@ export default function Dashboard({ isAdmin, user }) {
       if (metricName === 'Gross Profit' || metricName === 'Gross Margin') {
         if (node['Gross Profit'] !== undefined) return Number(node['Gross Profit']);
         const rev = Number(node['Revenue']) || 0;
-        const vc = Number(node['Variable Cost'] ?? node['Total Direct Cost'] ?? 0);
-        return rev - vc;
+        const totalDir = Number(node['Total Direct Cost'] !== undefined ? node['Total Direct Cost'] : ((Number(node['Variable Cost']) || 0) + (Number(node['Other Direct Cost']) || 0)));
+        return rev - totalDir;
       }
       if (metricName === 'Gross Margin %' || metricName === 'GP %' || metricName === 'GM %' || metricName === 'GM%') {
         if (node['Gross Margin %'] !== undefined) return Number(node['Gross Margin %']);
@@ -767,7 +784,8 @@ export default function Dashboard({ isAdmin, user }) {
         if (node['GM %'] !== undefined) return Number(node['GM %']);
         if (node['GM%'] !== undefined) return Number(node['GM%']);
         const rev = Number(node['Revenue']) || 0;
-        const gp = Number(node['Gross Profit'] !== undefined ? node['Gross Profit'] : (rev - (node['Variable Cost'] ?? node['Total Direct Cost'] ?? 0)));
+        const totalDir = Number(node['Total Direct Cost'] !== undefined ? node['Total Direct Cost'] : ((Number(node['Variable Cost']) || 0) + (Number(node['Other Direct Cost']) || 0)));
+        const gp = Number(node['Gross Profit'] !== undefined ? node['Gross Profit'] : (rev - totalDir));
         return rev > 0 ? (gp / rev) * 100 : 0;
       }
       if (metricName === 'OM %' || metricName === 'OM%' || metricName === 'Operating Margin %' || metricName === 'EBITDA %') {
@@ -824,6 +842,7 @@ export default function Dashboard({ isAdmin, user }) {
             matchesScope={matchesScope}
             formatPercent={formatPercent}
             setActiveTab={setActiveTab}
+            getActiveBusinesses={getActiveBusinesses}
             isAdmin={isAdmin}
             user={user}
             isUpdating={isFilterUpdating}

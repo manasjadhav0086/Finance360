@@ -20,13 +20,22 @@ function redirectBasePlugin() {
             res.end();
             return;
           }
-          if (rawUrl === '/login' || rawUrl.startsWith('/login?') || rawUrl.startsWith('/login/')) {
-            res.writeHead(302, { Location: '/fin' + rawUrl });
+          if (rawUrl === '/') {
+            res.writeHead(302, { Location: '/fin/' });
             res.end();
             return;
           }
-          if (rawUrl === '/') {
-            res.writeHead(302, { Location: '/fin/' });
+
+          // If path does not start with /fin and is not a Vite internal or static asset request
+          if (
+            !rawUrl.startsWith('/fin/') &&
+            !rawUrl.startsWith('/@') &&
+            !rawUrl.startsWith('/src/') &&
+            !rawUrl.startsWith('/node_modules/') &&
+            !rawUrl.startsWith('/favicon.') &&
+            !rawUrl.match(/\.(js|jsx|ts|tsx|css|json|png|jpg|jpeg|svg|ico|woff|woff2)$/i)
+          ) {
+            res.writeHead(302, { Location: '/fin' + (rawUrl.startsWith('/') ? rawUrl : '/' + rawUrl) });
             res.end();
             return;
           }

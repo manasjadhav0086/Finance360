@@ -6,11 +6,9 @@
  * - FY26 ends in March 2026 (Apr 2025 - Mar 2026).
  * - Centralized normalization and matching for all datasets:
  *   - Dataai: maps to 'DIS Period' (Date / YYYY-MM)
- *   - Headcount: maps to 'Period' (Date / YYYY-MM)
  *   - orderintake_view: maps to 'Month' (Apr..Mar) & 'Year' (FYxx)
  *   - capex_view: maps to 'Month' & 'Year'
  *   - collection_view: maps to 'Month' & 'Year'
- *   - enrollment_view: maps to 'Month' & 'Year'
  */
 
 export const MONTH_DEFINITIONS = [
@@ -500,10 +498,18 @@ export function extractYearMonth(dateVal) {
     return `${y}-${m < 10 ? '0' + m : m}`;
   }
   const str = String(dateVal).trim();
-  const match = str.match(/^(\d{4})[-/.](\d{1,2})/);
-  if (match) {
-    const y = match[1];
-    const m = parseInt(match[2], 10);
+  // 1. Matches YYYY-MM or YYYY/MM (e.g. 2023-10 or 2023/10/01)
+  const yFirst = str.match(/^(\d{4})[-/.](\d{1,2})/);
+  if (yFirst) {
+    const y = yFirst[1];
+    const m = parseInt(yFirst[2], 10);
+    return `${y}-${m < 10 ? '0' + m : m}`;
+  }
+  // 2. Matches DD-MM-YYYY or DD/MM/YYYY (e.g. 01-10-2023 00:00)
+  const dFirst = str.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
+  if (dFirst) {
+    const y = dFirst[3];
+    const m = parseInt(dFirst[2], 10);
     return `${y}-${m < 10 ? '0' + m : m}`;
   }
   return null;
@@ -514,11 +520,9 @@ export function extractYearMonth(dateVal) {
  * 
  * Mappings:
  * - Dataai: matches 'DIS Period' (or 'Posting Date' / 'period') against YYYY-MM
- * - Headcount: matches 'Period' (or 'period') against YYYY-MM
  * - orderintake_view: matches 'Month' ('Apr'..'Mar' or full) and 'Year' ('FYxx')
  * - capex_view: matches 'Month' and 'Year'
  * - collection_view: matches 'Month' and 'Year'
- * - enrollment_view: matches 'Month' and 'Year'
  */
 export function matchesMonthFilter(row, activeFilters = {}, sourceHint = '') {
   if (!row) return false;
@@ -554,18 +558,7 @@ export function matchesMonthFilter(row, activeFilters = {}, sourceHint = '') {
     return true;
   }
 
-  // 2. Headcount Source (Period)
-  const isHeadcount = hint.includes('headcount') || ('Period' in row && !('Month' in row));
-  if (isHeadcount) {
-    const periodVal = row.Period || row.period || row['Period'];
-    const rowYm = extractYearMonth(periodVal);
-    if (rowYm) {
-      return yearMonths.has(rowYm);
-    }
-    return true;
-  }
-
-  // 3. Tabular Views with Month & Year (orderintake_view, capex_view, collection_view, enrollment_view)
+  // 2. Tabular Views with Month & Year (orderintake_view, capex_view, collection_view)
   const rowMonth = row.Month || row.month;
   const rowYear = row.Year || row.year || row.FYs || row.Filter_FY || row.YEAR;
 

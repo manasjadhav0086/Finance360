@@ -1387,7 +1387,7 @@ export default function PerformanceTab({
 
         <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col min-w-0 overflow-hidden">
           <EChart
-            headerTitle="Biz-Wise Revenue Contribution"
+            headerTitle="Business Wise Revenue Contribution"
             subtitle={`Horizontal stacked distribution by business group · ${scopeTimeframe}`}
             exportFilename={`Biz_Wise_Revenue_Contribution_Stacked_Bar_${fileTimeframe}`}
             option={bizWiseRevHorizontalOption}

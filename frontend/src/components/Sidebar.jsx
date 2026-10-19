@@ -11,7 +11,7 @@ import {
   Globe,
   LogOut,
   Settings,
-  Users
+  Receipt
 } from 'lucide-react';
 
 const NAV_GROUPS = [
@@ -36,7 +36,7 @@ const NAV_GROUPS = [
       {
         id: 'othermetrics',
         label: 'Other Metrics',
-        icon: Users,
+        icon: Receipt,
       },
     ],
   },

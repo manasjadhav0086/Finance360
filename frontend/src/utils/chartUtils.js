@@ -8,7 +8,7 @@
  */
 
 /**
- * Ranks category dimensions (e.g., Business Units) by total metric value across active categories.
+ * Ranks category dimensions (e.g., Businesses or Business Groups) by total metric value across active categories.
  */
 export function sortDimensionsByContribution(dimensions = [], categories = [], matrix = {}) {
   if (!Array.isArray(dimensions) || dimensions.length <= 1) return dimensions;

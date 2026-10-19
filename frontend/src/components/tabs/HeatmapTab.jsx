@@ -33,15 +33,9 @@ export default function HeatmapTab({
   const normM = normalizeMonth(filters.month);
   const isMonthSelected = normM && normM !== 'ALL';
 
-  const [grain, setGrain] = useState(isMonthSelected ? 'monthly' : 'quarterly');
+  const [grain, setGrain] = useState('quarterly');
   const [isScrolledX, setIsScrolledX] = useState(false);
   const { hoveredCell, setHoveredCell, getCellBg } = useTableHover();
-
-  useEffect(() => {
-    if (isMonthSelected) {
-      setGrain('monthly');
-    }
-  }, [isMonthSelected]);
 
   const activeQuarter = useMemo(() => {
     const qVal = filters.quarter;
@@ -212,13 +206,6 @@ export default function HeatmapTab({
         <div className="inline-flex rounded-lg bg-slate-100 p-1 border border-slate-200 self-start sm:self-auto">
           <button
             type="button"
-            className={`px-3.5 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${grain === 'monthly' ? 'bg-[#249791] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 font-semibold'}`}
-            onClick={() => setGrain('monthly')}
-          >
-            Monthly
-          </button>
-          <button
-            type="button"
             className={`px-3.5 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${grain === 'quarterly' ? 'bg-[#249791] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 font-semibold'}`}
             onClick={() => setGrain('quarterly')}
           >
@@ -255,7 +242,7 @@ export default function HeatmapTab({
               <tr className="bg-[#249791] text-white font-bold sticky top-0 z-20 shadow-xs">
                 <th
                   onMouseEnter={() => setHoveredCell({ row: null, col: 'metric' })}
-                  className={`py-2.5 px-3 text-left sticky top-0 left-0 z-40 min-w-[200px] border-r border-b border-[#1d827d] bg-[#249791] text-white font-bold transition-all duration-150 ${hoveredCell.col === 'metric' ? 'bg-[#1c7b76]' : ''} ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.25)]' : ''}`}
+                  className={`py-2.5 px-3 text-left sticky top-0 left-0 z-20 min-w-[200px] border-r border-b border-[#1d827d] bg-[#249791] text-white font-bold transition-all duration-150 ${hoveredCell.col === 'metric' ? 'bg-[#1c7b76]' : ''} ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.25)]' : ''}`}
                 >
                   {grain === 'monthly' ? 'Monthly Metric' : grain === 'quarterly' ? 'Quarterly Metric' : 'Yearly Metric'}
                 </th>
