@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Copy, Check, Download, Table, BarChart3, RotateCcw, RefreshCw, Maximize2, Minimize2 } from "lucide-react";
+import { Copy, Check, Download, Table, BarChart3, Maximize2, Minimize2 } from "lucide-react";
 import * as echarts from "echarts";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -26,7 +26,6 @@ function isChartConfig(codeStr) {
 }
 
 function InteractiveAIChart({ rawCode }) {
-    const [refreshKey, setRefreshKey] = useState(0);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const containerRef = useRef(null);
 
@@ -112,22 +111,6 @@ function InteractiveAIChart({ rawCode }) {
         }
     };
 
-    const handleReset = () => {
-        try {
-            const chartDom = containerRef.current?.querySelector('[_echarts_instance_]');
-            const inst = chartDom ? echarts.getInstanceByDom(chartDom) : null;
-            if (inst) {
-                inst.dispatchAction({ type: 'restore' });
-            }
-        } catch (err) {
-            console.error('[InteractiveAIChart] Reset failed:', err);
-        }
-    };
-
-    const handleRefresh = () => {
-        setRefreshKey(k => k + 1);
-    };
-
     const toggleFullscreen = () => {
         if (!containerRef.current) return;
         if (!document.fullscreenElement) {
@@ -165,26 +148,8 @@ function InteractiveAIChart({ rawCode }) {
                     )}
                 </div>
 
-                {/* Right: Dedicated Action Area (Never overlaps title, wraps cleanly on mobile) */}
+                {/* Right: Dedicated Action Area (Download and Fullscreen) */}
                 <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
-                    <button
-                        type="button"
-                        onClick={handleRefresh}
-                        className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex items-center justify-center cursor-pointer border border-transparent hover:border-slate-700"
-                        title="Refresh Chart"
-                        aria-label="Refresh Chart"
-                    >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleReset}
-                        className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex items-center justify-center cursor-pointer border border-transparent hover:border-slate-700"
-                        title="Reset View"
-                        aria-label="Reset View"
-                    >
-                        <RefreshCw className="w-3.5 h-3.5" />
-                    </button>
                     <button
                         type="button"
                         onClick={handleDownload}
@@ -208,7 +173,7 @@ function InteractiveAIChart({ rawCode }) {
 
             {/* Chart Canvas Area */}
             <div className={`w-full ${isFullscreen ? 'flex-1 min-h-[500px]' : 'h-[290px] sm:h-[320px]'}`}>
-                <EChart key={refreshKey} option={cleanOption} headerTitle="" />
+                <EChart option={cleanOption} headerTitle="" />
             </div>
         </div>
     );
