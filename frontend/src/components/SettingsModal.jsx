@@ -79,16 +79,16 @@ function UserScopeDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-60 flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150">
       <div className="fixed inset-0" onClick={onClose} />
-      <div className="relative w-full max-w-xl bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden flex flex-col z-10 animate-in zoom-in-95 duration-150 max-h-[90vh]">
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
+      <div className="relative w-full max-w-xl bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden flex flex-col z-10 animate-in zoom-in-95 duration-150 max-h-[92vh]">
+        <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shadow-xs">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shadow-xs shrink-0">
               {isEdit ? <Edit3 className="w-4.5 h-4.5" /> : <UserPlus className="w-4.5 h-4.5" />}
             </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-900">
+            <div className="min-w-0">
+              <h3 className="text-sm font-bold text-slate-900 truncate">
                 {isEdit ? 'Edit Scoped Data Permissions' : 'Authorize New User'}
               </h3>
               <p className="text-xs text-slate-500 font-medium truncate max-w-sm">
@@ -101,13 +101,13 @@ function UserScopeDialog({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-md cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-md cursor-pointer shrink-0"
           >
             <X className="w-4.5 h-4.5" />
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="p-6 flex-1 overflow-y-auto custom-scroll flex flex-col gap-4">
+        <form onSubmit={onSubmit} className="p-4 sm:p-6 flex-1 overflow-y-auto custom-scroll flex flex-col gap-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -591,14 +591,40 @@ export default function SettingsModal({ isOpen, onClose, currentUser }) {
     );
   });
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') {
+          if (deleteConfirmState.isOpen) {
+            setDeleteConfirmState({ isOpen: false, userId: null, userEmail: '' });
+          } else if (editingUser) {
+            setEditingUser(null);
+          } else if (isAddUserOpen) {
+            setIsAddUserOpen(false);
+          } else {
+            onClose();
+          }
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [isOpen, isAddUserOpen, editingUser, deleteConfirmState, onClose]);
+
   if (!isOpen) return null;
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150">
         <div className="fixed inset-0" onClick={onClose} />
 
-        <div className="relative w-full max-w-5xl bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden flex flex-col z-10 max-h-[92vh] animate-in zoom-in-95 duration-150">
+        <div className="relative w-full max-w-5xl bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden flex flex-col z-10 max-h-[94vh] animate-in zoom-in-95 duration-150">
           {notification && (
             <div className="absolute top-4 right-4 z-50">
               <AppNotification
@@ -609,13 +635,13 @@ export default function SettingsModal({ isOpen, onClose, currentUser }) {
             </div>
           )}
 
-          <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
+          <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shrink-0">
                 <KeyRound className="w-5 h-5" />
               </div>
-              <div>
-                <h2 className="text-base font-bold text-slate-900 tracking-tight">
+              <div className="min-w-0">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight truncate">
                   Settings & User Access Control
                 </h2>
                 <p className="text-xs text-slate-500 font-medium">
@@ -633,7 +659,7 @@ export default function SettingsModal({ isOpen, onClose, currentUser }) {
             </button>
           </div>
 
-          <div className="p-6 flex-1 overflow-y-auto custom-scroll flex flex-col gap-5">
+          <div className="p-4 sm:p-6 flex-1 overflow-y-auto custom-scroll flex flex-col gap-4 sm:gap-5">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
               <div className="relative flex-1 max-w-sm">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />

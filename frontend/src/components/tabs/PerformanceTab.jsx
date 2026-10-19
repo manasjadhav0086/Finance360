@@ -1311,12 +1311,12 @@ export default function PerformanceTab({
                     <Shimmer className="h-7 w-24 rounded-md" />
                   </div>
                 ) : (
-                  <div className="flex items-baseline gap-1.5 mb-1 flex-wrap">
-                    <span className="text-2xl font-bold font-mono tracking-tight text-slate-950">
+                  <div className="flex items-baseline gap-1.5 mb-1 flex-wrap min-w-0">
+                    <span className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-slate-950 break-words">
                       {card.value}
                     </span>
                     {!card.isPct && (
-                      <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-md border bg-slate-50 text-slate-600 border-slate-200">
+                      <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-md border bg-slate-50 text-slate-600 border-slate-200 shrink-0">
                         MN
                       </span>
                     )}

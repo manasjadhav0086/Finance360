@@ -152,11 +152,39 @@ export default function CopilotDrawer({
       : 'Company Wide'
     }`;
 
+  useEffect(() => {
+    if (isAiOpen) {
+      document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') {
+          setIsAiOpen(false);
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [isAiOpen]);
+
   return (
     <>
+      {/* Mobile & Desktop Backdrop */}
+      {isAiOpen && (
+        <div
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-40 transition-opacity"
+          onClick={() => setIsAiOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       <div
-        className={`fixed top-0 right-0 bottom-0 w-[600px] max-w-[96vw] bg-white border-l border-slate-200 shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-in-out ${isAiOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
+        className={`fixed top-0 right-0 bottom-0 w-full sm:w-[540px] max-w-full sm:max-w-[92vw] bg-white border-l border-slate-200 shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-in-out ${
+          isAiOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
         id="copilotPanel"
       >
         <div className="px-4 py-3.5 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">

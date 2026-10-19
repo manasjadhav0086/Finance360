@@ -95,7 +95,12 @@ const MONTH_TO_QTR = {
   'Jan': 'Q4', 'January': 'Q4', 'Feb': 'Q4', 'February': 'Q4', 'Mar': 'Q4', 'March': 'Q4'
 };
 
+let cachedBusinessMappingRecords = null;
+
 async function fetchBusinessMappingRecords() {
+  if (cachedBusinessMappingRecords && cachedBusinessMappingRecords.length > 0) {
+    return cachedBusinessMappingRecords;
+  }
   const bmQuery = `
     SELECT DISTINCT Segment, Biz1
     FROM dataai
@@ -117,6 +122,7 @@ async function fetchBusinessMappingRecords() {
       });
     }
   }
+  cachedBusinessMappingRecords = businessMappingRecords;
   return businessMappingRecords;
 }
 
@@ -125,6 +131,37 @@ let cachedCapexRaw = null;
 let cachedCollRaw = null;
 let cachedOiRaw = null;
 let lastMonthlyCacheTime = 0;
+
+// Master normalized payload cache for instant dashboard rendering
+const dashboardMasterCache = new Map();
+const DASHBOARD_CACHE_TTL_MS = 20 * 60 * 1000; // 20 minutes
+
+function getDashboardCacheKey(userScope, options = {}) {
+  const scopeId = userScope.isUnrestricted
+    ? 'ALL'
+    : `${(userScope.allowedBizs || []).slice().sort().join(',')}|${(userScope.allowedSegments || []).slice().sort().join(',')}`;
+  return `${scopeId}:${options.fy || 'ALL'}:${options.quarter || 'ALL'}:${options.segment || 'ALL'}:${options.biz1 || 'ALL'}`;
+}
+
+export function clearDashboardCache() {
+  dashboardMasterCache.clear();
+  cachedBusinessMappingRecords = null;
+  cachedMonthlyPnlRaw = null;
+  cachedCapexRaw = null;
+  cachedCollRaw = null;
+  cachedOiRaw = null;
+}
+
+export async function warmDashboardCache() {
+  try {
+    console.log('[Dashboard] Pre-warming master dashboard cache in background...');
+    const t0 = Date.now();
+    await fetchAndNormalize({ user: { role: 'admin' } });
+    console.log(`[Dashboard] Master dashboard cache pre-warmed in ${Date.now() - t0}ms.`);
+  } catch (err) {
+    console.warn('[Dashboard] Cache pre-warm notice:', err.message);
+  }
+}
 
 export async function fetchAndNormalize(options = {}) {
   const {
@@ -141,6 +178,14 @@ export async function fetchAndNormalize(options = {}) {
 
   const allBmRecords = await fetchBusinessMappingRecords();
   const userScope = resolveUserScope(user, allBmRecords);
+
+  const forceRefresh = Boolean(options.force_refresh);
+  const cacheKey = getDashboardCacheKey(userScope, options);
+  const cachedResult = dashboardMasterCache.get(cacheKey);
+
+  if (!forceRefresh && cachedResult && (Date.now() - cachedResult.timestamp < DASHBOARD_CACHE_TTL_MS)) {
+    return cachedResult.data;
+  }
 
   let bmRecords = allBmRecords;
   if (!userScope.isUnrestricted) {
@@ -246,7 +291,6 @@ export async function fetchAndNormalize(options = {}) {
   `;
 
   // Fetch or retrieve from in-memory cache
-  const forceRefresh = Boolean(options.force_refresh);
   const now = Date.now();
   const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
@@ -902,7 +946,7 @@ export async function fetchAndNormalize(options = {}) {
     }
   };
 
-  return {
+  const resultPayload = {
     meta,
     company: companyData,
     segment: segmentData,
@@ -913,6 +957,9 @@ export async function fetchAndNormalize(options = {}) {
       bu: monthlyBu
     }
   };
+
+  dashboardMasterCache.set(cacheKey, { data: resultPayload, timestamp: Date.now() });
+  return resultPayload;
 }
 
 router.get('/', verifyUser, async (req, res) => {

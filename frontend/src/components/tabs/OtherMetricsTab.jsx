@@ -410,7 +410,7 @@ export default function OtherMetricsTab({
             type="button"
             onClick={toggleExpandAll}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer shadow-xs"
-            title={isAllExpanded ? 'Collapse all business groups' : 'Expand all business groups'}
+            title={isAllExpanded ? 'Collapse all segments' : 'Expand all segments'}
           >
             {isAllExpanded ? (
               <>
@@ -443,7 +443,7 @@ export default function OtherMetricsTab({
             </span>
           </div>
           <span className="text-xs font-mono text-slate-300">
-            {groupedData.length} Business Groups · {totalBusinessesCount} Businesses
+            {groupedData.length} Segments · {totalBusinessesCount} Businesses
           </span>
         </div>
 
@@ -457,7 +457,7 @@ export default function OtherMetricsTab({
             onScroll={(e) => setIsScrolledX(e.currentTarget.scrollLeft > 0)}
           >
             <table
-              className="w-full border-separate border-spacing-0 text-xs min-w-[960px]"
+              className="w-full border-separate border-spacing-0 text-xs min-w-[850px]"
               onMouseLeave={() => setHoveredCell({ row: null, col: null })}
             >
               <thead className="bg-[#249791]">
@@ -466,28 +466,15 @@ export default function OtherMetricsTab({
                   <th
                     rowSpan={2}
                     onClick={() => handleSort('groupName')}
-                    className={`py-2 px-2.5 text-left border-b border-r border-[#1d827d] ${hasAnyExpanded ? 'min-w-[140px] sm:min-w-[160px] w-[180px]' : 'min-w-[160px] sm:min-w-[180px] w-[200px]'
-                      } bg-[#249791] text-white font-bold sticky top-0 left-0 z-20 transition-colors cursor-pointer group hover:bg-[#1c7b76] select-none ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.25)]' : ''
-                      }`}
+                    className={`py-2 px-3 text-left border-b border-r border-[#1d827d] min-w-[200px] sm:min-w-[230px] w-[240px] bg-[#249791] text-white font-bold sticky top-0 left-0 z-20 transition-colors cursor-pointer group hover:bg-[#1c7b76] select-none ${
+                      isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.25)]' : ''
+                    }`}
                   >
                     <div className="flex items-center gap-1.5">
-                      <span>Business Group</span>
+                      <span>Segment</span>
                       {renderSortIcon('groupName')}
                     </div>
                   </th>
-
-                  {hasAnyExpanded && (
-                    <th
-                      rowSpan={2}
-                      onClick={() => handleSort('business')}
-                      className="py-2 px-2.5 text-left border-b border-r border-[#1d827d] min-w-[130px] sm:min-w-[150px] w-1/6 bg-[#249791] text-white font-bold sticky top-0 z-20 cursor-pointer group hover:bg-[#1c7b76] select-none"
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <span>Business</span>
-                        {renderSortIcon('business')}
-                      </div>
-                    </th>
-                  )}
 
                   {quartersList.map((qKey) => (
                     <th
@@ -557,7 +544,7 @@ export default function OtherMetricsTab({
               <tbody className="divide-y divide-slate-100 font-mono text-[13px] sm:text-[13.5px]">
                 {groupedData.length === 0 ? (
                   <tr>
-                    <td colSpan={hasAnyExpanded ? 12 : 11} className="py-8 text-center text-slate-400">
+                    <td colSpan={11} className="py-8 text-center text-slate-400">
                       No matching records found for the selected filters.
                     </td>
                   </tr>
@@ -567,14 +554,15 @@ export default function OtherMetricsTab({
 
                     return (
                       <Fragment key={group.groupName}>
-                        {/* Business Group Header Row (Collapsible) */}
+                        {/* Segment Header Row (Collapsible) */}
                         <tr
                           onClick={() => toggleGroup(group.groupName)}
                           className="bg-slate-50/95 hover:bg-slate-100/95 cursor-pointer select-none transition-colors border-t border-b border-slate-200 font-semibold"
                         >
                           <td
-                            className={`py-2 px-2.5 text-slate-900 sticky left-0 z-10 bg-slate-50/95 border-r border-slate-200 ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)]' : ''
-                              }`}
+                            className={`py-2 px-3 text-slate-900 sticky left-0 z-10 bg-slate-50/95 border-r border-slate-200 ${
+                              isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)]' : ''
+                            }`}
                           >
                             <div className="flex items-center gap-2">
                               <span className="p-1 rounded-md bg-slate-200/90 text-slate-700 hover:bg-[#249791] hover:text-white transition-all shadow-xs border border-slate-300/80 inline-flex items-center justify-center shrink-0">
@@ -584,13 +572,14 @@ export default function OtherMetricsTab({
                                   <ChevronRight className="w-3.5 h-3.5 stroke-[2.5]" />
                                 )}
                               </span>
-                              <span className="font-bold text-slate-900 truncate" title={group.groupName}>{group.groupName}</span>
+                              <span className="font-bold text-slate-900 truncate" title={group.groupName}>
+                                {group.groupName}
+                              </span>
+                              <span className="text-[10px] text-slate-400 font-medium ml-auto pr-1 shrink-0">
+                                ({group.businesses.length})
+                              </span>
                             </div>
                           </td>
-
-                          {hasAnyExpanded && (
-                            <td className="py-2 px-2.5 text-slate-400 font-normal border-r border-slate-200"></td>
-                          )}
 
                           {quartersList.map((qKey) => (
                             <Fragment key={qKey}>
@@ -611,7 +600,7 @@ export default function OtherMetricsTab({
                           </td>
                         </tr>
 
-                        {/* Child Business Rows (Rendered when group is expanded) */}
+                        {/* Child Business Rows (Rendered as subcategory directly under Segment) */}
                         {isExpanded &&
                           group.businesses.map((biz) => (
                             <tr
@@ -619,17 +608,17 @@ export default function OtherMetricsTab({
                               className="bg-white hover:bg-slate-50/80 transition-colors"
                             >
                               <td
-                                className={`py-1.5 px-2.5 text-slate-400 pl-7 border-b border-r border-slate-100 sticky left-0 z-10 bg-white ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)]' : ''
-                                  }`}
+                                className={`py-1.5 px-3 pl-8 sm:pl-9 text-slate-700 border-b border-r border-slate-100 sticky left-0 z-10 bg-white ${
+                                  isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)]' : ''
+                                }`}
                               >
-                                <span className="text-slate-300 text-[11px]">—</span>
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <span className="text-teal-600/80 font-mono text-[12px] select-none shrink-0">↳</span>
+                                  <span className="font-medium text-slate-800 text-xs truncate" title={biz.business}>
+                                    {biz.business}
+                                  </span>
+                                </div>
                               </td>
-
-                              {hasAnyExpanded && (
-                                <td className="py-1.5 px-2.5 text-slate-800 font-medium border-b border-r border-slate-100 truncate" title={biz.business}>
-                                  {biz.business}
-                                </td>
-                              )}
 
                               {quartersList.map((qKey) => (
                                 <Fragment key={qKey}>
@@ -660,17 +649,17 @@ export default function OtherMetricsTab({
                 <tfoot>
                   <tr className="bg-slate-100 font-bold text-slate-900 sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)]">
                     <td
-                      className={`py-2.5 px-2.5 border-t border-r border-slate-300 sticky left-0 z-20 bg-slate-100 text-sm sm:text-base font-bold ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)]' : ''
-                        }`}
+                      className={`py-2.5 px-3 border-t border-r border-slate-300 sticky left-0 z-20 bg-slate-100 text-sm sm:text-base font-bold text-slate-900 ${
+                        isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)]' : ''
+                      }`}
                     >
-                      Total
+                      <div className="flex items-center justify-between gap-1">
+                        <span>Total</span>
+                        <span className="text-[11px] font-normal text-slate-500">
+                          ({totalBusinessesCount} BUs)
+                        </span>
+                      </div>
                     </td>
-
-                    {hasAnyExpanded && (
-                      <td className="py-2.5 px-2.5 text-slate-500 font-medium border-t border-r border-slate-300 text-xs sm:text-sm">
-                        {totalBusinessesCount} {totalBusinessesCount === 1 ? 'Business' : 'Businesses'}
-                      </td>
-                    )}
 
                     {quartersList.map((qKey) => (
                       <Fragment key={qKey}>

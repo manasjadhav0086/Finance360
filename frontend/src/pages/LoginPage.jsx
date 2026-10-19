@@ -62,9 +62,9 @@ export default function LoginPage() {
       </div>
 
       {/* Header */}
-      <header className="relative z-10 w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
+      <header className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-white p-1 shadow-md flex items-center justify-center">
+          <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-white p-1 shadow-md flex items-center justify-center shrink-0">
             <img
               src="/fin/finance360_logo.png"
               alt="Finance360 Logo"
@@ -72,10 +72,10 @@ export default function LoginPage() {
             />
           </div>
           <div className="flex flex-col">
-            <span className="text-xl font-bold tracking-tight text-white leading-tight">
+            <span className="text-lg sm:text-xl font-bold tracking-tight text-white leading-tight">
               Finance360
             </span>
-            <span className="text-[10px] font-semibold text-blue-200 tracking-wider uppercase">
+            <span className="text-[9px] sm:text-[10px] font-semibold text-blue-200 tracking-wider uppercase">
               Financial Intelligence Suite
             </span>
           </div>
@@ -88,13 +88,13 @@ export default function LoginPage() {
       </header>
 
       {/* Main Form Content */}
-      <main className="relative z-10 flex-1 flex items-center justify-center px-4 py-8 sm:px-6">
+      <main className="relative z-10 flex-1 flex items-center justify-center px-3 py-6 sm:px-6 sm:py-8">
         <div className="w-full max-w-md">
           {/* Card Container */}
-          <div className="bg-white/95 backdrop-blur-xl text-slate-900 rounded-2xl shadow-2xl border border-white/20 p-8 sm:p-10 transition-all">
+          <div className="bg-white/95 backdrop-blur-xl text-slate-900 rounded-2xl shadow-2xl border border-white/20 p-5 sm:p-8 md:p-10 transition-all">
             {/* Title & Subtitle */}
-            <div className="mb-8 text-center sm:text-left">
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+            <div className="mb-6 sm:mb-8 text-center sm:text-left">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
                 Sign in to your account
               </h1>
               <p className="mt-2 text-sm text-slate-500">

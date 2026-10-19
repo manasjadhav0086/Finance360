@@ -1,12 +1,13 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import compression from 'compression';
 
 import mysqlService from './utils/mysqlClient.js';
 import { initDatabase } from './init_db.js';
 
-import dashboard from './routes/dashboard.js';
-import performance from './routes/performance.js';
+import dashboard, { warmDashboardCache } from './routes/dashboard.js';
+import performance, { warmPerformanceCache } from './routes/performance.js';
 import ai from './routes/ai.js';
 import news from './routes/news.js';
 import users from './routes/users.js';
@@ -15,6 +16,7 @@ const app = express();
 
 // 1. Middleware
 app.use(cors());
+app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -62,6 +64,12 @@ async function startServer() {
 
     app.listen(port, '0.0.0.0', () => {
       console.log(`[Server] Running on port ${port} (MySQL mode)`);
+      // Pre-warm dashboard and performance caches in background so user logins are instant
+      setTimeout(() => {
+        Promise.all([warmDashboardCache(), warmPerformanceCache()]).catch((err) => {
+          console.warn('[Cache Warmup] Notice:', err.message);
+        });
+      }, 500);
     });
   } catch (error) {
     console.error('[Server Startup Error]:', error.message);

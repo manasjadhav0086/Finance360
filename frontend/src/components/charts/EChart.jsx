@@ -679,12 +679,12 @@ const EChart = ({
   return (
     <div className={`w-full h-full min-w-0 min-h-0 flex flex-col relative ${className}`}>
       {headerTitle && (
-        <div className="flex items-center justify-between gap-2 mb-3 px-4 py-2.5 -mx-4 -mt-4 rounded-t-xl bg-gradient-to-r from-[#102A54] via-[#184480] to-[#1E56A0] text-white shadow-xs shrink-0">
-          <div className="flex items-center gap-2.5 min-w-0 pr-2">
+        <div className="flex items-center justify-between gap-2 mb-3 px-3 sm:px-4 py-2 sm:py-2.5 -mx-3 sm:-mx-4 -mt-3 sm:-mt-4 rounded-t-xl bg-gradient-to-r from-[#102A54] via-[#184480] to-[#1E56A0] text-white shadow-xs shrink-0">
+          <div className="flex items-center gap-2 min-w-0 pr-1">
             <span className="w-2 h-2 rounded-full bg-[#38BDF8] shadow-xs shrink-0" />
-            <div className="flex items-baseline gap-2 min-w-0 flex-wrap">
-              <span className="text-[13.5px] font-bold text-white tracking-tight whitespace-nowrap">{headerTitle}</span>
-              {subtitle && <span className="text-[11px] text-blue-100/85 font-medium truncate">{subtitle}</span>}
+            <div className="flex items-baseline gap-1.5 min-w-0 flex-wrap">
+              <span className="text-xs sm:text-[13.5px] font-bold text-white tracking-tight break-words leading-snug">{headerTitle}</span>
+              {subtitle && <span className="text-[10px] sm:text-[11px] text-blue-100/85 font-medium line-clamp-1 sm:truncate">{subtitle}</span>}
             </div>
           </div>
           <div className="flex items-center gap-1 shrink-0 text-blue-200">

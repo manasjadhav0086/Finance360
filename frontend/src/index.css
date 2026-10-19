@@ -73,9 +73,15 @@ input[type="reset"] {
   cursor: pointer;
 }
 
-@media (max-width: 1440px) {
+@media (min-width: 769px) and (max-width: 1440px) {
   html {
-    font-size: 80% !important;
+    font-size: 85% !important;
+  }
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: 100% !important;
   }
 }
 

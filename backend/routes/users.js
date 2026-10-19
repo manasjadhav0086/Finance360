@@ -167,11 +167,14 @@ router.post('/forgot-password', async (req, res) => {
       await user.save();
 
       // Trigger email delivery via configured SMTP provider
-      await emailService.sendPasswordResetEmail({
+      const deliveryResult = await emailService.sendPasswordResetEmail({
         to: user.email,
         name: user.name,
         resetToken: rawToken,
       });
+      console.log(`[Forgot Password] Reset token issued for ${user.email}. Live email sent: ${deliveryResult.sent}${deliveryResult.previewLink ? ` (Dev link: ${deliveryResult.previewLink})` : ''}`);
+    } else {
+      console.warn(`[Forgot Password] Reset requested for email "${cleanEmail}", but no active account was found in the database.`);
     }
 
     // Always return neutral anti-enumeration message
@@ -427,6 +430,7 @@ router.post('/send-invite/:user_id', verifyAdmin, async (req, res) => {
       to: targetUser.email,
       name: targetUser.name,
       setupToken: rawSetupToken,
+      temporaryPassword: process.env.DEFAULT_USER_PASSWORD || 'Welcome@Finance360',
     });
 
     const setupLink = `${emailService.getAppUrl()}/fin/reset-password?token=${rawSetupToken}`;

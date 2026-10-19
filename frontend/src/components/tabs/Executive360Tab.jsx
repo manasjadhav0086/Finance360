@@ -1124,18 +1124,18 @@ export default function Executive360Tab({
       {/* ========================================================= */}
       {/* EXECUTIVE HEADER BANNER */}
       {/* ========================================================= */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0F2744] via-[#1E40AF] to-[#0F2744] p-5 text-white shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex flex-col">
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-white drop-shadow-xs">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0F2744] via-[#1E40AF] to-[#0F2744] p-3.5 sm:p-5 text-white shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex flex-col min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <h1 className="text-base sm:text-xl md:text-2xl font-bold tracking-tight text-white drop-shadow-xs break-words">
               Executive360 — Financial Performance &amp; Strategy
             </h1>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/15 text-white border border-white/20 backdrop-blur-md">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-bold bg-white/15 text-white border border-white/20 backdrop-blur-md shrink-0">
               <Calendar className="w-3.5 h-3.5" />
               {isMonthFiltered ? `${activeMonthStr} ${currentFy}` : `${currentFy} ${currentQ === 'Total' ? 'Full Year' : currentQ}`}
             </span>
           </div>
-          <span className="text-xs text-blue-100/90 font-medium mt-1">
+          <span className="text-[11px] sm:text-xs text-blue-100/90 font-medium mt-1 leading-relaxed">
             Executive Financial Cockpit · P&amp;L Health, Capital Allocation, Cash Flow &amp; Risk Governance
           </span>
         </div>
@@ -1145,32 +1145,32 @@ export default function Executive360Tab({
       {/* SECTION 1: EXECUTIVE FINANCIAL SUMMARY (6 NON-DUPLICATE KPIS) */}
       {/* ========================================================= */}
       <section>
-        <div className="flex items-center justify-between mb-2.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2.5">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#1E40AF]" />
-            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#1E40AF] shrink-0" />
+            <h2 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">
               1. Executive Financial Summary
             </h2>
           </div>
-          <span className="text-xs text-slate-500 font-medium">
+          <span className="text-[11px] sm:text-xs text-slate-500 font-medium">
             Non-redundant core measures · Distinct from Operational Performance Tile
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-3.5">
           {executiveKpis.map((kpi) => (
             <article
               key={kpi.id}
-              className={`relative overflow-hidden rounded-xl border border-slate-200/90 bg-white ${kpi.borderAccent} p-3.5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between min-h-[140px]`}
+              className={`relative overflow-hidden rounded-xl border border-slate-200/90 bg-white ${kpi.borderAccent} p-3 sm:p-3.5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between min-h-[130px] sm:min-h-[140px]`}
             >
               <div>
-                <div className="flex items-start justify-between gap-1 mb-1.5 min-h-[28px]">
+                <div className="flex items-start justify-between gap-1 mb-1.5 min-h-[26px]">
                   <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider leading-snug break-words">
                     {kpi.title}
                   </span>
                   <div className="group relative cursor-pointer shrink-0 mt-0.5">
                     <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 transition-colors" />
-                    <div className="invisible group-hover:visible absolute right-0 top-5 z-50 w-52 p-2.5 bg-slate-900 text-white text-[11px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all pointer-events-none leading-relaxed">
+                    <div className="invisible group-hover:visible absolute right-0 top-5 z-50 w-48 sm:w-52 p-2.5 bg-slate-900 text-white text-[11px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all pointer-events-none leading-relaxed">
                       {kpi.tooltip}
                     </div>
                   </div>
@@ -1182,7 +1182,7 @@ export default function Executive360Tab({
                   </div>
                 ) : (
                   <div className="flex items-baseline gap-1.5 mb-1 flex-wrap">
-                    <span className="text-2xl font-bold font-mono tracking-tight text-slate-950">
+                    <span className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-slate-950">
                       {kpi.value}
                     </span>
                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${kpi.badgeColor}`}>

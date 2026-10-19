@@ -51,9 +51,9 @@ export default function ForgotPasswordPage() {
       </div>
 
       {/* Header */}
-      <header className="relative z-10 w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
+      <header className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-white p-1 shadow-md flex items-center justify-center">
+          <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-white p-1 shadow-md flex items-center justify-center shrink-0">
             <img
               src="/fin/finance360_logo.png"
               alt="Finance360 Logo"
@@ -61,10 +61,10 @@ export default function ForgotPasswordPage() {
             />
           </div>
           <div className="flex flex-col">
-            <span className="text-xl font-bold tracking-tight text-white leading-tight">
+            <span className="text-lg sm:text-xl font-bold tracking-tight text-white leading-tight">
               Finance360
             </span>
-            <span className="text-[10px] font-semibold text-blue-200 tracking-wider uppercase">
+            <span className="text-[9px] sm:text-[10px] font-semibold text-blue-200 tracking-wider uppercase">
               Financial Intelligence Suite
             </span>
           </div>
@@ -72,23 +72,24 @@ export default function ForgotPasswordPage() {
 
         <Link
           to="/login"
-          className="flex items-center gap-2 text-xs font-semibold text-blue-200 hover:text-white bg-white/10 hover:bg-white/15 px-3 py-1.5 rounded-full backdrop-blur-xs border border-white/10 transition-all cursor-pointer"
+          className="flex items-center gap-1.5 sm:gap-2 text-xs font-semibold text-blue-200 hover:text-white bg-white/10 hover:bg-white/15 px-2.5 sm:px-3 py-1.5 rounded-full backdrop-blur-xs border border-white/10 transition-all cursor-pointer min-h-[36px]"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Sign In</span>
+          <span className="hidden xs:inline">Back to Sign In</span>
+          <span className="xs:hidden">Sign In</span>
         </Link>
       </header>
 
       {/* Main Form Content */}
-      <main className="relative z-10 flex-1 flex items-center justify-center px-4 py-8 sm:px-6">
+      <main className="relative z-10 flex-1 flex items-center justify-center px-3 py-6 sm:px-6 sm:py-8">
         <div className="w-full max-w-md">
           {/* Card Container */}
-          <div className="bg-white/95 backdrop-blur-xl text-slate-900 rounded-2xl shadow-2xl border border-white/20 p-8 sm:p-10 transition-all">
+          <div className="bg-white/95 backdrop-blur-xl text-slate-900 rounded-2xl shadow-2xl border border-white/20 p-5 sm:p-8 md:p-10 transition-all">
             <div className="mb-6 text-center sm:text-left">
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
                 Reset your password
               </h1>
-              <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+              <p className="mt-2 text-xs sm:text-sm text-slate-500 leading-relaxed">
                 Enter your registered email address and we'll generate single-use instructions to reset your account password.
               </p>
             </div>

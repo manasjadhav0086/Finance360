@@ -83,7 +83,7 @@ export default function Dashboard({ isAdmin, user }) {
   const perfCacheRef = useRef({});
 
   // Initial and refresh loader for main dashboard dataset
-  const loadDashboardData = useCallback(async (forceRefresh = false, activeFilters = filters) => {
+  const loadDashboardData = useCallback(async (forceRefresh = false) => {
     if (!forceRefresh && dataCacheRef.current['master']) {
       setDashboardData(dataCacheRef.current['master']);
       setLoading(false);
@@ -99,9 +99,9 @@ export default function Dashboard({ isAdmin, user }) {
       const res = await api.get(apiEndpoints.DASHBOARD_DATA, { params });
       dataCacheRef.current['master'] = res.data;
       setDashboardData(res.data);
-      if (!activeFilters.fy && (res.data?.meta?.budget_fy || res.data?.meta?.fys?.length)) {
+      if (res.data?.meta?.budget_fy || res.data?.meta?.fys?.length) {
         const defaultFy = res.data.meta.budget_fy || res.data.meta.fys[res.data.meta.fys.length - 1];
-        setFilters((prev) => ({ ...prev, fy: defaultFy }));
+        setFilters((prev) => (prev.fy ? prev : { ...prev, fy: defaultFy }));
       }
     } catch (err) {
       console.error('Error loading dashboard data:', err);
@@ -137,13 +137,13 @@ export default function Dashboard({ isAdmin, user }) {
   useEffect(() => {
     if (activeTab !== 'livenews') {
       if (!dataCacheRef.current['master']) {
-        loadDashboardData(false, filters);
+        loadDashboardData(false);
       }
       if (!perfCacheRef.current['master']) {
         loadPerfViews(false);
       }
     }
-  }, [activeTab, loadDashboardData, loadPerfViews, filters]);
+  }, [activeTab, loadDashboardData, loadPerfViews]);
 
   // Alias lookup map builder
   // Multi-alias lookup map builder
@@ -950,22 +950,21 @@ export default function Dashboard({ isAdmin, user }) {
       />
 
       <div className="flex-1 min-w-0 flex flex-col">
-        {activeTab !== 'livenews' && (
-          <Topbar
-            onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
-            filters={filters}
-            updateFilters={updateFilters}
-            dashboardData={dashboardData}
-            loading={loading}
-            refreshAll={refreshAll}
-            getActiveBusinesses={getActiveBusinesses}
-            isAdmin={isAdmin}
-            user={user}
-            onOpenAi={() => setIsAiOpen(true)}
-          />
-        )}
+        <Topbar
+          onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+          filters={filters}
+          updateFilters={updateFilters}
+          dashboardData={dashboardData}
+          loading={loading}
+          refreshAll={refreshAll}
+          getActiveBusinesses={getActiveBusinesses}
+          isAdmin={isAdmin}
+          user={user}
+          onOpenAi={() => setIsAiOpen(true)}
+          hideFilters={activeTab === 'livenews'}
+        />
 
-        <main id="mainContent" className="p-6 flex-1 min-w-0 max-w-full overflow-x-hidden">
+        <main id="mainContent" className="p-3 sm:p-4 md:p-6 flex-1 min-w-0 max-w-full overflow-x-hidden">
           {activeTab !== 'livenews' && loading ? (
             <Loader />
           ) : activeTab !== 'livenews' && error ? (

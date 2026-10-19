@@ -66,9 +66,9 @@ export default function ChangePasswordPage() {
       </div>
 
       {/* Header */}
-      <header className="relative z-10 w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
+      <header className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-white p-1 shadow-md flex items-center justify-center">
+          <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-white p-1 shadow-md flex items-center justify-center shrink-0">
             <img
               src="/fin/finance360_logo.png"
               alt="Finance360 Logo"
@@ -76,31 +76,32 @@ export default function ChangePasswordPage() {
             />
           </div>
           <div className="flex flex-col">
-            <span className="text-xl font-bold tracking-tight text-white leading-tight">
+            <span className="text-lg sm:text-xl font-bold tracking-tight text-white leading-tight">
               Finance360
             </span>
-            <span className="text-[10px] font-semibold text-blue-200 tracking-wider uppercase">
+            <span className="text-[9px] sm:text-[10px] font-semibold text-blue-200 tracking-wider uppercase">
               Financial Intelligence Suite
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-medium text-amber-200 bg-amber-500/15 border border-amber-400/30 px-3 py-1.5 rounded-full backdrop-blur-xs">
-          <ShieldCheck className="w-4 h-4 text-amber-300" />
-          <span>Mandatory Account Activation</span>
+        <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-medium text-amber-200 bg-amber-500/15 border border-amber-400/30 px-2.5 sm:px-3 py-1.5 rounded-full backdrop-blur-xs">
+          <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 shrink-0" />
+          <span className="hidden xs:inline">Mandatory Account Activation</span>
+          <span className="xs:hidden">Activation</span>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="relative z-10 flex-1 flex items-center justify-center px-4 py-8 sm:px-6">
+      <main className="relative z-10 flex-1 flex items-center justify-center px-3 py-6 sm:px-6 sm:py-8">
         <div className="w-full max-w-md">
-          <div className="bg-white/95 backdrop-blur-xl text-slate-900 rounded-2xl shadow-2xl border border-white/20 p-8 sm:p-10 transition-all">
+          <div className="bg-white/95 backdrop-blur-xl text-slate-900 rounded-2xl shadow-2xl border border-white/20 p-5 sm:p-8 md:p-10 transition-all">
             <div className="mb-6 text-center sm:text-left">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 mb-3">
                 <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
                 First-Login Password Setup
               </span>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
                 Configure your password
               </h1>
               <p className="mt-2 text-sm text-slate-500 leading-relaxed">

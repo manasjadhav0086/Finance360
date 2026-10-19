@@ -200,11 +200,65 @@ async function fetchView(viewKey, segment, biz1, userScope = { isUnrestricted: t
   return (rawRows || []).map(serializeRow);
 }
 
+// In-memory response cache for high-speed dashboard loading
+const perfCache = new Map();
+const PERF_CACHE_TTL_MS = 20 * 60 * 1000; // 20 minutes
+
+function getPerfCacheKey(userScope, segment, biz1) {
+  const scopeId = userScope.isUnrestricted
+    ? 'ALL'
+    : `${(userScope.allowedBizs || []).slice().sort().join(',')}|${(userScope.allowedSegments || []).slice().sort().join(',')}`;
+  return `${scopeId}:${segment || 'ALL'}:${biz1 || 'ALL'}`;
+}
+
+export function clearPerformanceCache() {
+  perfCache.clear();
+}
+
+export async function warmPerformanceCache() {
+  try {
+    await ensureAliases();
+    const adminScope = { isUnrestricted: true, allowedBizs: [], allowedSegments: [] };
+    const views = {
+      dataai: 'dataai_view',
+      RevBizWise: 'RevBizWise',
+      OrderBizWise: 'OrderBizWise',
+      orderintake_view: 'orderintake_view',
+      capex_view: 'capex_view',
+      collection_view: 'collection_view',
+    };
+
+    console.log('[PerformanceRouter] Pre-warming performance cache in background...');
+    const t0 = Date.now();
+    const entries = await Promise.all(
+      Object.entries(views).map(async ([key, bqView]) => {
+        const rows = await fetchView(key, null, null, adminScope);
+        return [key, { rows, viewName: bqView }];
+      })
+    );
+    const result = Object.fromEntries(entries);
+    const cacheKey = getPerfCacheKey(adminScope, null, null);
+    perfCache.set(cacheKey, { data: result, timestamp: Date.now() });
+    console.log(`[PerformanceRouter] Performance cache pre-warmed in ${Date.now() - t0}ms.`);
+  } catch (err) {
+    console.warn('[PerformanceRouter] Pre-warm notice:', err.message);
+  }
+}
+
 router.get('/', verifyUser, async (req, res) => {
   try {
     await ensureAliases();
-    const { segment = null, biz1 = null } = req.query;
+    const { segment = null, biz1 = null, force_refresh = null } = req.query;
     const userScope = resolveUserScope(req.dbUser, bmRawRecords);
+
+    const isForceRefresh = force_refresh === 'true' || force_refresh === true;
+    const cacheKey = getPerfCacheKey(userScope, segment, biz1);
+    const cached = perfCache.get(cacheKey);
+
+    if (!isForceRefresh && cached && (Date.now() - cached.timestamp < PERF_CACHE_TTL_MS)) {
+      res.setHeader('X-Cache', 'HIT');
+      return res.json(cached.data);
+    }
 
     const views = {
       dataai: 'dataai_view',
@@ -222,7 +276,10 @@ router.get('/', verifyUser, async (req, res) => {
       })
     );
 
-    return res.json(Object.fromEntries(entries));
+    const payload = Object.fromEntries(entries);
+    perfCache.set(cacheKey, { data: payload, timestamp: Date.now() });
+    res.setHeader('X-Cache', 'MISS');
+    return res.json(payload);
   } catch (exc) {
     console.error(`[PerformanceRouter] MySQL Query error: ${exc.message}`);
     return res.status(500).json({ detail: exc.message });

@@ -89,9 +89,9 @@ export default function ResetPasswordPage() {
       </div>
 
       {/* Header */}
-      <header className="relative z-10 w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
+      <header className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-white p-1 shadow-md flex items-center justify-center">
+          <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-white p-1 shadow-md flex items-center justify-center shrink-0">
             <img
               src="/fin/finance360_logo.png"
               alt="Finance360 Logo"
@@ -99,10 +99,10 @@ export default function ResetPasswordPage() {
             />
           </div>
           <div className="flex flex-col">
-            <span className="text-xl font-bold tracking-tight text-white leading-tight">
+            <span className="text-lg sm:text-xl font-bold tracking-tight text-white leading-tight">
               Finance360
             </span>
-            <span className="text-[10px] font-semibold text-blue-200 tracking-wider uppercase">
+            <span className="text-[9px] sm:text-[10px] font-semibold text-blue-200 tracking-wider uppercase">
               Financial Intelligence Suite
             </span>
           </div>
@@ -110,16 +110,16 @@ export default function ResetPasswordPage() {
 
         <Link
           to="/login"
-          className="text-xs font-semibold text-blue-200 hover:text-white bg-white/10 hover:bg-white/15 px-3 py-1.5 rounded-full backdrop-blur-xs border border-white/10 transition-all cursor-pointer"
+          className="text-xs font-semibold text-blue-200 hover:text-white bg-white/10 hover:bg-white/15 px-3 py-1.5 rounded-full backdrop-blur-xs border border-white/10 transition-all cursor-pointer min-h-[36px] flex items-center"
         >
           Sign In
         </Link>
       </header>
 
       {/* Main Content */}
-      <main className="relative z-10 flex-1 flex items-center justify-center px-4 py-8 sm:px-6">
+      <main className="relative z-10 flex-1 flex items-center justify-center px-3 py-6 sm:px-6 sm:py-8">
         <div className="w-full max-w-md">
-          <div className="bg-white/95 backdrop-blur-xl text-slate-900 rounded-2xl shadow-2xl border border-white/20 p-8 sm:p-10 transition-all">
+          <div className="bg-white/95 backdrop-blur-xl text-slate-900 rounded-2xl shadow-2xl border border-white/20 p-5 sm:p-8 md:p-10 transition-all">
             {isVerifying ? (
               <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-500">
                 <Loader2 className="w-8 h-8 animate-spin text-blue-600" />

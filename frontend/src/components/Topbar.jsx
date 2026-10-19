@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { ChevronDown, Check, Search, RotateCcw, CheckCheck, X, Sparkles } from 'lucide-react';
+import { ChevronDown, Check, Search, RotateCcw, CheckCheck, X, Sparkles, Menu, SlidersHorizontal } from 'lucide-react';
 import { getMonthsForQuarter } from '../utils/periodUtils';
 
 function CustomDropdown({
@@ -137,7 +137,7 @@ function CustomDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1.5 z-50 bg-white border border-slate-300 rounded-md shadow-xl min-w-[240px] max-w-[320px] p-2 flex flex-col gap-1.5 animate-in fade-in duration-150">
+        <div className="absolute top-full left-0 sm:left-auto right-auto sm:right-0 mt-1.5 z-50 bg-white border border-slate-300 rounded-lg shadow-xl w-full sm:w-auto min-w-[220px] max-w-[calc(100vw-32px)] p-2 flex flex-col gap-1.5 animate-in fade-in duration-150">
           <div className="flex items-center justify-between px-2 pb-1.5 border-b border-slate-200 text-[11px]">
             <span className="font-bold text-slate-800 uppercase tracking-wider text-[10px]">
               Filter {label}
@@ -260,6 +260,7 @@ export default function Topbar({
   isAdmin,
   user,
   onOpenAi,
+  hideFilters = false,
 }) {
   const fys = dashboardData?.meta?.fys || [];
   const quarters = [
@@ -384,6 +385,17 @@ export default function Topbar({
     return businesses.filter((b) => (typeof b === 'object' ? b.value : b) !== 'ALL');
   }, [businesses]);
 
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.quarter && filters.quarter !== 'Total' && filters.quarter !== 'ALL') count++;
+    if (filters.month && filters.month !== 'ALL') count++;
+    if (filters.segment && filters.segment !== 'ALL') count++;
+    if (filters.bu && filters.bu !== 'ALL') count++;
+    return count;
+  }, [filters]);
+
   const resetFilters = () => {
     const defaultFy =
       dashboardData?.meta?.budget_fy ||
@@ -400,77 +412,182 @@ export default function Topbar({
     updateFilters(resetValues);
   };
 
-  return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-6 py-3 shadow-xs">
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 w-full">
-        <div className="flex items-end gap-3 flex-wrap flex-1">
-          <CustomDropdown
-            label="Year"
-            options={fys}
-            value={filters.fy}
-            onChange={handleYearChange}
-            multi={false}
-            searchable={true}
-          />
+  const filterControls = (
+    <>
+      <CustomDropdown
+        label="Year"
+        options={fys}
+        value={filters.fy}
+        onChange={handleYearChange}
+        multi={false}
+        searchable={true}
+      />
 
-          <CustomDropdown
-            label="Quarter"
-            options={quarters}
-            value={filters.quarter}
-            onChange={handleQuarterChange}
-            multi={true}
-            allOptionLabel="Full Year"
-          />
+      <CustomDropdown
+        label="Quarter"
+        options={quarters}
+        value={filters.quarter}
+        onChange={handleQuarterChange}
+        multi={true}
+        allOptionLabel="Full Year"
+      />
 
-          <CustomDropdown
-            label="Month"
-            options={monthOptions}
-            value={filters.month || 'ALL'}
-            onChange={(val) => updateFilters({ month: val })}
-            multi={true}
-            searchable={true}
-            allOptionLabel="All Months"
-          />
+      <CustomDropdown
+        label="Month"
+        options={monthOptions}
+        value={filters.month || 'ALL'}
+        onChange={(val) => updateFilters({ month: val })}
+        multi={true}
+        searchable={true}
+        allOptionLabel="All Months"
+      />
 
-          <CustomDropdown
-            label="Business Group"
-            options={segmentOptions}
-            value={filters.segment}
-            onChange={(val) => {
-              let nextBu = filters.bu;
-              if (nextBu && nextBu !== 'ALL') {
-                const validBUs = typeof getActiveBusinesses === 'function' ? getActiveBusinesses(val) : [];
-                if (validBUs.length > 0) {
-                  const isStillValid = Array.isArray(nextBu)
-                    ? nextBu.every((b) => validBUs.includes(b))
-                    : validBUs.includes(nextBu);
-                  if (!isStillValid) {
-                    nextBu = 'ALL';
-                  }
-                }
+      <CustomDropdown
+        label="Business Group"
+        options={segmentOptions}
+        value={filters.segment}
+        onChange={(val) => {
+          let nextBu = filters.bu;
+          if (nextBu && nextBu !== 'ALL') {
+            const validBUs = typeof getActiveBusinesses === 'function' ? getActiveBusinesses(val) : [];
+            if (validBUs.length > 0) {
+              const isStillValid = Array.isArray(nextBu)
+                ? nextBu.every((b) => validBUs.includes(b))
+                : validBUs.includes(nextBu);
+              if (!isStillValid) {
+                nextBu = 'ALL';
               }
-              updateFilters({ segment: val, bu: nextBu });
-            }}
-            multi={true}
-            searchable={true}
-            allOptionLabel="All Business Groups"
-          />
+            }
+          }
+          updateFilters({ segment: val, bu: nextBu });
+        }}
+        multi={true}
+        searchable={true}
+        allOptionLabel="All Business Groups"
+      />
 
-          <CustomDropdown
-            label="Business"
-            options={businessOptions}
-            value={filters.bu}
-            onChange={(val) => updateFilters({ bu: val })}
-            multi={true}
-            searchable={true}
-            allOptionLabel="All Businesses"
-          />
+      <CustomDropdown
+        label="Business"
+        options={businessOptions}
+        value={filters.bu}
+        onChange={(val) => updateFilters({ bu: val })}
+        multi={true}
+        searchable={true}
+        allOptionLabel="All Businesses"
+      />
+    </>
+  );
+
+  return (
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-3 sm:px-4 lg:px-6 py-2 sm:py-2.5 shadow-xs">
+      {/* Mobile Header Bar: Menu toggle, Logo, Filter toggle & AI button */}
+      <div className="flex lg:hidden items-center justify-between gap-2 w-full">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            className="p-2 -ml-1 text-slate-700 hover:text-[#1E56A0] hover:bg-slate-100 rounded-lg transition-colors cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center"
+            aria-label="Open navigation menu"
+            id="mobileMenuBtn"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-1.5">
+            <img
+              src="/fin/finance360_logo.png"
+              alt="Finance360"
+              className="h-6 w-6 object-contain rounded-full bg-slate-100"
+            />
+            <span className="font-bold text-sm sm:text-base text-slate-900 tracking-tight">Finance360</span>
+          </div>
         </div>
+
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {!hideFilters && (
+            <button
+              type="button"
+              onClick={() => setIsMobileFilterOpen((prev) => !prev)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer min-h-[36px] ${
+                isMobileFilterOpen || activeFilterCount > 0
+                  ? 'bg-blue-50 border-blue-600 text-blue-700 font-bold shadow-xs'
+                  : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
+              }`}
+              aria-expanded={isMobileFilterOpen}
+              aria-label="Toggle filters"
+              id="mobileFilterToggleBtn"
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span className="hidden xs:inline text-xs">Filters</span>
+              {activeFilterCount > 0 && (
+                <span className="bg-blue-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+          )}
+
+          <button
+            type="button"
+            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-xs transition-colors cursor-pointer min-h-[36px]"
+            id="mobileAskAiBtn"
+            title="Open Finance AI Copilot"
+            onClick={onOpenAi}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-blue-200" />
+            <span className="hidden xs:inline">Ask AI</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Collapsible Filter Drawer/Panel */}
+      {!hideFilters && isMobileFilterOpen && (
+        <div className="lg:hidden mt-2 p-3 bg-slate-50 border border-slate-200 rounded-xl shadow-inner flex flex-col gap-2.5 animate-in fade-in duration-150">
+          <div className="flex items-center justify-between pb-1.5 border-b border-slate-200 text-xs">
+            <span className="font-bold text-slate-800 uppercase tracking-wider text-[11px]">
+              Dashboard Filters {activeFilterCount > 0 ? `(${activeFilterCount} Active)` : ''}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="text-[11px] font-bold text-slate-600 hover:text-rose-600 flex items-center gap-1 cursor-pointer"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Reset</span>
+              </button>
+              <span className="text-slate-300">|</span>
+              <button
+                type="button"
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="text-[11px] font-bold text-blue-600 hover:text-blue-800 cursor-pointer"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {filterControls}
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Filter Bar (Preserved Horizontal Layout on lg and above) */}
+      <div className="hidden lg:flex lg:flex-row lg:items-end justify-between gap-4 w-full">
+        {!hideFilters ? (
+          <div className="flex items-end gap-3 flex-wrap flex-1">
+            {filterControls}
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+            <span>Finance360 Suite</span>
+          </div>
+        )}
 
         <div className="flex items-center gap-2.5 ml-auto shrink-0 flex-wrap sm:flex-nowrap self-end pb-0.5">
           <button
             type="button"
-            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-all cursor-pointer shadow-xs group shrink-0"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-all cursor-pointer shadow-xs group shrink-0 min-h-[34px]"
             id="askFinanceAiBtn"
             title="Open Finance AI Copilot"
             onClick={onOpenAi}
@@ -481,7 +598,7 @@ export default function Topbar({
 
           <button
             type="button"
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-800 hover:text-slate-950 bg-white hover:bg-slate-100 border border-slate-300 rounded-md transition-colors cursor-pointer shadow-2xs"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-800 hover:text-slate-950 bg-white hover:bg-slate-100 border border-slate-300 rounded-md transition-colors cursor-pointer shadow-2xs min-h-[34px]"
             id="resetFiltersBtn"
             title="Reset all filters to default"
             onClick={resetFilters}

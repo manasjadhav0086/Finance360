@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Tooltip from './ui/Tooltip';
 import { useAuth } from '../context/AuthContext';
@@ -11,7 +12,8 @@ import {
   Globe,
   LogOut,
   Settings,
-  Receipt
+  Receipt,
+  X,
 } from 'lucide-react';
 
 const NAV_GROUPS = [
@@ -98,21 +100,41 @@ export default function Sidebar({
     logout();
   };
 
+  // Lock body scroll and handle Escape key on mobile when sidebar is open
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [isOpen, onClose]);
+
   return (
     <>
       <div
-        className={`fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 lg:hidden ${isOpen ? 'block' : 'hidden'
+        className={`fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 lg:hidden transition-opacity duration-200 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
           }`}
         id="sidebarBackdrop"
         onClick={onClose}
+        aria-hidden="true"
       />
 
       <aside
-        className={`fixed lg:sticky top-0 left-0 h-screen w-64 bg-gradient-to-b from-[#1E56A0] via-[#184480] to-[#122A56] text-white border-r border-[#163B70] z-50 flex flex-col flex-shrink-0 transition-all duration-200 ease-in-out lg:translate-x-0 select-none shadow-xl ${isOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed lg:sticky top-0 left-0 h-screen w-72 sm:w-64 max-w-[85vw] bg-gradient-to-b from-[#1E56A0] via-[#184480] to-[#122A56] text-white border-r border-[#163B70] z-50 flex flex-col flex-shrink-0 transition-transform duration-200 ease-in-out lg:translate-x-0 select-none shadow-2xl ${isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
+        aria-label="Main Navigation"
       >
-        <div className="h-16 px-4 bg-white/10 backdrop-blur-md border-b border-white/15 flex items-center shrink-0">
-          <div className="flex items-center gap-3">
+        <div className="h-16 px-4 bg-white/10 backdrop-blur-md border-b border-white/15 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
             <div className="flex items-center justify-center shrink-0">
               <img
                 src="/fin/finance360_logo.png"
@@ -125,6 +147,16 @@ export default function Sidebar({
               Finance360
             </span>
           </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="lg:hidden p-2 text-white/80 hover:text-white hover:bg-white/15 rounded-lg transition-colors cursor-pointer shrink-0 ml-2"
+            aria-label="Close navigation menu"
+            id="closeSidebarBtn"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         <nav className="p-3 flex-1 flex flex-col gap-5 overflow-y-auto custom-scroll" aria-label="Dashboard sections">
@@ -142,8 +174,8 @@ export default function Sidebar({
                   <button
                     key={item.id}
                     type="button"
-                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all duration-150 cursor-pointer text-left ${isActive
-                      ? 'bg-white text-[#1E56A0] font-bold shadow-lg shadow-black/15 scale-[1.02]'
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 min-h-[44px] rounded-xl text-sm transition-all duration-150 cursor-pointer text-left ${isActive
+                      ? 'bg-white text-[#1E56A0] font-bold shadow-lg shadow-black/15 scale-[1.01]'
                       : 'text-blue-100/90 hover:bg-white/12 hover:text-white font-semibold'
                       }`}
                     onClick={() => {

@@ -40,40 +40,42 @@ export default function LiveNewsTab() {
           </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-1.5 text-xs text-slate-600 font-medium">
-            Industry:
-            <input
-              type="text"
-              className="bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:bg-white focus:border-blue-600 transition-all w-28"
-              value={industry}
-              onChange={(e) => setIndustry(e.target.value)}
-            />
-          </label>
+        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3 w-full lg:w-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 flex-1 sm:flex-initial">
+            <label className="flex items-center justify-between sm:justify-start gap-1.5 text-xs text-slate-600 font-medium">
+              <span>Industry:</span>
+              <input
+                type="text"
+                className="bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:bg-white focus:border-blue-600 transition-all w-32 sm:w-28"
+                value={industry}
+                onChange={(e) => setIndustry(e.target.value)}
+              />
+            </label>
 
-          <label className="flex items-center gap-1.5 text-xs text-slate-600 font-medium">
-            Topic:
-            <input
-              type="text"
-              className="bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:bg-white focus:border-blue-600 transition-all w-36"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-            />
-          </label>
+            <label className="flex items-center justify-between sm:justify-start gap-1.5 text-xs text-slate-600 font-medium">
+              <span>Topic:</span>
+              <input
+                type="text"
+                className="bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:bg-white focus:border-blue-600 transition-all w-36"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+              />
+            </label>
 
-          <label className="flex items-center gap-1.5 text-xs text-slate-600 font-medium">
-            Location:
-            <input
-              type="text"
-              className="bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:bg-white focus:border-blue-600 transition-all w-24"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
-          </label>
+            <label className="flex items-center justify-between sm:justify-start gap-1.5 text-xs text-slate-600 font-medium">
+              <span>Location:</span>
+              <input
+                type="text"
+                className="bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs text-slate-800 outline-none focus:bg-white focus:border-blue-600 transition-all w-28 sm:w-24"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+              />
+            </label>
+          </div>
 
           <button
             type="button"
-            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors cursor-pointer disabled:opacity-50"
+            className="flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors cursor-pointer disabled:opacity-50 min-h-[40px] shrink-0"
             onClick={loadNews}
             disabled={loading}
           >
