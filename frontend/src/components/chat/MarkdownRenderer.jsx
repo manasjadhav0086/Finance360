@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { Copy, Check, Download, Table, BarChart3 } from "lucide-react";
+import { Copy, Check, Download, Table, BarChart3, RotateCcw, RefreshCw, Maximize2, Minimize2 } from "lucide-react";
+import * as echarts from "echarts";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -22,6 +23,195 @@ function isChartConfig(codeStr) {
     } catch {
         return false;
     }
+}
+
+function InteractiveAIChart({ rawCode }) {
+    const [refreshKey, setRefreshKey] = useState(0);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const containerRef = useRef(null);
+
+    let parsed = null;
+    try {
+        parsed = JSON.parse(rawCode.trim());
+    } catch {
+        return null;
+    }
+    if (!parsed) return null;
+
+    // Extract title text cleanly
+    const extractedTitle = typeof parsed.title?.text === 'string'
+        ? parsed.title.text
+        : Array.isArray(parsed.title) && parsed.title[0]?.text
+            ? parsed.title[0].text
+            : parsed.chartTitle || 'Financial Performance Visualization';
+
+    const subtitle = typeof parsed.title?.subtext === 'string'
+        ? parsed.title.subtext
+        : '';
+
+    // Create a clean option without internal canvas title or toolbox to avoid overlapping
+    const cleanOption = {
+        ...parsed,
+        title: { show: false },
+        toolbox: { show: false },
+        grid: {
+            left: '3%',
+            right: '4%',
+            top: '8%',
+            bottom: '18%',
+            containLabel: true,
+            ...(parsed.grid || {})
+        }
+    };
+
+    // If pie/donut, ensure slices and legend are clean and readable without clipping
+    const isPieOrDonut = Array.isArray(cleanOption.series) && cleanOption.series.some(s => s.type === 'pie');
+    if (isPieOrDonut) {
+        cleanOption.series = cleanOption.series.map(s => ({
+            ...s,
+            avoidLabelOverlap: true,
+            minShowLabelAngle: 3.5,
+            label: {
+                show: true,
+                position: 'outside',
+                formatter: '{d}%',
+                fontSize: 10,
+                color: '#CBD5E1',
+                ...(s.label || {}),
+            },
+            labelLine: {
+                show: true,
+                length: 10,
+                length2: 8,
+                smooth: true,
+                ...(s.labelLine || {}),
+            }
+        }));
+    }
+
+    const handleDownload = () => {
+        try {
+            const chartDom = containerRef.current?.querySelector('[_echarts_instance_]');
+            const inst = chartDom ? echarts.getInstanceByDom(chartDom) : null;
+            if (!inst) return;
+            const safeName = extractedTitle.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_') || 'finance_chart';
+            const url = inst.getDataURL({
+                type: 'png',
+                pixelRatio: 2,
+                backgroundColor: '#0F172A',
+                excludeComponents: ['toolbox'],
+            });
+            const link = document.createElement('a');
+            link.download = `${safeName}.png`;
+            link.href = url;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (err) {
+            console.error('[InteractiveAIChart] Export failed:', err);
+        }
+    };
+
+    const handleReset = () => {
+        try {
+            const chartDom = containerRef.current?.querySelector('[_echarts_instance_]');
+            const inst = chartDom ? echarts.getInstanceByDom(chartDom) : null;
+            if (inst) {
+                inst.dispatchAction({ type: 'restore' });
+            }
+        } catch (err) {
+            console.error('[InteractiveAIChart] Reset failed:', err);
+        }
+    };
+
+    const handleRefresh = () => {
+        setRefreshKey(k => k + 1);
+    };
+
+    const toggleFullscreen = () => {
+        if (!containerRef.current) return;
+        if (!document.fullscreenElement) {
+            containerRef.current.requestFullscreen?.().then(() => setIsFullscreen(true)).catch(() => {});
+        } else {
+            document.exitFullscreen?.().then(() => setIsFullscreen(false)).catch(() => {});
+        }
+    };
+
+    return (
+        <div 
+            ref={containerRef}
+            className={`my-4 bg-[#0F172A] border border-slate-700/80 rounded-xl shadow-lg transition-all overflow-hidden ${
+                isFullscreen ? 'p-6 fixed inset-0 z-50 rounded-none bg-slate-950 flex flex-col' : 'p-3.5 sm:p-4'
+            }`}
+        >
+            {/* Redesigned Header: Responsive flex layout with dedicated action toolbar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 mb-2 border-b border-slate-800">
+                {/* Left: Chart Badge & Title */}
+                <div className="flex flex-col min-w-0 pr-1">
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold tracking-wider text-blue-400 uppercase mb-0.5">
+                        <BarChart3 className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                        <span>Interactive AI Chart</span>
+                    </div>
+                    <h4 
+                        className="text-xs sm:text-[13px] font-semibold text-slate-100 leading-snug break-words line-clamp-2"
+                        title={extractedTitle}
+                    >
+                        {extractedTitle}
+                    </h4>
+                    {subtitle && (
+                        <span className="text-[10px] text-slate-400 font-medium truncate mt-0.5">
+                            {subtitle}
+                        </span>
+                    )}
+                </div>
+
+                {/* Right: Dedicated Action Area (Never overlaps title, wraps cleanly on mobile) */}
+                <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
+                    <button
+                        type="button"
+                        onClick={handleRefresh}
+                        className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex items-center justify-center cursor-pointer border border-transparent hover:border-slate-700"
+                        title="Refresh Chart"
+                        aria-label="Refresh Chart"
+                    >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleReset}
+                        className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex items-center justify-center cursor-pointer border border-transparent hover:border-slate-700"
+                        title="Reset View"
+                        aria-label="Reset View"
+                    >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleDownload}
+                        className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex items-center justify-center cursor-pointer border border-transparent hover:border-slate-700"
+                        title="Download PNG"
+                        aria-label="Download PNG"
+                    >
+                        <Download className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={toggleFullscreen}
+                        className="p-1.5 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex items-center justify-center cursor-pointer border border-transparent hover:border-slate-700"
+                        title={isFullscreen ? "Exit Fullscreen" : "Expand Fullscreen"}
+                        aria-label={isFullscreen ? "Exit Fullscreen" : "Expand Fullscreen"}
+                    >
+                        {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                    </button>
+                </div>
+            </div>
+
+            {/* Chart Canvas Area */}
+            <div className={`w-full ${isFullscreen ? 'flex-1 min-h-[500px]' : 'h-[290px] sm:h-[320px]'}`}>
+                <EChart key={refreshKey} option={cleanOption} headerTitle="" />
+            </div>
+        </div>
+    );
 }
 
 function fixMalformedBlocks(content) {
@@ -112,22 +302,7 @@ function MarkdownCode({ className, children }) {
             : String(children || '');
 
     if (language === 'echarts' || language === 'chart' || (language === 'json' && isChartConfig(rawCode))) {
-        try {
-            const chartOption = JSON.parse(rawCode.trim());
-            return (
-                <div className="my-4 p-3.5 bg-slate-900 rounded-xl border border-slate-700 shadow-md">
-                    <div className="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                        <BarChart3 className="w-4 h-4 text-blue-400" />
-                        <span>Interactive AI Chart</span>
-                    </div>
-                    <div className="h-64 w-full">
-                        <EChart option={chartOption} />
-                    </div>
-                </div>
-            );
-        } catch {
-            // fallback to code block
-        }
+        return <InteractiveAIChart rawCode={rawCode} />;
     }
 
     if (!language) {
@@ -490,6 +665,14 @@ export default function MarkdownRenderer({ content }) {
 
                 thematicBreak: () => (
                     <hr className="my-6 border-gray-300 opacity-70" />
+                ),
+
+                details: (props) => (
+                    <details className="my-3 p-3 bg-slate-900 border border-slate-800 rounded-lg text-xs font-mono text-slate-300 transition shadow-xs group" {...props} />
+                ),
+
+                summary: (props) => (
+                    <summary className="font-semibold text-blue-400 cursor-pointer select-none outline-none hover:text-blue-300 flex items-center gap-1.5" {...props} />
                 ),
             }}
         >

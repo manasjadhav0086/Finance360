@@ -21,19 +21,19 @@ import { getPeriodLabels, normalizeMonth, normalizeQuarter } from '../../utils/p
 import { getCategoryColor, getLighterTints, THEME_TOKENS } from '../../utils/theme';
 
 const PALETTE = {
-  navy: '#0F2744',
-  blue: '#1E40AF',
-  sky: '#0284C7',
+  navy: '#101828',
+  blue: '#246BFD',
+  sky: '#0EA5E9',
   teal: '#0D9488',
-  emerald: '#059669',
-  amber: '#D97706',
-  orange: '#EA580C',
-  rose: '#E11D48',
+  emerald: '#12B981',
+  amber: '#F59E0B',
+  orange: '#F97316',
+  rose: '#D92D20',
   purple: '#7C3AED',
-  slate: '#475569',
-  darkText: '#0F172A',
-  mutedText: '#64748B',
-  border: '#E2E8F0',
+  slate: '#667085',
+  darkText: '#101828',
+  mutedText: '#667085',
+  border: '#E4E7EC',
 };
 
 export default function Executive360Tab({
@@ -163,84 +163,114 @@ export default function Executive360Tab({
         id: 'order_intake',
         title: 'Order Intake',
         category: 'Forward Demand',
+        icon: TrendingUp,
+        cardGradient: 'bg-gradient-to-br from-[#FFFBEB]/70 via-white to-white border-[#FDE68A] hover:border-[#F59E0B]',
+        iconBg: 'bg-[#FEF3C7] text-[#B45309]',
+        valueColor: 'text-[#92400E]',
+        categoryColor: 'text-[#B45309]',
         value: `₹${Math.round(orderIntake).toLocaleString('en-IN')}`,
         unit: 'INR MN',
         badge: `B2B: ${bookToBill.toFixed(2)}x`,
-        badgeColor: bookToBill >= 1.0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200',
+        badgeColor: bookToBill >= 1.0 ? 'bg-[#ECFDF5] text-[#065F46] border-[#A7F3D0]' : 'bg-[#FFFBEB] text-[#92400E] border-[#FDE68A]',
         comparisonText: oiAchPct !== null ? `${Math.round(oiAchPct)}% Plan Realized` : (bookToBill >= 1.0 ? 'Pipeline Expanding' : 'Pipeline Contracting'),
-        comparisonCls: (oiAchPct !== null ? oiAchPct >= 100 : bookToBill >= 1.0) ? 'text-emerald-700 font-semibold' : 'text-amber-700 font-semibold',
+        comparisonCls: (oiAchPct !== null ? oiAchPct >= 100 : bookToBill >= 1.0) ? 'text-[#065F46] font-semibold' : 'text-[#92400E] font-semibold',
         subtext: oiBud > 0 ? `Target: ₹${Math.round(oiBud).toLocaleString('en-IN')} MN` : `B2B: ${bookToBill.toFixed(2)}x vs Net Rev`,
-        borderAccent: 'border-l-[6px] border-l-[#D97706]',
+        borderAccent: 'border-l-4 border-l-[#D97706]',
         tooltip: 'Total contracted client commitments and forward pipeline intake. Book-to-Bill ratio compares new orders to billed revenue (>1.0x indicates business expansion). Source: order_intake table.',
       },
       {
         id: 'net_variance',
         title: 'Budget Variance',
         category: 'Plan Adherence',
+        icon: Target,
+        cardGradient: 'bg-gradient-to-br from-[#EFF6FF]/70 via-white to-white border-[#BFDBFE] hover:border-[#3B82F6]',
+        iconBg: 'bg-[#DBEAFE] text-[#1D4ED8]',
+        valueColor: 'text-[#1E40AF]',
+        categoryColor: 'text-[#1D4ED8]',
         value: `${revVariance >= 0 ? '+' : '-'}₹${Math.abs(Math.round(revVariance)).toLocaleString('en-IN')}`,
         unit: 'INR MN',
         badge: revAchPct !== null ? `${Math.round(revAchPct)}% Realized` : 'Target N/A',
-        badgeColor: revVariance >= 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200',
+        badgeColor: revVariance >= 0 ? 'bg-[#ECFDF5] text-[#065F46] border-[#A7F3D0]' : 'bg-[#FEF3F2] text-[#912018] border-[#FECDCA]',
         comparisonText: revVariance >= 0 ? `+${Math.round(revVariance).toLocaleString('en-IN')} MN Favorable` : `-${Math.abs(Math.round(revVariance)).toLocaleString('en-IN')} MN Deficit`,
-        comparisonCls: revVariance >= 0 ? 'text-emerald-700 font-semibold' : 'text-rose-700 font-semibold',
+        comparisonCls: revVariance >= 0 ? 'text-[#065F46] font-semibold' : 'text-[#912018] font-semibold',
         subtext: revBud > 0 ? `Budget Target: ₹${Math.round(revBud).toLocaleString('en-IN')} MN` : 'Base Target',
-        borderAccent: 'border-l-[6px] border-l-[#0284C7]',
+        borderAccent: 'border-l-4 border-l-[#2563EB]',
         tooltip: 'Variance between Recognized Revenue and Approved Board Budget. Positive value indicates revenue outperformance against plan. Source: dataai financial postings.',
       },
       {
         id: 'collections',
         title: 'Cash Collections',
         category: 'Working Capital',
+        icon: Wallet,
+        cardGradient: 'bg-gradient-to-br from-[#F0FDFA]/70 via-white to-white border-[#99F6E4] hover:border-[#14B8A6]',
+        iconBg: 'bg-[#CCFBF1] text-[#0F766E]',
+        valueColor: 'text-[#115E59]',
+        categoryColor: 'text-[#0F766E]',
         value: `₹${Math.round(collection).toLocaleString('en-IN')}`,
         unit: 'INR MN',
         badge: collAchPct !== null ? `${Math.round(collAchPct)}% Target` : 'Active Period',
-        badgeColor: (collAchPct || 100) >= 95 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200',
+        badgeColor: (collAchPct || 100) >= 95 ? 'bg-[#ECFDF5] text-[#065F46] border-[#A7F3D0]' : 'bg-[#FFFBEB] text-[#92400E] border-[#FDE68A]',
         comparisonText: collAchPct !== null ? `${Math.round(collAchPct)}% of Cash Target` : `Customer Inflow Realized`,
-        comparisonCls: (collAchPct || 100) >= 95 ? 'text-emerald-700 font-semibold' : 'text-amber-700 font-semibold',
+        comparisonCls: (collAchPct || 100) >= 95 ? 'text-[#065F46] font-semibold' : 'text-[#92400E] font-semibold',
         subtext: collectionBud > 0 ? `Target: ₹${Math.round(collectionBud).toLocaleString('en-IN')} MN` : `Cash Liquidity Inflow`,
-        borderAccent: 'border-l-[6px] border-l-[#059669]',
+        borderAccent: 'border-l-4 border-l-[#0D9488]',
         tooltip: 'Gross cash receipts collected from customers during the active financial period. Measures cash realization against treasury collection targets. Source: collection table.',
       },
       {
         id: 'capex_utilization',
         title: 'CAPEX Spend',
         category: 'Capital Allocation',
+        icon: Building2,
+        cardGradient: 'bg-gradient-to-br from-[#FAF5FF]/70 via-white to-white border-[#DDD6FE] hover:border-[#8B5CF6]',
+        iconBg: 'bg-[#EDE9FE] text-[#6D28D9]',
+        valueColor: 'text-[#5B21B6]',
+        categoryColor: 'text-[#6D28D9]',
         value: `₹${Math.round(capex).toLocaleString('en-IN')}`,
         unit: 'INR MN',
         badge: capexBud > 0 ? `${capexUtilPct.toFixed(0)}% Utilized` : 'Actual Inv',
-        badgeColor: capexUtilPct <= 100 ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-rose-50 text-rose-700 border-rose-200',
+        badgeColor: capexUtilPct <= 100 ? 'bg-[#F0F9FF] text-[#0369A1] border-[#BAE6FD]' : 'bg-[#FEF3F2] text-[#912018] border-[#FECDCA]',
         comparisonText: capexBud > 0 ? `Headroom: ₹${Math.round(capexHeadroom).toLocaleString('en-IN')} MN` : `Capital Assets Deployed`,
-        comparisonCls: capexUtilPct <= 100 ? 'text-sky-700 font-semibold' : 'text-rose-700 font-semibold',
+        comparisonCls: capexUtilPct <= 100 ? 'text-[#0369A1] font-semibold' : 'text-[#912018] font-semibold',
         subtext: capexBud > 0 ? `Budget: ₹${Math.round(capexBud).toLocaleString('en-IN')} MN` : `Asset Expansion Spend`,
-        borderAccent: 'border-l-[6px] border-l-[#7C3AED]',
+        borderAccent: 'border-l-4 border-l-[#7C3AED]',
         tooltip: 'Capital expenditures invested in tangible, technological, and infrastructure expansion. Tracks actual deployment against authorized CAPEX budget envelopes. Source: capex table.',
       },
       {
         id: 'operating_conversion',
         title: 'Conversion Index',
         category: 'Structural Leverage',
+        icon: PieChart,
+        cardGradient: 'bg-gradient-to-br from-[#FFF7ED]/70 via-white to-white border-[#FFEDD5] hover:border-[#FB923C]',
+        iconBg: 'bg-[#FFEDD5] text-[#C2410C]',
+        valueColor: 'text-[#9A3412]',
+        categoryColor: 'text-[#C2410C]',
         value: `${opConversion.toFixed(1)}%`,
         unit: 'GP to EBITDA',
         badge: `${gpPct.toFixed(1)}% GM`,
-        badgeColor: 'bg-purple-50 text-purple-700 border-purple-200',
+        badgeColor: 'bg-[#F9F5FF] text-[#6941C6] border-[#E9D7FE]',
         comparisonText: `${conversionDiff >= 0 ? '▲ +' : '▼ '}${Math.abs(conversionDiff).toFixed(1)}% YoY Conversion`,
-        comparisonCls: conversionDiff >= 0 ? 'text-emerald-700 font-semibold' : 'text-amber-700 font-semibold',
+        comparisonCls: conversionDiff >= 0 ? 'text-[#065F46] font-semibold' : 'text-[#92400E] font-semibold',
         subtext: `Opex: ${(100 - opConversion).toFixed(1)}% of GP`,
-        borderAccent: 'border-l-[6px] border-l-[#EA580C]',
+        borderAccent: 'border-l-4 border-l-[#EA580C]',
         tooltip: 'Structural Operating Leverage: percentage of Gross Profit that successfully drops through to EBITDA after absorbing operating expenses (EBITDA / Gross Profit × 100).',
       },
       {
         id: 'net_operating_cash',
         title: 'Net Cash Flow',
         category: 'Liquidity & Solvency',
+        icon: Coins,
+        cardGradient: 'bg-gradient-to-br from-[#F0F9FF]/70 via-white to-white border-[#BAE6FD] hover:border-[#38BDF8]',
+        iconBg: 'bg-[#E0F2FE] text-[#0369A1]',
+        valueColor: 'text-[#075985]',
+        categoryColor: 'text-[#0369A1]',
         value: `${netCash >= 0 ? '' : '-'}₹${Math.abs(Math.round(netCash)).toLocaleString('en-IN')}`,
         unit: 'INR MN',
         badge: `${netCashMargin.toFixed(1)}% Cash Margin`,
-        badgeColor: netCash >= 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200',
+        badgeColor: netCash >= 0 ? 'bg-[#ECFDF5] text-[#065F46] border-[#A7F3D0]' : 'bg-[#FEF3F2] text-[#912018] border-[#FECDCA]',
         comparisonText: netCash >= netCashBud ? '▲ Ahead of Plan' : '▼ Plan Deficit',
-        comparisonCls: netCash >= netCashBud ? 'text-emerald-700 font-semibold' : 'text-rose-700 font-semibold',
+        comparisonCls: netCash >= netCashBud ? 'text-[#065F46] font-semibold' : 'text-[#912018] font-semibold',
         subtext: netCashBud !== 0 ? `Target: ₹${Math.round(netCashBud).toLocaleString('en-IN')} MN` : `Net Liquidity Created`,
-        borderAccent: 'border-l-[6px] border-l-[#0D9488]',
+        borderAccent: 'border-l-4 border-l-[#0284C7]',
         tooltip: 'Net free operating cash flow after paying operating overhead and capital expenditures (Collection − Total Opex − Capex). Verifies self-funded expansion capability.',
       },
     ];
@@ -303,12 +333,34 @@ export default function Executive360Tab({
           name: 'Revenue (Actual)',
           type: 'bar',
           itemStyle: { color: PALETTE.blue, borderRadius: [2, 2, 0, 0] },
+          label: {
+            show: true,
+            position: 'top',
+            distance: 4,
+            color: PALETTE.blue,
+            fontSize: 9.5,
+            fontWeight: '600',
+            fontFamily: 'Inter, sans-serif',
+            formatter: (p) => (p.value > 0 ? `₹${p.value}` : ''),
+          },
+          labelLayout: { hideOverlap: true },
           data: revAct,
         },
         {
           name: 'Revenue (Budget)',
           type: 'bar',
           itemStyle: { color: '#93C5FD', borderRadius: [2, 2, 0, 0] },
+          label: {
+            show: true,
+            position: 'top',
+            distance: 4,
+            color: '#60A5FA',
+            fontSize: 9.5,
+            fontWeight: '600',
+            fontFamily: 'Inter, sans-serif',
+            formatter: (p) => (p.value > 0 ? `₹${p.value}` : ''),
+          },
+          labelLayout: { hideOverlap: true },
           data: revBud,
         },
         {
@@ -318,6 +370,17 @@ export default function Executive360Tab({
           symbolSize: 8,
           lineStyle: { width: 3, color: PALETTE.emerald },
           itemStyle: { color: PALETTE.emerald },
+          label: {
+            show: true,
+            position: 'top',
+            distance: 6,
+            color: PALETTE.emerald,
+            fontSize: 9.5,
+            fontWeight: '700',
+            fontFamily: 'Inter, sans-serif',
+            formatter: (p) => `₹${p.value}`,
+          },
+          labelLayout: { hideOverlap: true, moveOverlap: 'shiftY' },
           data: ebitdaAct,
         },
         {
@@ -327,6 +390,17 @@ export default function Executive360Tab({
           symbolSize: 8,
           lineStyle: { width: 2.5, color: '#6EE7B7', type: 'dashed' },
           itemStyle: { color: '#6EE7B7' },
+          label: {
+            show: true,
+            position: 'bottom',
+            distance: 6,
+            color: '#059669',
+            fontSize: 9.5,
+            fontWeight: '700',
+            fontFamily: 'Inter, sans-serif',
+            formatter: (p) => `₹${p.value}`,
+          },
+          labelLayout: { hideOverlap: true, moveOverlap: 'shiftY' },
           data: ebitdaBud,
         },
       ],
@@ -430,12 +504,34 @@ export default function Executive360Tab({
           name: 'Recognized Revenue',
           type: 'bar',
           itemStyle: { color: '#2563EB', borderRadius: [2, 2, 0, 0] },
+          label: {
+            show: true,
+            position: 'top',
+            distance: 4,
+            color: '#2563EB',
+            fontSize: 8.5,
+            fontWeight: '600',
+            fontFamily: 'Inter, sans-serif',
+            formatter: (p) => (p.value > 0 ? `₹${p.value}` : ''),
+          },
+          labelLayout: { hideOverlap: true },
           data: revData,
         },
         {
           name: 'Contracted Order Intake',
           type: 'bar',
           itemStyle: { color: '#F59E0B', borderRadius: [2, 2, 0, 0] },
+          label: {
+            show: true,
+            position: 'top',
+            distance: 4,
+            color: '#D97706',
+            fontSize: 8.5,
+            fontWeight: '600',
+            fontFamily: 'Inter, sans-serif',
+            formatter: (p) => (p.value > 0 ? `₹${p.value}` : ''),
+          },
+          labelLayout: { hideOverlap: true },
           data: oiData,
         },
         {
@@ -446,6 +542,17 @@ export default function Executive360Tab({
           symbolSize: 6,
           lineStyle: { width: 2.5, color: '#10B981' },
           itemStyle: { color: '#10B981' },
+          label: {
+            show: true,
+            position: 'top',
+            distance: 6,
+            color: '#059669',
+            fontSize: 9.5,
+            fontWeight: '700',
+            fontFamily: 'Inter, sans-serif',
+            formatter: (p) => (p.value > 0 ? `${p.value}x` : ''),
+          },
+          labelLayout: { hideOverlap: true, moveOverlap: 'shiftY' },
           data: b2bData,
         },
       ],
@@ -530,6 +637,17 @@ export default function Executive360Tab({
           name: 'EBITDA (Amount)',
           type: 'bar',
           itemStyle: { color: '#059669', borderRadius: [2, 2, 0, 0] },
+          label: {
+            show: true,
+            position: 'top',
+            distance: 4,
+            color: '#059669',
+            fontSize: 9.5,
+            fontWeight: '600',
+            fontFamily: 'Inter, sans-serif',
+            formatter: (p) => (p.value > 0 ? `₹${p.value}` : ''),
+          },
+          labelLayout: { hideOverlap: true },
           data: ebitdaAbsList,
         },
         {
@@ -540,6 +658,17 @@ export default function Executive360Tab({
           symbolSize: 8,
           lineStyle: { width: 3, color: '#0284C7' },
           itemStyle: { color: '#0284C7' },
+          label: {
+            show: true,
+            position: 'top',
+            distance: 6,
+            color: '#0284C7',
+            fontSize: 9.5,
+            fontWeight: '700',
+            fontFamily: 'Inter, sans-serif',
+            formatter: (p) => `${p.value}%`,
+          },
+          labelLayout: { hideOverlap: true, moveOverlap: 'shiftY' },
           data: gpPctList,
         },
         {
@@ -550,6 +679,17 @@ export default function Executive360Tab({
           symbolSize: 8,
           lineStyle: { width: 3, color: '#D97706' },
           itemStyle: { color: '#D97706' },
+          label: {
+            show: true,
+            position: 'bottom',
+            distance: 6,
+            color: '#D97706',
+            fontSize: 9.5,
+            fontWeight: '700',
+            fontFamily: 'Inter, sans-serif',
+            formatter: (p) => `${p.value}%`,
+          },
+          labelLayout: { hideOverlap: true, moveOverlap: 'shiftY' },
           data: ebitdaPctList,
         },
       ],
@@ -610,12 +750,32 @@ export default function Executive360Tab({
           name: 'Actual Cost',
           type: 'bar',
           itemStyle: { color: '#EA580C', borderRadius: [2, 2, 0, 0] },
+          label: {
+            show: true,
+            position: 'top',
+            distance: 4,
+            fontSize: 9.5,
+            fontWeight: '600',
+            color: '#C2410C',
+            formatter: (p) => (p.value > 0 ? `₹${Math.round(p.value)}` : ''),
+          },
+          labelLayout: { hideOverlap: true },
           data: actList,
         },
         {
           name: 'Budget Envelope',
           type: 'bar',
           itemStyle: { color: '#CBD5E1', borderRadius: [2, 2, 0, 0] },
+          label: {
+            show: true,
+            position: 'top',
+            distance: 4,
+            fontSize: 9.5,
+            fontWeight: '600',
+            color: '#64748B',
+            formatter: (p) => (p.value > 0 ? `₹${Math.round(p.value)}` : ''),
+          },
+          labelLayout: { hideOverlap: true },
           data: budList,
         },
       ],
@@ -693,12 +853,32 @@ export default function Executive360Tab({
           name: 'Actual Collections',
           type: 'bar',
           itemStyle: { color: '#059669', borderRadius: [2, 2, 0, 0] },
+          label: {
+            show: true,
+            position: 'top',
+            distance: 4,
+            fontSize: 9.5,
+            fontWeight: '600',
+            color: '#065F46',
+            formatter: (p) => (p.value > 0 ? `₹${Math.round(p.value)}` : ''),
+          },
+          labelLayout: { hideOverlap: true },
           data: actList,
         },
         {
           name: 'Collection Target',
           type: 'bar',
           itemStyle: { color: '#93C5FD', borderRadius: [2, 2, 0, 0] },
+          label: {
+            show: true,
+            position: 'top',
+            distance: 4,
+            fontSize: 9.5,
+            fontWeight: '600',
+            color: '#1D4ED8',
+            formatter: (p) => (p.value > 0 ? `₹${Math.round(p.value)}` : ''),
+          },
+          labelLayout: { hideOverlap: true },
           data: budList,
         },
         {
@@ -709,6 +889,16 @@ export default function Executive360Tab({
           symbolSize: 8,
           lineStyle: { width: 3, color: '#D97706' },
           itemStyle: { color: '#D97706' },
+          label: {
+            show: true,
+            position: 'top',
+            distance: 5,
+            fontSize: 9.5,
+            fontWeight: '700',
+            color: '#B45309',
+            formatter: '{c}%',
+          },
+          labelLayout: { hideOverlap: true, moveOverlap: 'shiftY' },
           data: achieveList,
         },
       ],
@@ -768,12 +958,32 @@ export default function Executive360Tab({
           name: 'Actual CAPEX',
           type: 'bar',
           itemStyle: { color: '#7C3AED', borderRadius: [2, 2, 0, 0] },
+          label: {
+            show: true,
+            position: 'top',
+            distance: 4,
+            fontSize: 9.5,
+            fontWeight: '600',
+            color: '#5B21B6',
+            formatter: (p) => (p.value > 0 ? `₹${Math.round(p.value)}` : ''),
+          },
+          labelLayout: { hideOverlap: true },
           data: actList,
         },
         {
           name: 'CAPEX Budget Envelope',
           type: 'bar',
           itemStyle: { color: '#DDD6FE', borderRadius: [2, 2, 0, 0] },
+          label: {
+            show: true,
+            position: 'top',
+            distance: 4,
+            fontSize: 9.5,
+            fontWeight: '600',
+            color: '#6D28D9',
+            formatter: (p) => (p.value > 0 ? `₹${Math.round(p.value)}` : ''),
+          },
+          labelLayout: { hideOverlap: true },
           data: budList,
         },
       ],
@@ -967,7 +1177,7 @@ export default function Executive360Tab({
       '- People Cost',
       '- Marketing',
       '- Fixed Costs',
-      '= EBITDA',
+      'EBITDA',
     ];
 
     const base = [
@@ -1093,13 +1303,13 @@ export default function Executive360Tab({
       const budAch = revBud > 0 ? (rev / revBud) * 100 : 0;
 
       let status = 'On Track';
-      let statusCls = 'bg-blue-50 text-blue-700 border-blue-200';
+      let statusCls = 'bg-[#EFF4FF] text-[#1D4ED8] border-[#D1E0FF]';
       if (budAch >= 100 && ebitdaPct >= 12) {
         status = 'Outperforming';
-        statusCls = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        statusCls = 'bg-[#ECFDF5] text-[#065F46] border-[#A7F3D0]';
       } else if (budAch < 85 || ebitda < 0) {
         status = 'Underperforming';
-        statusCls = 'bg-rose-50 text-rose-700 border-rose-200';
+        statusCls = 'bg-[#FEF3F2] text-[#912018] border-[#FECDCA]';
       }
 
       return {
@@ -1124,18 +1334,18 @@ export default function Executive360Tab({
       {/* ========================================================= */}
       {/* EXECUTIVE HEADER BANNER */}
       {/* ========================================================= */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#0F2744] via-[#1E40AF] to-[#0F2744] p-3.5 sm:p-5 text-white shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+      <div className="relative overflow-hidden rounded-xl bg-[#101828] border border-[#1D2939] p-4 sm:p-5 text-white shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
         <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <h1 className="text-base sm:text-xl md:text-2xl font-bold tracking-tight text-white drop-shadow-xs break-words">
               Executive360 — Financial Performance &amp; Strategy
             </h1>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-bold bg-white/15 text-white border border-white/20 backdrop-blur-md shrink-0">
-              <Calendar className="w-3.5 h-3.5" />
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-semibold bg-[#1D2939] text-[#D0D5DD] border border-[#344054] shrink-0">
+              <Calendar className="w-3.5 h-3.5 text-[#246BFD]" />
               {isMonthFiltered ? `${activeMonthStr} ${currentFy}` : `${currentFy} ${currentQ === 'Total' ? 'Full Year' : currentQ}`}
             </span>
           </div>
-          <span className="text-[11px] sm:text-xs text-blue-100/90 font-medium mt-1 leading-relaxed">
+          <span className="text-[11px] sm:text-xs text-[#98A2B3] font-medium mt-1 leading-relaxed">
             Executive Financial Cockpit · P&amp;L Health, Capital Allocation, Cash Flow &amp; Risk Governance
           </span>
         </div>
@@ -1145,15 +1355,15 @@ export default function Executive360Tab({
       {/* SECTION 1: EXECUTIVE FINANCIAL SUMMARY (6 NON-DUPLICATE KPIS) */}
       {/* ========================================================= */}
       <section>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#1E40AF] shrink-0" />
-            <h2 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#246BFD] shrink-0" />
+            <h2 className="text-xs sm:text-sm font-bold text-[#101828] uppercase tracking-wider">
               1. Executive Financial Summary
             </h2>
           </div>
-          <span className="text-[11px] sm:text-xs text-slate-500 font-medium">
-            Non-redundant core measures · Distinct from Operational Performance Tile
+          <span className="text-[11px] sm:text-xs text-[#667085] font-medium">
+            Core strategic measures · Distinct from Operational Performance Tile
           </span>
         </div>
 
@@ -1161,16 +1371,21 @@ export default function Executive360Tab({
           {executiveKpis.map((kpi) => (
             <article
               key={kpi.id}
-              className={`relative overflow-hidden rounded-xl border border-slate-200/90 bg-white ${kpi.borderAccent} p-3 sm:p-3.5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between min-h-[130px] sm:min-h-[140px]`}
+              className={`relative overflow-hidden rounded-xl border ${kpi.cardGradient || 'bg-white border-[#E4E7EC]'} ${kpi.borderAccent} p-3.5 sm:p-4 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between min-h-[145px] sm:min-h-[155px]`}
             >
               <div>
-                <div className="flex items-start justify-between gap-1 mb-1.5 min-h-[26px]">
-                  <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider leading-snug break-words">
-                    {kpi.title}
-                  </span>
+                <div className="flex items-start justify-between gap-1.5 mb-2 min-h-[32px]">
+                  <div className="flex items-start gap-1.5 min-w-0 flex-1">
+                    <span className={`w-5 h-5 sm:w-6 sm:h-6 rounded-md flex items-center justify-center shrink-0 mt-0.5 ${kpi.iconBg || 'bg-slate-100 text-slate-700'}`}>
+                      {kpi.icon ? <kpi.icon className="w-3.5 h-3.5" /> : null}
+                    </span>
+                    <span className={`text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider leading-tight break-words flex-1 ${kpi.categoryColor || 'text-[#667085]'}`}>
+                      {kpi.title}
+                    </span>
+                  </div>
                   <div className="group relative cursor-pointer shrink-0 mt-0.5">
-                    <HelpCircle className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 transition-colors" />
-                    <div className="invisible group-hover:visible absolute right-0 top-5 z-50 w-48 sm:w-52 p-2.5 bg-slate-900 text-white text-[11px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all pointer-events-none leading-relaxed">
+                    <HelpCircle className="w-3.5 h-3.5 text-[#98A2B3] hover:text-[#667085] transition-colors" />
+                    <div className="invisible group-hover:visible absolute right-0 top-5 z-50 w-52 sm:w-56 p-2.5 bg-[#101828] border border-[#1D2939] text-white text-[11px] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all pointer-events-none leading-relaxed">
                       {kpi.tooltip}
                     </div>
                   </div>
@@ -1182,23 +1397,23 @@ export default function Executive360Tab({
                   </div>
                 ) : (
                   <div className="flex items-baseline gap-1.5 mb-1 flex-wrap">
-                    <span className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-slate-950">
+                    <span className={`text-xl sm:text-2xl font-bold tabular-nums tracking-tight ${kpi.valueColor || 'text-[#101828]'}`}>
                       {kpi.value}
                     </span>
-                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${kpi.badgeColor}`}>
+                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${kpi.badgeColor}`}>
                       {kpi.badge}
                     </span>
                   </div>
                 )}
               </div>
 
-              <div className="pt-2 border-t border-slate-100 flex flex-col gap-0.5 text-xs">
+              <div className="pt-2 border-t border-[#F2F4F7] flex flex-col gap-0.5 text-xs">
                 {isUpdating ? (
                   <Shimmer className="h-4 w-32 rounded-md mt-0.5" />
                 ) : (
                   <>
                     <span className={`text-xs ${kpi.comparisonCls}`}>{kpi.comparisonText}</span>
-                    <span className="text-[10.5px] text-slate-500 leading-snug break-words">{kpi.subtext}</span>
+                    <span className="text-[10.5px] text-[#667085] leading-snug break-words">{kpi.subtext}</span>
                   </>
                 )}
               </div>
@@ -1355,47 +1570,47 @@ export default function Executive360Tab({
                 onMouseLeave={() => setHoveredCell({ row: null, col: null })}
               >
                 <thead>
-                  <tr className="bg-[#1E40AF] text-white font-bold sticky top-0 z-20">
-                    <th className="py-2.5 px-3 text-left sticky left-0 z-30 bg-[#1E40AF] border-b border-blue-900">
+                  <tr className="bg-[#101828] text-white font-semibold sticky top-0 z-20">
+                    <th className="py-2.5 px-3 text-left sticky left-0 z-30 bg-[#101828] border-b border-[#1D2939]">
                       Business
                     </th>
-                    <th className="py-2.5 px-3 text-left border-b border-blue-900">Group</th>
-                    <th className="py-2.5 px-3 text-right border-b border-blue-900">Revenue</th>
-                    <th className="py-2.5 px-3 text-right border-b border-blue-900">Bud Ach %</th>
-                    <th className="py-2.5 px-3 text-right border-b border-blue-900">YoY %</th>
-                    <th className="py-2.5 px-3 text-right border-b border-blue-900">GM %</th>
-                    <th className="py-2.5 px-3 text-right border-b border-blue-900">EBITDA</th>
-                    <th className="py-2.5 px-3 text-right border-b border-blue-900">Status</th>
+                    <th className="py-2.5 px-3 text-left border-b border-[#1D2939]">Group</th>
+                    <th className="py-2.5 px-3 text-right border-b border-[#1D2939]">Revenue</th>
+                    <th className="py-2.5 px-3 text-right border-b border-[#1D2939]">Bud Ach %</th>
+                    <th className="py-2.5 px-3 text-right border-b border-[#1D2939]">YoY %</th>
+                    <th className="py-2.5 px-3 text-right border-b border-[#1D2939]">GM %</th>
+                    <th className="py-2.5 px-3 text-right border-b border-[#1D2939]">EBITDA</th>
+                    <th className="py-2.5 px-3 text-right border-b border-[#1D2939]">Status</th>
                   </tr>
                 </thead>
-                <tbody className="font-mono text-xs">
+                <tbody className="tabular-nums text-xs">
                   {leaderboardData.map((row, idx) => {
-                    const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/70';
+                    const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-[#F9FAFB]';
                     return (
-                      <tr key={row.bu} className="hover:bg-blue-50/50 transition-colors">
-                        <td className={`py-2 px-3 font-sans font-semibold text-slate-900 sticky left-0 z-10 ${rowBg} border-b border-slate-100`}>
+                      <tr key={row.bu} className="hover:bg-[#EFF4FF] transition-colors">
+                        <td className={`py-2 px-3 font-sans font-semibold text-[#101828] sticky left-0 z-10 ${rowBg} border-b border-[#E4E7EC]`}>
                           {row.bu}
                         </td>
-                        <td className="py-2 px-3 font-sans text-slate-600 border-b border-slate-100">
+                        <td className="py-2 px-3 font-sans text-[#667085] border-b border-[#E4E7EC]">
                           {row.seg}
                         </td>
-                        <td className="py-2 px-3 text-right font-semibold text-slate-900 border-b border-slate-100">
+                        <td className="py-2 px-3 text-right font-semibold text-[#101828] border-b border-[#E4E7EC]">
                           ₹{Math.round(row.rev).toLocaleString('en-IN')}
                         </td>
-                        <td className={`py-2 px-3 text-right font-semibold border-b border-slate-100 ${row.budAch >= 100 ? 'text-emerald-700' : 'text-amber-700'}`}>
+                        <td className={`py-2 px-3 text-right font-semibold border-b border-[#E4E7EC] ${row.budAch >= 100 ? 'text-[#065F46]' : 'text-[#92400E]'}`}>
                           {row.budAch > 0 ? `${row.budAch.toFixed(0)}%` : '—'}
                         </td>
-                        <td className={`py-2 px-3 text-right font-semibold border-b border-slate-100 ${row.revGrowth >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                        <td className={`py-2 px-3 text-right font-semibold border-b border-[#E4E7EC] ${row.revGrowth >= 0 ? 'text-[#065F46]' : 'text-[#912018]'}`}>
                           {row.revGrowth >= 0 ? `+${row.revGrowth.toFixed(1)}%` : `${row.revGrowth.toFixed(1)}%`}
                         </td>
-                        <td className="py-2 px-3 text-right text-slate-700 border-b border-slate-100">
+                        <td className="py-2 px-3 text-right text-[#344054] border-b border-[#E4E7EC]">
                           {row.gpPct.toFixed(1)}%
                         </td>
-                        <td className={`py-2 px-3 text-right font-semibold border-b border-slate-100 ${row.ebitda >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                        <td className={`py-2 px-3 text-right font-semibold border-b border-[#E4E7EC] ${row.ebitda >= 0 ? 'text-[#065F46]' : 'text-[#912018]'}`}>
                           ₹{Math.round(row.ebitda).toLocaleString('en-IN')}
                         </td>
-                        <td className="py-2 px-3 text-right border-b border-slate-100">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${row.statusCls}`}>
+                        <td className="py-2 px-3 text-right border-b border-[#E4E7EC]">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${row.statusCls}`}>
                             {row.status}
                           </span>
                         </td>

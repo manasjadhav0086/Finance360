@@ -67,6 +67,19 @@ const EChart = ({
     }
   };
 
+  const handleRefresh = () => {
+    if (!chartInstance.current) return;
+    try {
+      chartInstance.current.dispatchAction({ type: 'restore' });
+      const currentOpt = chartInstance.current.getOption();
+      if (currentOpt) {
+        chartInstance.current.setOption(currentOpt, { notMerge: true });
+      }
+    } catch (e) {
+      console.error('[EChart] Refresh failed:', e);
+    }
+  };
+
   const handleReset = () => {
     if (!chartInstance.current) return;
     try {
@@ -90,10 +103,11 @@ const EChart = ({
       appendToBody: true,
     };
 
+    const isCanvasToolboxDisabled = headerTitle || option.toolbox?.show === false;
     const finalOption = enhanceChartLegendOrdering({
       ...option,
       tooltip: baseTooltip,
-      toolbox: headerTitle ? { show: false } : (option.toolbox || {
+      toolbox: isCanvasToolboxDisabled ? { show: false } : (option.toolbox || {
         show: true,
         right: 22,
         top: 2,
@@ -353,15 +367,22 @@ const EChart = ({
           label: {
             show: true,
             position: 'outside',
-            formatter: '{b}',
-            fontSize: 11,
+            formatter: (params) => {
+              const name = params.name || '';
+              const percent = params.percent || 0;
+              if (percent < 4) return '';
+              const displayName = name.length > 14 ? `${name.slice(0, 12)}…` : name;
+              return `${displayName}\n${percent}%`;
+            },
+            fontSize: 10,
+            lineHeight: 13,
             color: '#475569',
             fontFamily: 'Inter, sans-serif',
           },
           labelLine: {
             show: true,
-            length: 15,
-            length2: 12,
+            length: 10,
+            length2: 8,
             smooth: true,
             lineStyle: {
               color: '#94a3b8',
@@ -679,61 +700,70 @@ const EChart = ({
   return (
     <div className={`w-full h-full min-w-0 min-h-0 flex flex-col relative ${className}`}>
       {headerTitle && (
-        <div className="flex items-center justify-between gap-2 mb-3 px-3 sm:px-4 py-2 sm:py-2.5 -mx-3 sm:-mx-4 -mt-3 sm:-mt-4 rounded-t-xl bg-gradient-to-r from-[#102A54] via-[#184480] to-[#1E56A0] text-white shadow-xs shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 px-3 sm:px-4 py-2 sm:py-2.5 -mx-3 sm:-mx-4 -mt-3 sm:-mt-4 rounded-t-xl bg-[#101828] text-white border-b border-[#1D2939] shadow-xs shrink-0">
           <div className="flex items-center gap-2 min-w-0 pr-1">
-            <span className="w-2 h-2 rounded-full bg-[#38BDF8] shadow-xs shrink-0" />
-            <div className="flex items-baseline gap-1.5 min-w-0 flex-wrap">
-              <span className="text-xs sm:text-[13.5px] font-bold text-white tracking-tight break-words leading-snug">{headerTitle}</span>
-              {subtitle && <span className="text-[10px] sm:text-[11px] text-blue-100/85 font-medium line-clamp-1 sm:truncate">{subtitle}</span>}
+            <span className="w-2 h-2 rounded-full bg-[#246BFD] shrink-0" />
+            <div className="flex items-baseline gap-2 min-w-0 flex-wrap">
+              <span className="text-xs sm:text-[13.5px] font-bold text-white tracking-tight break-words leading-snug" title={headerTitle}>{headerTitle}</span>
+              {subtitle && <span className="text-[10px] sm:text-[11px] text-[#98A2B3] font-medium line-clamp-1 sm:truncate" title={subtitle}>{subtitle}</span>}
             </div>
           </div>
-          <div className="flex items-center gap-1 shrink-0 text-blue-200">
-            <div className="relative group">
-              <button
-                type="button"
-                onClick={handleDownload}
-                className="p-1.5 rounded-md text-blue-100 hover:text-white hover:bg-white/15 transition-colors flex items-center justify-center cursor-pointer"
-                title="Download PNG"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                </svg>
-              </button>
-            </div>
+          <div className="flex items-center gap-1 shrink-0 self-end sm:self-center text-[#98A2B3]">
+            <button
+              type="button"
+              onClick={handleRefresh}
+              className="p-1.5 rounded-md text-[#98A2B3] hover:text-white hover:bg-[#1D2939] transition-colors flex items-center justify-center cursor-pointer"
+              title="Refresh Chart"
+              aria-label="Refresh Chart"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
+            </button>
 
-            <div className="relative group">
-              <button
-                type="button"
-                onClick={() => {
-                  if (chartRef.current) {
-                    if (!document.fullscreenElement) {
-                      chartRef.current.closest('.bg-white')?.requestFullscreen?.();
-                    } else {
-                      document.exitFullscreen?.();
-                    }
+            <button
+              type="button"
+              onClick={handleReset}
+              className="p-1.5 rounded-md text-[#98A2B3] hover:text-white hover:bg-[#1D2939] transition-colors flex items-center justify-center cursor-pointer"
+              title="Reset View"
+              aria-label="Reset View"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleDownload}
+              className="p-1.5 rounded-md text-[#98A2B3] hover:text-white hover:bg-[#1D2939] transition-colors flex items-center justify-center cursor-pointer"
+              title="Download PNG"
+              aria-label="Download PNG"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (chartRef.current) {
+                  if (!document.fullscreenElement) {
+                    chartRef.current.closest('.bg-white, .rounded-xl, .shadow-md, .shadow-xs, [class*="rounded"]')?.requestFullscreen?.();
+                  } else {
+                    document.exitFullscreen?.();
                   }
-                }}
-                className="p-1.5 rounded-md text-blue-100 hover:text-white hover:bg-white/15 transition-colors flex items-center justify-center cursor-pointer"
-                title="Expand"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="relative group">
-              <button
-                type="button"
-                onClick={handleReset}
-                className="p-1.5 rounded-md text-blue-100 hover:text-white hover:bg-white/15 transition-colors flex items-center justify-center cursor-pointer"
-                title="Reset View"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                </svg>
-              </button>
-            </div>
+                }
+              }}
+              className="p-1.5 rounded-md text-[#98A2B3] hover:text-white hover:bg-[#1D2939] transition-colors flex items-center justify-center cursor-pointer"
+              title="Expand Fullscreen"
+              aria-label="Expand Fullscreen"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+              </svg>
+            </button>
           </div>
         </div>
       )}

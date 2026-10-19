@@ -54,21 +54,28 @@ export async function initDatabase() {
       await mysqlService.executeQuery('ALTER TABLE users ADD COLUMN reset_token_expires_at DATETIME NULL AFTER reset_token_hash');
     }
 
-    // Default admin is always active and doesn't require password change
-    await mysqlService.executeQuery("UPDATE users SET status = 'active', must_change_password = 0 WHERE email = 'admin@finance360.local'");
+    // 2. Ensure primary production admin is active and migrate legacy .local account if present
+    const defaultAdminEmail = (process.env.ADMIN_EMAIL || process.env.DEFAULT_ADMIN_EMAIL || 'admin@misar.io').toLowerCase().trim();
+    await mysqlService.executeQuery(
+      "UPDATE users SET email = ?, status = 'active', must_change_password = 0 WHERE email = 'admin@finance360.local'",
+      [defaultAdminEmail]
+    );
+    await mysqlService.executeQuery(
+      "UPDATE users SET status = 'active', must_change_password = 0 WHERE email = ?",
+      [defaultAdminEmail]
+    );
   } catch (colErr) {
     console.warn('[DB Init] Column check notice:', colErr.message);
   }
   console.log('[DB Init] Users table ready.');
 
-  // 2. Seed default admin if table is empty or missing password
-  const defaultAdminEmail = 'admin@finance360.local';
+  // 2. Seed default admin if no administrator account exists in database
+  const defaultAdminEmail = (process.env.ADMIN_EMAIL || process.env.DEFAULT_ADMIN_EMAIL || 'admin@misar.io').toLowerCase().trim();
   const defaultAdminPass = process.env.DEFAULT_ADMIN_PASSWORD || 'Admin@Finance360';
   const hashedAdminPass = await bcrypt.hash(defaultAdminPass, 10);
 
   const existingAdmins = await mysqlService.executeQuery(
-    "SELECT _id, email, password_hash FROM users WHERE email = ? LIMIT 1",
-    [defaultAdminEmail]
+    "SELECT _id, email, password_hash FROM users WHERE role = 'admin' LIMIT 1"
   );
 
   if (!existingAdmins || existingAdmins.length === 0) {
@@ -78,13 +85,13 @@ export async function initDatabase() {
        ON DUPLICATE KEY UPDATE role = 'admin', password_hash = VALUES(password_hash)`,
       ['usr_admin_default', defaultAdminEmail, 'System Admin', hashedAdminPass]
     );
-    console.log(`[DB Init] Default admin user initialized: ${defaultAdminEmail}`);
+    console.log(`[DB Init] Primary admin user initialized: ${defaultAdminEmail}`);
   } else if (!existingAdmins[0].password_hash) {
     await mysqlService.executeQuery(
       'UPDATE users SET password_hash = ? WHERE _id = ?',
       [hashedAdminPass, existingAdmins[0]._id]
     );
-    console.log(`[DB Init] Seeded password hash for default admin: ${defaultAdminEmail}`);
+    console.log(`[DB Init] Seeded password hash for existing admin: ${existingAdmins[0].email}`);
   }
 
   // Also verify any other admin accounts have a password

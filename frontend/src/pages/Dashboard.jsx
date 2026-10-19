@@ -78,9 +78,33 @@ export default function Dashboard({ isAdmin, user }) {
   const [isNewsOpen, setIsNewsOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Frontend in-memory cache to retain data until page reload
+  // Frontend in-memory cache to retain data until user change or page reload
   const dataCacheRef = useRef({});
   const perfCacheRef = useRef({});
+
+  // Reset caches and force reload if authenticated user profile or ID changes
+  const userIdentifier = user?._id || user?.email || 'anonymous';
+  const prevUserRef = useRef(userIdentifier);
+
+  useEffect(() => {
+    if (prevUserRef.current !== userIdentifier) {
+      prevUserRef.current = userIdentifier;
+      dataCacheRef.current = {};
+      perfCacheRef.current = {};
+      setDashboardData(null);
+      setPerfViews(null);
+      setFilters({
+        fy: '',
+        quarter: 'Total',
+        month: 'ALL',
+        segment: 'ALL',
+        bu: 'ALL',
+        currency: 'INR',
+      });
+      loadDashboardData(true);
+      loadPerfViews(true);
+    }
+  }, [userIdentifier]);
 
   // Initial and refresh loader for main dashboard dataset
   const loadDashboardData = useCallback(async (forceRefresh = false) => {
@@ -101,7 +125,30 @@ export default function Dashboard({ isAdmin, user }) {
       setDashboardData(res.data);
       if (res.data?.meta?.budget_fy || res.data?.meta?.fys?.length) {
         const defaultFy = res.data.meta.budget_fy || res.data.meta.fys[res.data.meta.fys.length - 1];
-        setFilters((prev) => (prev.fy ? prev : { ...prev, fy: defaultFy }));
+        setFilters((prev) => {
+          let nextSegment = prev.segment;
+          if (nextSegment && nextSegment !== 'ALL') {
+            const allowedSegs = res.data?.meta?.segments || [];
+            const isValid = Array.isArray(nextSegment)
+              ? nextSegment.every((s) => allowedSegs.includes(s))
+              : allowedSegs.includes(nextSegment);
+            if (!isValid) nextSegment = 'ALL';
+          }
+          let nextBu = prev.bu;
+          if (nextBu && nextBu !== 'ALL') {
+            const allowedBus = res.data?.meta?.biz_units || [];
+            const isValid = Array.isArray(nextBu)
+              ? nextBu.every((b) => allowedBus.includes(b))
+              : allowedBus.includes(nextBu);
+            if (!isValid) nextBu = 'ALL';
+          }
+          return {
+            ...prev,
+            fy: prev.fy || defaultFy,
+            segment: nextSegment,
+            bu: nextBu,
+          };
+        });
       }
     } catch (err) {
       console.error('Error loading dashboard data:', err);

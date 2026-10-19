@@ -24,44 +24,72 @@ const PERF_KPI_META = {
   Revenue: {
     label: 'Revenue',
     icon: BarChart3,
-    borderAccent: 'border-l-[6px] border-l-[#0284C7]',
-    badgeBg: 'bg-sky-50 text-[#0284C7] border-sky-200',
-    cardGradient: 'bg-white border-slate-200/90 shadow-sm hover:shadow-md hover:border-sky-300',
+    borderAccent: 'border-l-4 border-l-[#2563EB]',
+    badgeBg: 'bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]',
+    cardGradient: 'bg-gradient-to-br from-[#EFF6FF]/70 via-white to-white border-[#BFDBFE] hover:border-[#3B82F6] shadow-xs hover:shadow-sm',
+    iconBg: 'bg-[#DBEAFE] text-[#1D4ED8]',
+    valueColor: 'text-[#1E40AF]',
+    labelColor: 'text-[#1D4ED8]',
   },
   'Variable Cost': {
     label: 'Variable Cost',
     icon: Coins,
-    borderAccent: 'border-l-[6px] border-l-[#EA580C]',
-    badgeBg: 'bg-orange-50 text-[#EA580C] border-orange-200',
-    cardGradient: 'bg-white border-slate-200/90 shadow-sm hover:shadow-md hover:border-orange-300',
+    borderAccent: 'border-l-4 border-l-[#EA580C]',
+    badgeBg: 'bg-[#FFF7ED] text-[#C2410C] border-[#FFEDD5]',
+    cardGradient: 'bg-gradient-to-br from-[#FFF7ED]/70 via-white to-white border-[#FFEDD5] hover:border-[#FB923C] shadow-xs hover:shadow-sm',
+    iconBg: 'bg-[#FFEDD5] text-[#C2410C]',
+    valueColor: 'text-[#9A3412]',
+    labelColor: 'text-[#C2410C]',
   },
   'Gross Margin %': {
     label: 'Gross Margin',
     icon: PieChart,
-    borderAccent: 'border-l-[6px] border-l-[#16A34A]',
-    badgeBg: 'bg-emerald-50 text-[#16A34A] border-emerald-200',
-    cardGradient: 'bg-white border-slate-200/90 shadow-sm hover:shadow-md hover:border-emerald-300',
+    borderAccent: 'border-l-4 border-l-[#10B981]',
+    badgeBg: 'bg-[#ECFDF5] text-[#065F46] border-[#A7F3D0]',
+    cardGradient: 'bg-gradient-to-br from-[#ECFDF5]/70 via-white to-white border-[#A7F3D0] hover:border-[#34D399] shadow-xs hover:shadow-sm',
+    iconBg: 'bg-[#D1FAE5] text-[#065F46]',
+    valueColor: 'text-[#065F46]',
+    labelColor: 'text-[#047857]',
   },
   'Total Opex': {
     label: 'Total Opex',
     icon: FileText,
-    borderAccent: 'border-l-[6px] border-l-[#9333EA]',
-    badgeBg: 'bg-purple-50 text-[#9333EA] border-purple-200',
-    cardGradient: 'bg-white border-slate-200/90 shadow-sm hover:shadow-md hover:border-purple-300',
+    borderAccent: 'border-l-4 border-l-[#7C3AED]',
+    badgeBg: 'bg-[#F9F5FF] text-[#6941C6] border-[#E9D7FE]',
+    cardGradient: 'bg-gradient-to-br from-[#FAF5FF]/70 via-white to-white border-[#DDD6FE] hover:border-[#8B5CF6] shadow-xs hover:shadow-sm',
+    iconBg: 'bg-[#EDE9FE] text-[#6D28D9]',
+    valueColor: 'text-[#5B21B6]',
+    labelColor: 'text-[#6D28D9]',
   },
   'EBITDA Contribution': {
-    label: 'EBITDA Contrib',
+    label: 'EBITDA Contribution',
     icon: TrendingUp,
-    borderAccent: 'border-l-[6px] border-l-[#0D9488]',
-    badgeBg: 'bg-teal-50 text-[#0D9488] border-teal-200',
-    cardGradient: 'bg-white border-slate-200/90 shadow-sm hover:shadow-md hover:border-teal-300',
+    borderAccent: 'border-l-4 border-l-[#E11D48]',
+    badgeBg: 'bg-[#FFF1F2] text-[#BE123C] border-[#FECDD3]',
+    cardGradient: 'bg-gradient-to-br from-[#FFF1F2]/70 via-white to-white border-[#FECDD3] hover:border-[#FB7185] shadow-xs hover:shadow-sm',
+    iconBg: 'bg-[#FFE4E6] text-[#BE123C]',
+    valueColor: 'text-[#9F1239]',
+    labelColor: 'text-[#BE123C]',
+  },
+  'EBITDA Contribution %': {
+    label: 'EBITDA Contribution %',
+    icon: TrendingUp,
+    borderAccent: 'border-l-4 border-l-[#E11D48]',
+    badgeBg: 'bg-[#FFF1F2] text-[#BE123C] border-[#FECDD3]',
+    cardGradient: 'bg-gradient-to-br from-[#FFF1F2]/70 via-white to-white border-[#FECDD3] hover:border-[#FB7185] shadow-xs hover:shadow-sm',
+    iconBg: 'bg-[#FFE4E6] text-[#BE123C]',
+    valueColor: 'text-[#9F1239]',
+    labelColor: 'text-[#BE123C]',
   },
   EBITDA: {
     label: 'EBITDA',
     icon: LineChart,
-    borderAccent: 'border-l-[6px] border-l-[#059669]',
-    badgeBg: 'bg-emerald-50 text-[#059669] border-emerald-200',
-    cardGradient: 'bg-white border-slate-200/90 shadow-sm hover:shadow-md hover:border-emerald-300',
+    borderAccent: 'border-l-4 border-l-[#0D9488]',
+    badgeBg: 'bg-[#F0FDFA] text-[#0F766E] border-[#99F6E4]',
+    cardGradient: 'bg-gradient-to-br from-[#F0FDFA]/70 via-white to-white border-[#99F6E4] hover:border-[#14B8A6] shadow-xs hover:shadow-sm',
+    iconBg: 'bg-[#CCFBF1] text-[#0F766E]',
+    valueColor: 'text-[#115E59]',
+    labelColor: 'text-[#0F766E]',
   },
 };
 
@@ -90,12 +118,12 @@ const getLineMetricColor = (name, fallbackIdx = 0) => {
 
 const getLineLabelPosition = (seriesName, index) => {
   const name = (seriesName || '').toLowerCase();
-  if (name.includes('ebitda contribution') || name.includes('marketing') || name.includes('variable cost')) {
-    return 'bottom';
-  }
-  if (name.includes('gp') || name.includes('people') || name.includes('fixed') || name.includes('ebitda')) {
-    return 'top';
-  }
+  if (name.includes('gp') || name.includes('gross margin')) return 'top';
+  if (name.includes('ebitda contribution')) return 'top';
+  if (name.includes('ebitda')) return 'bottom';
+  if (name.includes('variable cost') || name.includes('vc%')) return 'top';
+  if (name.includes('fixed') || name.includes('marketing')) return 'bottom';
+  if (name.includes('people')) return 'top';
   return index % 2 === 0 ? 'top' : 'bottom';
 };
 
@@ -141,9 +169,9 @@ export default function PerformanceTab({
     const opexBud = getScopedMetric('Total Opex', fy, 'BUD', q);
     const opexPy = priorFy ? getScopedMetric('Total Opex', priorFy, 'ACT', q) : 0;
 
-    const ebitdaContrib = getScopedMetric('EBITDA Contribution', fy, 'ACT', q);
-    const ebitdaContribBud = getScopedMetric('EBITDA Contribution', fy, 'BUD', q);
-    const ebitdaContribPy = priorFy ? getScopedMetric('EBITDA Contribution', priorFy, 'ACT', q) : 0;
+    const ebitdaContribPct = getScopedMetric('EBITDA Contribution %', fy, 'ACT', q);
+    const ebitdaContribPctBud = getScopedMetric('EBITDA Contribution %', fy, 'BUD', q);
+    const ebitdaContribPctPy = priorFy ? getScopedMetric('EBITDA Contribution %', priorFy, 'ACT', q) : 0;
 
     const ebitda = getScopedMetric('EBITDA', fy, 'ACT', q);
     const ebitdaBud = getScopedMetric('EBITDA', fy, 'BUD', q);
@@ -197,6 +225,9 @@ export default function PerformanceTab({
         icon: meta.icon,
         iconBg: meta.iconBg,
         cardGradient: meta.cardGradient,
+        borderAccent: meta.borderAccent,
+        valueColor: meta.valueColor,
+        labelColor: meta.labelColor,
         accentColor: meta.accentColor,
         indicatorBg: meta.indicatorBg,
         label: meta.label,
@@ -215,7 +246,7 @@ export default function PerformanceTab({
       buildCard('Variable Cost', vc, vcBud, vcPy),
       buildCard('Gross Margin %', gpPct, gpPctBud, gpPctPy, true),
       buildCard('Total Opex', opex, opexBud, opexPy),
-      buildCard('EBITDA Contribution', ebitdaContrib, ebitdaContribBud, ebitdaContribPy),
+      buildCard('EBITDA Contribution %', ebitdaContribPct, ebitdaContribPctBud, ebitdaContribPctPy, true),
       buildCard('EBITDA', ebitda, ebitdaBud, ebitdaPy),
     ];
   }, [dashboardData, filters, getScopedMetric]);
@@ -399,15 +430,77 @@ export default function PerformanceTab({
 
   const buildLineOption = (categories, seriesList, isPercentage = true, showLabels = true) => {
     const sortedSeriesList = sortSeriesByContribution(seriesList);
-    const series = sortedSeriesList.map((s, idx) => {
-      const lineColor = getLineMetricColor(s.name, idx);
-      const labelPos = getLineLabelPosition(s.name, idx);
+    const catCount = categories.length;
+
+    const series = sortedSeriesList.map((s, sIdx) => {
+      const lineColor = getLineMetricColor(s.name, sIdx);
+
+      // Pre-compute non-overlapping smart label position for every data point
+      const dataWithSmartLabels = s.data.map((rawVal, k) => {
+        if (rawVal == null || isNaN(rawVal)) return null;
+        const numVal = Math.round(Number(rawVal) * 10) / 10;
+
+        // Collect all active points across all series at category index k
+        const activeAtK = [];
+        sortedSeriesList.forEach((otherSeries, oIdx) => {
+          const oVal = otherSeries.data[k];
+          if (oVal != null && !isNaN(oVal)) {
+            activeAtK.push({
+              sIdx: oIdx,
+              val: Math.round(Number(oVal) * 10) / 10,
+            });
+          }
+        });
+
+        // Sort ascending by value (lowest to highest)
+        activeAtK.sort((a, b) => a.val - b.val);
+        const rank = activeAtK.findIndex((item) => item.sIdx === sIdx);
+        const total = activeAtK.length;
+
+        let position = 'top';
+        let distance = catCount > 8 ? 5 : 6;
+
+        if (total === 2) {
+          position = rank === 0 ? 'bottom' : 'top';
+        } else if (total === 3) {
+          if (rank === 0) {
+            position = 'bottom';
+          } else if (rank === 2) {
+            position = 'top';
+          } else {
+            const distToLower = activeAtK[1].val - activeAtK[0].val;
+            const distToHigher = activeAtK[2].val - activeAtK[1].val;
+            position = distToLower < distToHigher ? 'top' : 'bottom';
+          }
+        } else if (total >= 4) {
+          // Bottom-most always downwards, top-most always upwards
+          // Alternate in-between to guarantee vertical separation
+          if (rank === 0) {
+            position = 'bottom';
+          } else if (rank === total - 1) {
+            position = 'top';
+          } else if (rank % 2 === 0) {
+            position = 'bottom';
+          } else {
+            position = 'top';
+          }
+        }
+
+        return {
+          value: numVal,
+          label: {
+            position,
+            distance,
+          },
+        };
+      });
+
       return {
         name: s.name,
         type: 'line',
         smooth: 0.25,
         symbol: 'circle',
-        symbolSize: 7,
+        symbolSize: catCount > 8 ? 6 : 7,
         itemStyle: {
           color: lineColor,
           borderColor: '#FFFFFF',
@@ -421,16 +514,23 @@ export default function PerformanceTab({
         },
         label: {
           show: showLabels,
-          position: labelPos,
-          distance: 5,
           color: lineColor,
-          fontSize: 10,
+          textBorderColor: '#FFFFFF',
+          textBorderWidth: 2.5,
+          fontSize: catCount > 8 ? 8.5 : 9.5,
           fontWeight: '700',
           fontFamily: 'Inter, sans-serif',
-          hideOverlap: true,
-          formatter: (params) => (params.value != null ? (isPercentage ? `${Number(params.value).toFixed(1)}%` : Math.round(params.value).toLocaleString('en-IN')) : ''),
+          formatter: (params) =>
+            params.value != null
+              ? isPercentage
+                ? `${Number(params.value).toFixed(1)}%`
+                : Math.round(params.value).toLocaleString('en-IN')
+              : '',
         },
-        data: s.data.map((v) => (v != null ? Math.round(v * 10) / 10 : null)),
+        labelLayout: {
+          hideOverlap: true,
+        },
+        data: dataWithSmartLabels,
       };
     });
 
@@ -493,10 +593,10 @@ export default function PerformanceTab({
         textStyle: { color: '#64748B', fontSize: 10.5, fontFamily: 'Inter, sans-serif', fontWeight: '500' },
       },
       grid: {
-        top: 40,
+        top: 45,
         left: 10,
         right: 14,
-        bottom: categories.length > 6 ? 48 : 36,
+        bottom: categories.length > 6 ? 54 : 38,
         containLabel: true,
       },
       xAxis: {
@@ -517,6 +617,7 @@ export default function PerformanceTab({
       },
       yAxis: {
         type: 'value',
+        max: (val) => (isPercentage ? Math.min(100, Math.ceil(val.max / 10) * 10 + 4) : Math.ceil(val.max * 1.05)),
         splitLine: { lineStyle: { color: '#F1F5F9', type: 'dashed' } },
         axisLabel: {
           color: '#64748B',
@@ -1162,6 +1263,21 @@ export default function PerformanceTab({
             symbolSize: 7,
             lineStyle: { width: 3.2, color: '#6366F1' },
             itemStyle: { color: '#6366F1', borderColor: '#FFFFFF', borderWidth: 1.5 },
+            label: {
+              show: true,
+              position: 'bottom',
+              distance: 6,
+              color: '#6366F1',
+              textBorderColor: '#FFFFFF',
+              textBorderWidth: 2.5,
+              fontSize: 10,
+              fontWeight: '700',
+              fontFamily: 'Inter, sans-serif',
+              formatter: (p) => (p.value != null ? `₹${Math.round(p.value)}` : ''),
+            },
+            labelLayout: {
+              hideOverlap: true,
+            },
             emphasis: { focus: 'series' },
             data: fixedData,
           },
@@ -1174,6 +1290,21 @@ export default function PerformanceTab({
             symbolSize: 7,
             lineStyle: { width: 3.2, color: '#EA580C' },
             itemStyle: { color: '#EA580C', borderColor: '#FFFFFF', borderWidth: 1.5 },
+            label: {
+              show: true,
+              position: 'top',
+              distance: 6,
+              color: '#EA580C',
+              textBorderColor: '#FFFFFF',
+              textBorderWidth: 2.5,
+              fontSize: 10,
+              fontWeight: '700',
+              fontFamily: 'Inter, sans-serif',
+              formatter: (p) => (p.value != null ? `₹${Math.round(p.value)}` : ''),
+            },
+            labelLayout: {
+              hideOverlap: true,
+            },
             emphasis: { focus: 'series' },
             data: varData,
           },
@@ -1265,23 +1396,23 @@ export default function PerformanceTab({
     };
   }, [dashboardData, filters, getScopedMetric]);
 
-  const kpiQuartersCount = quarterRatioData.labels?.length || 8;
+  const kpiQuartersCount = quarterRatioData?.labels?.length || 12;
 
   return (
     <div className="space-y-4">
-      {/* Top Banner similar to reference design */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#102A54] via-[#1E56A0] to-[#102A54] p-4 text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Top Banner */}
+      <div className="relative overflow-hidden rounded-xl bg-[#101828] border border-[#1D2939] p-4 text-white shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex flex-col">
           <div className="flex items-center gap-3">
             <h1 className="text-xl md:text-2xl font-bold tracking-tight text-white drop-shadow-xs">
-              Performance Analytics & Summary
+              Performance Analytics &amp; Summary
             </h1>
-            <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/20 text-white border border-white/30 backdrop-blur-xs">
+            <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#1D2939] text-[#D0D5DD] border border-[#344054]">
               {periodLabels.scopeDescription}
             </span>
           </div>
-          <span className="text-xs text-blue-100/90 font-medium mt-1">
-            Revenue Trajectory · Order Intake Momentum · P&L Ratio Decomposition · Multi-Quarter Analysis
+          <span className="text-xs text-[#98A2B3] font-medium mt-1">
+            Revenue Trajectory · Order Intake Momentum · P&amp;L Ratio Decomposition · Multi-Quarter Analysis
           </span>
         </div>
       </div>
@@ -1292,15 +1423,20 @@ export default function PerformanceTab({
           return (
             <article
               key={card.key}
-              className={`group relative overflow-hidden rounded-2xl border ${card.cardGradient} ${card.borderAccent || 'border-l-[6px] border-l-[#0284C7]'} p-4 transition-all duration-200 flex flex-col justify-between min-h-[124px]`}
+              className={`group relative overflow-hidden rounded-xl border ${card.cardGradient} ${card.borderAccent || 'border-l-4 border-l-[#246BFD]'} p-3.5 sm:p-4 transition-all duration-200 flex flex-col justify-between min-h-[135px] sm:min-h-[145px]`}
             >
               <div>
-                <div className="flex items-center justify-between gap-1 mb-2">
-                  <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wider truncate">
-                    {card.label}
+                <div className="flex items-start justify-between gap-1.5 mb-2 min-h-[30px]">
+                  <div className="flex items-start gap-1.5 min-w-0 flex-1">
+                    <span className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 ${card.iconBg || 'bg-slate-100 text-slate-700'}`}>
+                      {card.icon ? <card.icon className="w-3.5 h-3.5" /> : null}
+                    </span>
+                    <div className={`text-[10.5px] sm:text-[11px] font-bold uppercase tracking-wider leading-tight break-words flex-1 ${card.labelColor || 'text-[#667085]'}`}>
+                      {card.label}
+                    </div>
                   </div>
                   {card.achPct !== null && (
-                    <span className={`font-bold font-mono text-[10px] px-1.5 py-0.5 rounded-md border shrink-0 ${card.achPct >= 100 ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : card.achPct >= 85 ? 'text-blue-700 bg-blue-50 border-blue-200' : 'text-amber-700 bg-amber-50 border-amber-200'}`}>
+                    <span className={`font-semibold tabular-nums text-[10px] px-1.5 py-0.5 rounded border shrink-0 mt-0.5 ${card.achPct >= 100 ? 'text-[#065F46] bg-[#ECFDF5] border-[#A7F3D0]' : card.achPct >= 85 ? 'text-[#1D4ED8] bg-[#EFF4FF] border-[#D1E0FF]' : 'text-[#92400E] bg-[#FFFBEB] border-[#FDE68A]'}`}>
                       {card.achPct}%
                     </span>
                   )}
@@ -1312,11 +1448,11 @@ export default function PerformanceTab({
                   </div>
                 ) : (
                   <div className="flex items-baseline gap-1.5 mb-1 flex-wrap min-w-0">
-                    <span className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-slate-950 break-words">
+                    <span className={`text-xl sm:text-2xl font-bold tabular-nums tracking-tight break-words ${card.valueColor || 'text-[#101828]'}`}>
                       {card.value}
                     </span>
                     {!card.isPct && (
-                      <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-md border bg-slate-50 text-slate-600 border-slate-200 shrink-0">
+                      <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded border bg-[#F9FAFB] text-[#667085] border-[#E4E7EC] shrink-0">
                         MN
                       </span>
                     )}
@@ -1324,7 +1460,7 @@ export default function PerformanceTab({
                 )}
               </div>
 
-              <div className="pt-2 mt-1 border-t border-slate-100 flex flex-col gap-1 text-xs">
+              <div className="pt-2 mt-1 border-t border-[#E4E7EC] flex flex-col gap-1 text-xs">
                 {isUpdating ? (
                   <>
                     <Shimmer className="h-4 w-28 rounded-md" />

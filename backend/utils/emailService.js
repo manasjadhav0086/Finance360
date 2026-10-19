@@ -14,7 +14,7 @@ function getSmtpConfig() {
   const pass = process.env.SMTP_PASS || '';
   let from = process.env.SMTP_FROM || '';
   if (!from || from.includes('@finance360.local')) {
-    from = user ? `"Finance360 Platform" <${user}>` : '"Finance360 Platform" <no-reply@finance360.local>';
+    from = user ? `"Finance360 Platform" <${user}>` : '"Finance360 Platform" <finance360@misar.io>';
   }
   const appUrl = (process.env.APP_URL || 'http://localhost:3000').replace(/\/+$/, '');
 

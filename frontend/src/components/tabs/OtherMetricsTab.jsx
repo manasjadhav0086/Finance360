@@ -374,20 +374,20 @@ export default function OtherMetricsTab({
       {/* Header & Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">Other Metrics</h1>
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          <h1 className="text-xl font-bold tracking-tight text-[#101828]">Other Metrics</h1>
+          <span className="text-xs font-semibold text-[#667085] uppercase tracking-wider">
             Quarterly Breakdown (Budget vs Actual)
           </span>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Metric Switcher: Collection | Order Intake */}
-          <div className="inline-flex rounded-lg bg-slate-100 p-1 border border-slate-200">
+          <div className="inline-flex rounded-lg bg-[#F2F4F7] p-1 border border-[#E4E7EC]">
             <button
               type="button"
-              className={`px-3.5 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${metricMode === 'collection'
-                ? 'bg-[#249791] text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 font-semibold'
+              className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${metricMode === 'collection'
+                ? 'bg-[#0D9488] text-white shadow-xs'
+                : 'text-[#667085] hover:text-[#101828]'
                 }`}
               onClick={() => setMetricMode('collection')}
             >
@@ -395,9 +395,9 @@ export default function OtherMetricsTab({
             </button>
             <button
               type="button"
-              className={`px-3.5 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${metricMode === 'oi'
-                ? 'bg-[#249791] text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 font-semibold'
+              className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${metricMode === 'oi'
+                ? 'bg-[#D97706] text-white shadow-xs'
+                : 'text-[#667085] hover:text-[#101828]'
                 }`}
               onClick={() => setMetricMode('oi')}
             >
@@ -409,17 +409,17 @@ export default function OtherMetricsTab({
           <button
             type="button"
             onClick={toggleExpandAll}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer shadow-xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-white border border-[#E4E7EC] text-[#344054] hover:bg-[#F9FAFB] transition-colors cursor-pointer shadow-xs"
             title={isAllExpanded ? 'Collapse all segments' : 'Expand all segments'}
           >
             {isAllExpanded ? (
               <>
-                <ChevronsDownUp className="w-3.5 h-3.5 text-slate-500" />
+                <ChevronsDownUp className="w-3.5 h-3.5 text-[#667085]" />
                 <span>Collapse All</span>
               </>
             ) : (
               <>
-                <ChevronsUpDown className="w-3.5 h-3.5 text-slate-500" />
+                <ChevronsUpDown className="w-3.5 h-3.5 text-[#667085]" />
                 <span>Expand All</span>
               </>
             )}
@@ -428,21 +428,21 @@ export default function OtherMetricsTab({
       </div>
 
       {/* Main Table Card */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-        <div className="px-4 py-2.5 bg-gradient-to-r from-[#090D16] via-[#111827] to-[#1E293B] border-b border-slate-800/80 border-l-4 border-l-slate-400 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xs">
+      <div className="bg-white border border-[#E4E7EC] rounded-xl shadow-xs overflow-hidden">
+        <div className="px-4 py-2.5 bg-[#101828] border-b border-[#1D2939] flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xs">
           <div className="flex items-center gap-2.5 flex-wrap">
-            <span className="w-2.5 h-2.5 rounded-[2px] bg-slate-300 shrink-0" />
-            <span className="text-[14px] font-bold text-white tracking-tight">
+            <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${metricMode === 'collection' ? 'bg-[#0D9488]' : 'bg-[#D97706]'}`} />
+            <span className="text-sm font-semibold text-white tracking-tight">
               {metricLabel}
             </span>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-200 font-medium border border-slate-700">
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#1D2939] text-[#D0D5DD] font-medium border border-[#344054]">
               {fy}
             </span>
-            <span className="text-xs px-2 py-0.5 rounded bg-slate-800/80 text-teal-300 font-medium border border-slate-700">
+            <span className="text-xs px-2 py-0.5 rounded bg-[#1D2939] text-[#98A2B3] font-medium border border-[#344054]">
               Bud: Budget · Act: Actuals
             </span>
           </div>
-          <span className="text-xs font-mono text-slate-300">
+          <span className="text-xs font-mono tabular-nums text-[#98A2B3]">
             {groupedData.length} Segments · {totalBusinessesCount} Businesses
           </span>
         </div>
@@ -460,18 +460,17 @@ export default function OtherMetricsTab({
               className="w-full border-separate border-spacing-0 text-xs min-w-[850px]"
               onMouseLeave={() => setHoveredCell({ row: null, col: null })}
             >
-              <thead className="bg-[#249791]">
+              <thead className="bg-[#101828]">
                 {/* Level 1 Header: Periods */}
-                <tr className="bg-[#249791] text-white font-bold h-[32px]">
+                <tr className="bg-[#101828] text-white font-semibold h-[34px]">
                   <th
                     rowSpan={2}
                     onClick={() => handleSort('groupName')}
-                    className={`py-2 px-3 text-left border-b border-r border-[#1d827d] min-w-[200px] sm:min-w-[230px] w-[240px] bg-[#249791] text-white font-bold sticky top-0 left-0 z-20 transition-colors cursor-pointer group hover:bg-[#1c7b76] select-none ${
-                      isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.25)]' : ''
-                    }`}
+                    className={`py-2 px-3 text-left border-b border-r border-[#1D2939] min-w-[200px] sm:min-w-[230px] w-[240px] bg-[#101828] text-white font-semibold sticky top-0 left-0 z-20 transition-colors cursor-pointer group hover:bg-[#1D2939] select-none ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.25)]' : ''
+                      }`}
                   >
                     <div className="flex items-center gap-1.5">
-                      <span>Segment</span>
+                      <span>Business Group</span>
                       {renderSortIcon('groupName')}
                     </div>
                   </th>
@@ -480,7 +479,7 @@ export default function OtherMetricsTab({
                     <th
                       key={qKey}
                       colSpan={2}
-                      className="py-1.5 px-2 text-center sticky top-0 z-10 border-b border-r border-[#1d827d] bg-[#249791] font-bold text-white select-none"
+                      className="py-1.5 px-2 text-center sticky top-0 z-10 border-b border-r border-[#1D2939] bg-[#101828] font-semibold text-white select-none"
                     >
                       {qKey}
                     </th>
@@ -488,31 +487,31 @@ export default function OtherMetricsTab({
 
                   <th
                     colSpan={2}
-                    className="py-1.5 px-2 text-center sticky top-0 z-10 border-b border-[#1d827d] bg-[#1c7b76] font-bold text-white select-none"
+                    className="py-1.5 px-2 text-center sticky top-0 z-10 border-b border-[#1D2939] bg-[#101828] font-semibold text-white select-none"
                   >
                     Total
                   </th>
                 </tr>
 
                 {/* Level 2 Sub-Header: Bud | Act */}
-                <tr className="bg-[#1e8580] text-[11px] text-white font-semibold h-[30px]">
+                <tr className="bg-[#1D2939] text-[11px] text-[#D0D5DD] font-medium h-[30px]">
                   {quartersList.map((qKey) => (
                     <Fragment key={qKey}>
                       <th
                         onClick={() => handleSort(`${qKey}_bud`)}
-                        className="py-1.5 px-2 text-right sticky top-[32px] z-10 border-b border-r border-[#176a66] bg-[#23928c] text-teal-50 font-semibold cursor-pointer group hover:bg-[#1c7b76] select-none w-[70px]"
+                        className="py-1.5 px-2 text-right sticky top-[34px] z-10 border-b border-r border-[#344054] bg-[#1D2939] text-[#98A2B3] font-medium cursor-pointer group hover:bg-[#344054] select-none w-[70px]"
                       >
                         <div className="flex items-center justify-end gap-1">
-                          <span className="text-teal-50">Bud</span>
+                          <span>Bud</span>
                           {renderSortIcon(`${qKey}_bud`)}
                         </div>
                       </th>
                       <th
                         onClick={() => handleSort(`${qKey}_act`)}
-                        className="py-1.5 px-2 text-right sticky top-[32px] z-10 border-b border-r border-[#176a66] bg-[#1e8580] text-white font-bold cursor-pointer group hover:bg-[#176a66] select-none w-[70px]"
+                        className="py-1.5 px-2 text-right sticky top-[34px] z-10 border-b border-r border-[#344054] bg-[#1D2939] text-white font-semibold cursor-pointer group hover:bg-[#344054] select-none w-[70px]"
                       >
                         <div className="flex items-center justify-end gap-1">
-                          <span className="text-white font-bold">Act</span>
+                          <span>Act</span>
                           {renderSortIcon(`${qKey}_act`)}
                         </div>
                       </th>
@@ -522,29 +521,29 @@ export default function OtherMetricsTab({
                   {/* Total Bud | Act */}
                   <th
                     onClick={() => handleSort('Total_bud')}
-                    className="py-1.5 px-2 text-right sticky top-[32px] z-10 border-b border-r border-[#176a66] bg-[#1c7873] text-teal-50 font-bold cursor-pointer group hover:bg-[#166460] select-none w-[80px]"
+                    className="py-1.5 px-2 text-right sticky top-[34px] z-10 border-b border-r border-[#344054] bg-[#1D2939] text-[#98A2B3] font-semibold cursor-pointer group hover:bg-[#344054] select-none w-[80px]"
                   >
                     <div className="flex items-center justify-end gap-1">
-                      <span className="text-teal-50 font-bold">Bud</span>
+                      <span>Bud</span>
                       {renderSortIcon('Total_bud')}
                     </div>
                   </th>
                   <th
                     onClick={() => handleSort('Total_act')}
-                    className="py-1.5 px-2 text-right sticky top-[32px] z-10 border-b border-[#176a66] bg-[#176a66] text-white font-bold cursor-pointer group hover:bg-[#125552] select-none w-[80px]"
+                    className="py-1.5 px-2 text-right sticky top-[34px] z-10 border-b border-[#344054] bg-[#1D2939] text-white font-semibold cursor-pointer group hover:bg-[#344054] select-none w-[80px]"
                   >
                     <div className="flex items-center justify-end gap-1">
-                      <span className="text-white font-bold">Act</span>
+                      <span>Act</span>
                       {renderSortIcon('Total_act')}
                     </div>
                   </th>
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-slate-100 font-mono text-[13px] sm:text-[13.5px]">
+              <tbody className="divide-y divide-[#E4E7EC] font-mono tabular-nums text-[13px]">
                 {groupedData.length === 0 ? (
                   <tr>
-                    <td colSpan={11} className="py-8 text-center text-slate-400">
+                    <td colSpan={11} className="py-8 text-center text-[#98A2B3]">
                       No matching records found for the selected filters.
                     </td>
                   </tr>
@@ -557,25 +556,24 @@ export default function OtherMetricsTab({
                         {/* Segment Header Row (Collapsible) */}
                         <tr
                           onClick={() => toggleGroup(group.groupName)}
-                          className="bg-slate-50/95 hover:bg-slate-100/95 cursor-pointer select-none transition-colors border-t border-b border-slate-200 font-semibold"
+                          className="bg-[#F8FAFC] hover:bg-[#F1F5F9] cursor-pointer select-none transition-colors border-t border-b border-[#E4E7EC] font-semibold"
                         >
                           <td
-                            className={`py-2 px-3 text-slate-900 sticky left-0 z-10 bg-slate-50/95 border-r border-slate-200 ${
-                              isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)]' : ''
-                            }`}
+                            className={`py-2 px-3 text-[#101828] sticky left-0 z-10 bg-[#F8FAFC] border-r border-[#E4E7EC] ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)]' : ''
+                              }`}
                           >
                             <div className="flex items-center gap-2">
-                              <span className="p-1 rounded-md bg-slate-200/90 text-slate-700 hover:bg-[#249791] hover:text-white transition-all shadow-xs border border-slate-300/80 inline-flex items-center justify-center shrink-0">
+                              <span className="p-1 rounded-md bg-[#EAECF0] text-[#344054] hover:bg-[#246BFD] hover:text-white transition-all shadow-xs border border-[#D0D5DD] inline-flex items-center justify-center shrink-0">
                                 {isExpanded ? (
                                   <ChevronDown className="w-3.5 h-3.5 stroke-[2.5]" />
                                 ) : (
                                   <ChevronRight className="w-3.5 h-3.5 stroke-[2.5]" />
                                 )}
                               </span>
-                              <span className="font-bold text-slate-900 truncate" title={group.groupName}>
+                              <span className="font-semibold text-[#101828] truncate" title={group.groupName}>
                                 {group.groupName}
                               </span>
-                              <span className="text-[10px] text-slate-400 font-medium ml-auto pr-1 shrink-0">
+                              <span className="text-[10px] text-[#98A2B3] font-medium ml-auto pr-1 shrink-0">
                                 ({group.businesses.length})
                               </span>
                             </div>
@@ -583,38 +581,37 @@ export default function OtherMetricsTab({
 
                           {quartersList.map((qKey) => (
                             <Fragment key={qKey}>
-                              <td className="py-2 px-2 text-right font-mono text-slate-600 font-medium bg-slate-100/50 border-r border-slate-200">
+                              <td className="py-2 px-2 text-right font-mono text-[#667085] font-medium bg-[#F8FAFC] border-r border-[#E4E7EC]">
                                 {formatMetricVal(group.totals[`${qKey}_bud`])}
                               </td>
-                              <td className="py-2 px-2 text-right font-mono text-slate-900 font-bold border-r border-slate-200">
+                              <td className="py-2 px-2 text-right font-mono text-[#101828] font-semibold border-r border-[#E4E7EC]">
                                 {formatMetricVal(group.totals[`${qKey}_act`])}
                               </td>
                             </Fragment>
                           ))}
 
-                          <td className="py-2 px-2 text-right font-mono text-slate-800 font-bold bg-amber-50/40 border-r border-slate-200 text-sm sm:text-[14.5px]">
+                          <td className="py-2 px-2 text-right font-mono text-[#101828] font-semibold bg-[#F9FAFB] border-r border-[#E4E7EC]">
                             {formatMetricVal(group.totals.Total_bud)}
                           </td>
-                          <td className="py-2 px-2 text-right font-mono text-slate-900 font-bold bg-blue-50/50 text-sm sm:text-[14.5px]">
+                          <td className="py-2 px-2 text-right font-mono text-[#101828] font-bold bg-[#F0F5FF]">
                             {formatMetricVal(group.totals.Total_act)}
                           </td>
                         </tr>
 
-                        {/* Child Business Rows (Rendered as subcategory directly under Segment) */}
+                        {/* Child Business Rows */}
                         {isExpanded &&
                           group.businesses.map((biz) => (
                             <tr
                               key={`${group.groupName}-${biz.business}`}
-                              className="bg-white hover:bg-slate-50/80 transition-colors"
+                              className="bg-white hover:bg-[#F9FAFB] transition-colors"
                             >
                               <td
-                                className={`py-1.5 px-3 pl-8 sm:pl-9 text-slate-700 border-b border-r border-slate-100 sticky left-0 z-10 bg-white ${
-                                  isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)]' : ''
-                                }`}
+                                className={`py-1.5 px-3 pl-8 sm:pl-9 text-[#344054] border-b border-r border-[#E4E7EC] sticky left-0 z-10 bg-white ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)]' : ''
+                                  }`}
                               >
                                 <div className="flex items-center gap-1.5 min-w-0">
-                                  <span className="text-teal-600/80 font-mono text-[12px] select-none shrink-0">↳</span>
-                                  <span className="font-medium text-slate-800 text-xs truncate" title={biz.business}>
+                                  <span className="text-[#246BFD] font-mono text-[12px] select-none shrink-0">↳</span>
+                                  <span className="font-normal text-[#344054] text-xs truncate" title={biz.business}>
                                     {biz.business}
                                   </span>
                                 </div>
@@ -622,19 +619,19 @@ export default function OtherMetricsTab({
 
                               {quartersList.map((qKey) => (
                                 <Fragment key={qKey}>
-                                  <td className="py-1.5 px-2 text-right font-mono text-slate-500 bg-slate-50/40 border-b border-r border-slate-100">
+                                  <td className="py-1.5 px-2 text-right font-mono text-[#667085] bg-white border-b border-r border-[#E4E7EC]">
                                     {formatMetricVal(biz.values[`${qKey}_bud`])}
                                   </td>
-                                  <td className="py-1.5 px-2 text-right font-mono text-slate-800 border-b border-r border-slate-100">
+                                  <td className="py-1.5 px-2 text-right font-mono text-[#101828] border-b border-r border-[#E4E7EC]">
                                     {formatMetricVal(biz.values[`${qKey}_act`])}
                                   </td>
                                 </Fragment>
                               ))}
 
-                              <td className="py-1.5 px-2 text-right font-mono font-semibold text-slate-700 border-b border-r border-slate-100 bg-amber-50/20 text-xs sm:text-[13px]">
+                              <td className="py-1.5 px-2 text-right font-mono font-medium text-[#344054] border-b border-r border-[#E4E7EC] bg-[#FAFAFA] text-xs">
                                 {formatMetricVal(biz.values.Total_bud)}
                               </td>
-                              <td className="py-1.5 px-2 text-right font-mono font-bold text-slate-900 border-b border-slate-100 bg-blue-50/20 text-xs sm:text-[13px]">
+                              <td className="py-1.5 px-2 text-right font-mono font-semibold text-[#101828] border-b border-[#E4E7EC] bg-[#F0F5FF] text-xs">
                                 {formatMetricVal(biz.values.Total_act)}
                               </td>
                             </tr>
@@ -647,15 +644,14 @@ export default function OtherMetricsTab({
 
               {groupedData.length > 0 && (
                 <tfoot>
-                  <tr className="bg-slate-100 font-bold text-slate-900 sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)]">
+                  <tr className="bg-[#F1F5F9] font-bold text-[#101828] sticky bottom-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.05)]">
                     <td
-                      className={`py-2.5 px-3 border-t border-r border-slate-300 sticky left-0 z-20 bg-slate-100 text-sm sm:text-base font-bold text-slate-900 ${
-                        isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)]' : ''
-                      }`}
+                      className={`py-2.5 px-3 border-t border-r border-[#D0D5DD] sticky left-0 z-20 bg-[#F1F5F9] text-sm font-bold text-[#101828] ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)]' : ''
+                        }`}
                     >
                       <div className="flex items-center justify-between gap-1">
                         <span>Total</span>
-                        <span className="text-[11px] font-normal text-slate-500">
+                        <span className="text-[11px] font-normal text-[#667085]">
                           ({totalBusinessesCount} BUs)
                         </span>
                       </div>
@@ -663,19 +659,19 @@ export default function OtherMetricsTab({
 
                     {quartersList.map((qKey) => (
                       <Fragment key={qKey}>
-                        <td className="py-2.5 px-2 text-right font-mono text-[13px] border-t border-r border-slate-300 text-slate-700 bg-slate-200/30 font-semibold">
+                        <td className="py-2.5 px-2 text-right font-mono text-[13px] border-t border-r border-[#D0D5DD] text-[#344054] bg-[#F1F5F9] font-semibold">
                           {formatMetricVal(grandTotals[`${qKey}_bud`])}
                         </td>
-                        <td className="py-2.5 px-2 text-right font-mono text-[13px] border-t border-r border-slate-300 text-slate-900 font-bold">
+                        <td className="py-2.5 px-2 text-right font-mono text-[13px] border-t border-r border-[#D0D5DD] text-[#101828] font-bold">
                           {formatMetricVal(grandTotals[`${qKey}_act`])}
                         </td>
                       </Fragment>
                     ))}
 
-                    <td className="py-2.5 px-2 text-right font-mono text-sm sm:text-base border-t border-r border-slate-300 text-slate-900 font-bold bg-amber-100/60">
+                    <td className="py-2.5 px-2 text-right font-mono text-sm border-t border-r border-[#D0D5DD] text-[#101828] font-bold bg-[#F8FAFC]">
                       {formatMetricVal(grandTotals.Total_bud)}
                     </td>
-                    <td className="py-2.5 px-2 text-right font-mono text-sm sm:text-base border-t border-slate-300 text-slate-900 font-bold bg-blue-100/60">
+                    <td className="py-2.5 px-2 text-right font-mono text-sm border-t border-[#D0D5DD] text-[#101828] font-bold bg-[#EBF2FE]">
                       {formatMetricVal(grandTotals.Total_act)}
                     </td>
                   </tr>

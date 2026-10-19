@@ -199,21 +199,21 @@ export default function HeatmapTab({
     <div className="space-y-3">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">Heatmap</h1>
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Multi-Period Performance Matrix</span>
+          <h1 className="text-xl font-bold tracking-tight text-[#101828]">Heatmap</h1>
+          <span className="text-xs font-semibold text-[#667085] uppercase tracking-wider">Multi-Period Performance Matrix</span>
         </div>
 
-        <div className="inline-flex rounded-lg bg-slate-100 p-1 border border-slate-200 self-start sm:self-auto">
+        <div className="inline-flex rounded-lg bg-[#F2F4F7] p-1 border border-[#E4E7EC] self-start sm:self-auto">
           <button
             type="button"
-            className={`px-3.5 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${grain === 'quarterly' ? 'bg-[#249791] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 font-semibold'}`}
+            className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${grain === 'quarterly' ? 'bg-[#246BFD] text-white shadow-xs' : 'text-[#667085] hover:text-[#101828]'}`}
             onClick={() => setGrain('quarterly')}
           >
             Quarterly
           </button>
           <button
             type="button"
-            className={`px-3.5 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${grain === 'yearly' ? 'bg-[#249791] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 font-semibold'}`}
+            className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${grain === 'yearly' ? 'bg-[#246BFD] text-white shadow-xs' : 'text-[#667085] hover:text-[#101828]'}`}
             onClick={() => setGrain('yearly')}
           >
             Yearly
@@ -221,13 +221,13 @@ export default function HeatmapTab({
         </div>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
-        <div className="px-4 py-2.5 bg-gradient-to-r from-[#090D16] via-[#111827] to-[#1E293B] border-b border-slate-800/80 border-l-4 border-l-slate-400 flex items-center justify-between shadow-xs shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-[2px] bg-slate-300 shrink-0" />
-            <span className="text-[14px] font-bold text-white tracking-tight">{grainLabel} Heatmap Comparison ({periodLabels.currentPeriod})</span>
+      <div className="bg-white border border-[#E4E7EC] rounded-xl shadow-xs overflow-hidden flex flex-col">
+        <div className="px-4 py-2.5 bg-[#101828] border-b border-[#1D2939] flex items-center justify-between shadow-xs shrink-0">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-[#246BFD] shrink-0" />
+            <span className="text-sm font-semibold text-white tracking-tight">{grainLabel} Heatmap Comparison ({periodLabels.currentPeriod})</span>
           </div>
-          <span className="text-xs font-mono text-slate-300 font-medium">{tableRows.length} Metrics</span>
+          <span className="text-xs font-mono tabular-nums text-[#98A2B3] font-medium">{tableRows.length} Metrics</span>
         </div>
 
         <div
@@ -238,17 +238,17 @@ export default function HeatmapTab({
             className="w-full border-separate border-spacing-0 text-xs min-w-[750px]"
             onMouseLeave={() => setHoveredCell({ row: null, col: null })}
           >
-            <thead>
-              <tr className="bg-[#249791] text-white font-bold sticky top-0 z-20 shadow-xs">
+            <thead className="bg-[#101828]">
+              <tr className="bg-[#101828] text-white font-semibold sticky top-0 z-20 shadow-xs h-[34px]">
                 <th
                   onMouseEnter={() => setHoveredCell({ row: null, col: 'metric' })}
-                  className={`py-2.5 px-3 text-left sticky top-0 left-0 z-20 min-w-[200px] border-r border-b border-[#1d827d] bg-[#249791] text-white font-bold transition-all duration-150 ${hoveredCell.col === 'metric' ? 'bg-[#1c7b76]' : ''} ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.25)]' : ''}`}
+                  className={`py-2 px-3 text-left sticky top-0 left-0 z-20 min-w-[200px] border-r border-b border-[#1D2939] bg-[#101828] text-white font-semibold transition-all duration-150 ${hoveredCell.col === 'metric' ? 'bg-[#1D2939]' : ''} ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.25)]' : ''}`}
                 >
                   {grain === 'monthly' ? 'Monthly Metric' : grain === 'quarterly' ? 'Quarterly Metric' : 'Yearly Metric'}
                 </th>
                 <th
                   onMouseEnter={() => setHoveredCell({ row: null, col: 'uom' })}
-                  className={`py-2.5 px-3 text-left sticky top-0 z-20 min-w-[80px] border-r border-b border-[#1d827d] bg-[#249791] text-white font-bold transition-colors ${hoveredCell.col === 'uom' ? 'bg-[#1c7b76]' : ''}`}
+                  className={`py-2 px-3 text-left sticky top-0 z-20 min-w-[80px] border-r border-b border-[#1D2939] bg-[#101828] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'uom' ? 'bg-[#1D2939] text-white' : ''}`}
                 >
                   UOM
                 </th>
@@ -256,43 +256,43 @@ export default function HeatmapTab({
                   <>
                     <th
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'ly' })}
-                      className={`py-2.5 px-3 text-right min-w-[100px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'ly' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right min-w-[100px] border-r border-b border-[#1D2939] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'ly' ? 'bg-[#1D2939] text-white' : ''}`}
                     >
                       LY Actual
                     </th>
                     <th
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'prev' })}
-                      className={`py-2.5 px-3 text-right min-w-[100px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'prev' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right min-w-[100px] border-r border-b border-[#1D2939] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'prev' ? 'bg-[#1D2939] text-white' : ''}`}
                     >
                       Prev Month
                     </th>
                     <th
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'bud' })}
-                      className={`py-2.5 px-3 text-right min-w-[100px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'bud' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right min-w-[100px] border-r border-b border-[#1D2939] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'bud' ? 'bg-[#1D2939] text-white' : ''}`}
                     >
                       {periodLabels.budgetLabel}
                     </th>
                     <th
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'act' })}
-                      className={`py-2.5 px-3 text-right min-w-[100px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'act' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right min-w-[100px] border-r border-b border-[#1D2939] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'act' ? 'bg-[#1D2939] text-white' : ''}`}
                     >
                       {periodLabels.actualLabel}
                     </th>
                     <th
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'budAch' })}
-                      className={`py-2.5 px-3 text-right min-w-[90px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'budAch' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right min-w-[90px] border-r border-b border-[#1D2939] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'budAch' ? 'bg-[#1D2939] text-white' : ''}`}
                     >
                       {periodLabels.budAchLabel}
                     </th>
                     <th
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'seq' })}
-                      className={`py-2.5 px-3 text-right min-w-[90px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'seq' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right min-w-[90px] border-r border-b border-[#1D2939] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'seq' ? 'bg-[#1D2939] text-white' : ''}`}
                     >
                       MoM %
                     </th>
                     <th
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'yoy' })}
-                      className={`py-2.5 px-3 text-right min-w-[90px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'yoy' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right min-w-[90px] border-r border-b border-[#1D2939] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'yoy' ? 'bg-[#1D2939] text-white' : ''}`}
                     >
                       {periodLabels.yoyLabel}
                     </th>
@@ -301,43 +301,43 @@ export default function HeatmapTab({
                   <>
                     <th
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'ly' })}
-                      className={`py-2.5 px-3 text-right min-w-[100px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'ly' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right min-w-[100px] border-r border-b border-[#1D2939] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'ly' ? 'bg-[#1D2939] text-white' : ''}`}
                     >
                       {periodLabels.lyActualLabel}
                     </th>
                     <th
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'prev' })}
-                      className={`py-2.5 px-3 text-right min-w-[100px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'prev' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right min-w-[100px] border-r border-b border-[#1D2939] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'prev' ? 'bg-[#1D2939] text-white' : ''}`}
                     >
                       {periodLabels.lastQtrActualLabel}
                     </th>
                     <th
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'bud' })}
-                      className={`py-2.5 px-3 text-right min-w-[100px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'bud' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right min-w-[100px] border-r border-b border-[#1D2939] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'bud' ? 'bg-[#1D2939] text-white' : ''}`}
                     >
                       {periodLabels.budgetLabel}
                     </th>
                     <th
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'act' })}
-                      className={`py-2.5 px-3 text-right min-w-[100px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'act' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right min-w-[100px] border-r border-b border-[#1D2939] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'act' ? 'bg-[#1D2939] text-white' : ''}`}
                     >
                       {periodLabels.actualLabel}
                     </th>
                     <th
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'budAch' })}
-                      className={`py-2.5 px-3 text-right min-w-[90px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'budAch' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right min-w-[90px] border-r border-b border-[#1D2939] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'budAch' ? 'bg-[#1D2939] text-white' : ''}`}
                     >
                       {periodLabels.budAchLabel}
                     </th>
                     <th
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'seq' })}
-                      className={`py-2.5 px-3 text-right min-w-[90px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'seq' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right min-w-[90px] border-r border-b border-[#1D2939] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'seq' ? 'bg-[#1D2939] text-white' : ''}`}
                     >
                       {periodLabels.qoqLabel}
                     </th>
                     <th
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'yoy' })}
-                      className={`py-2.5 px-3 text-right min-w-[90px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'yoy' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right min-w-[90px] border-r border-b border-[#1D2939] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'yoy' ? 'bg-[#1D2939] text-white' : ''}`}
                     >
                       {periodLabels.yoyLabel}
                     </th>
@@ -346,31 +346,31 @@ export default function HeatmapTab({
                   <>
                     <th
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'ly' })}
-                      className={`py-2.5 px-3 text-right min-w-[100px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'ly' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right min-w-[100px] border-r border-b border-[#1D2939] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'ly' ? 'bg-[#1D2939] text-white' : ''}`}
                     >
                       {periodLabels.lyActualLabel}
                     </th>
                     <th
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'bud' })}
-                      className={`py-2.5 px-3 text-right min-w-[100px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'bud' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right min-w-[100px] border-r border-b border-[#1D2939] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'bud' ? 'bg-[#1D2939] text-white' : ''}`}
                     >
                       {periodLabels.budgetLabel}
                     </th>
                     <th
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'act' })}
-                      className={`py-2.5 px-3 text-right min-w-[100px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'act' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right min-w-[100px] border-r border-b border-[#1D2939] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'act' ? 'bg-[#1D2939] text-white' : ''}`}
                     >
                       {periodLabels.actualLabel}
                     </th>
                     <th
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'budAch' })}
-                      className={`py-2.5 px-3 text-right min-w-[90px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'budAch' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right min-w-[90px] border-r border-b border-[#1D2939] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'budAch' ? 'bg-[#1D2939] text-white' : ''}`}
                     >
                       {periodLabels.budAchLabel}
                     </th>
                     <th
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'yoy' })}
-                      className={`py-2.5 px-3 text-right min-w-[90px] border-r border-b border-[#1d827d] transition-colors ${hoveredCell.col === 'yoy' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right min-w-[90px] border-r border-b border-[#1D2939] text-[#D0D5DD] font-semibold transition-colors ${hoveredCell.col === 'yoy' ? 'bg-[#1D2939] text-white' : ''}`}
                     >
                       {periodLabels.yoyLabel}
                     </th>
@@ -378,20 +378,20 @@ export default function HeatmapTab({
                 )}
               </tr>
             </thead>
-            <tbody className="font-mono text-[13px] sm:text-[13.5px]">
+            <tbody className="font-mono tabular-nums text-[13px]">
               {tableRows.map((r, idx) => {
-                const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-slate-50';
+                const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-[#FAFAFA]';
                 return (
-                  <tr key={idx}>
+                  <tr key={idx} className="text-[#344054]">
                     <td
                       onMouseEnter={() => setHoveredCell({ row: idx, col: 'metric' })}
-                      className={`py-2 px-3 font-sans font-semibold text-slate-900 sticky left-0 z-10 ${getCellBg(idx, 'metric', rowBg)} border-r border-b border-slate-200 transition-all duration-100 ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)]' : ''}`}
+                      className={`py-2 px-3 font-sans font-semibold text-[#101828] sticky left-0 z-10 ${getCellBg(idx, 'metric', rowBg)} border-r border-b border-[#E4E7EC] transition-all duration-100 ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)]' : ''}`}
                     >
                       {r.metric}
                     </td>
                     <td
                       onMouseEnter={() => setHoveredCell({ row: idx, col: 'uom' })}
-                      className={`py-2 px-3 font-sans text-slate-500 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'uom', rowBg)}`}
+                      className={`py-2 px-3 font-sans text-[#667085] border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'uom', rowBg)}`}
                     >
                       {r.uom}
                     </td>
@@ -400,25 +400,25 @@ export default function HeatmapTab({
                       <>
                         <td
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'ly' })}
-                          className={`py-2 px-3 text-right text-slate-700 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'ly', rowBg)}`}
+                          className={`py-2 px-3 text-right border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'ly', rowBg)}`}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-12 ml-auto rounded-sm" /> : r.isPct ? fmtPct(r.ly) : fmtAmt(r.ly)}
                         </td>
                         <td
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'prev' })}
-                          className={`py-2 px-3 text-right text-slate-700 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'prev', rowBg)}`}
+                          className={`py-2 px-3 text-right border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'prev', rowBg)}`}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-12 ml-auto rounded-sm" /> : r.isPct ? fmtPct(r.prev) : fmtAmt(r.prev)}
                         </td>
                         <td
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'bud' })}
-                          className={`py-2 px-3 text-right text-slate-700 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'bud', rowBg)}`}
+                          className={`py-2 px-3 text-right border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'bud', rowBg)}`}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-12 ml-auto rounded-sm" /> : r.isPct ? fmtPct(r.bud) : fmtAmt(r.bud)}
                         </td>
                         <td
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'act' })}
-                          className={`py-2 px-3 text-right font-semibold text-slate-900 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'act', rowBg)}`}
+                          className={`py-2 px-3 text-right font-semibold text-[#101828] border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'act', rowBg)}`}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-12 ml-auto rounded-sm" /> : r.isPct ? fmtPct(r.act) : fmtAmt(r.act)}
                         </td>
@@ -426,19 +426,19 @@ export default function HeatmapTab({
                           <>
                             <td
                               onMouseEnter={() => setHoveredCell({ row: idx, col: 'budAch' })}
-                              className={`py-2 px-3 text-right text-slate-300 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'budAch', rowBg)}`}
+                              className={`py-2 px-3 text-right text-[#98A2B3] border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'budAch', rowBg)}`}
                             >
                               —
                             </td>
                             <td
                               onMouseEnter={() => setHoveredCell({ row: idx, col: 'seq' })}
-                              className={`py-2 px-3 text-right text-slate-300 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'seq', rowBg)}`}
+                              className={`py-2 px-3 text-right text-[#98A2B3] border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'seq', rowBg)}`}
                             >
                               —
                             </td>
                             <td
                               onMouseEnter={() => setHoveredCell({ row: idx, col: 'yoy' })}
-                              className={`py-2 px-3 text-right text-slate-300 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'yoy', rowBg)}`}
+                              className={`py-2 px-3 text-right text-[#98A2B3] border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'yoy', rowBg)}`}
                             >
                               —
                             </td>
@@ -447,19 +447,19 @@ export default function HeatmapTab({
                           <>
                             <td
                               onMouseEnter={() => setHoveredCell({ row: idx, col: 'budAch' })}
-                              className={`py-2 px-3 text-right font-semibold border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'budAch', rowBg)} ${r.budAch >= 100 ? 'text-emerald-600' : 'text-slate-700'}`}
+                              className={`py-2 px-3 text-right font-semibold border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'budAch', rowBg)} ${r.budAch >= 100 ? 'text-[#12B981]' : 'text-[#344054]'}`}
                             >
                               {isUpdating ? <Shimmer className="h-4 w-10 ml-auto rounded-sm" /> : fmtPct(r.budAch)}
                             </td>
                             <td
                               onMouseEnter={() => setHoveredCell({ row: idx, col: 'seq' })}
-                              className={`py-2 px-3 text-right font-semibold border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'seq', rowBg)} ${r.seq >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}
+                              className={`py-2 px-3 text-right font-semibold border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'seq', rowBg)} ${r.seq >= 0 ? 'text-[#12B981]' : 'text-[#D92D20]'}`}
                             >
                               {isUpdating ? <Shimmer className="h-4 w-10 ml-auto rounded-sm" /> : fmtPct(r.seq)}
                             </td>
                             <td
                               onMouseEnter={() => setHoveredCell({ row: idx, col: 'yoy' })}
-                              className={`py-2 px-3 text-right font-semibold border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'yoy', rowBg)} ${r.yoy >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}
+                              className={`py-2 px-3 text-right font-semibold border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'yoy', rowBg)} ${r.yoy >= 0 ? 'text-[#12B981]' : 'text-[#D92D20]'}`}
                             >
                               {isUpdating ? <Shimmer className="h-4 w-10 ml-auto rounded-sm" /> : fmtPct(r.yoy)}
                             </td>
@@ -470,25 +470,25 @@ export default function HeatmapTab({
                       <>
                         <td
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'ly' })}
-                          className={`py-2 px-3 text-right text-slate-700 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'ly', rowBg)}`}
+                          className={`py-2 px-3 text-right border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'ly', rowBg)}`}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-12 ml-auto rounded-sm" /> : r.isPct ? fmtPct(r.ly) : fmtAmt(r.ly)}
                         </td>
                         <td
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'prev' })}
-                          className={`py-2 px-3 text-right text-slate-700 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'prev', rowBg)}`}
+                          className={`py-2 px-3 text-right border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'prev', rowBg)}`}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-12 ml-auto rounded-sm" /> : r.isPct ? fmtPct(r.prev) : fmtAmt(r.prev)}
                         </td>
                         <td
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'bud' })}
-                          className={`py-2 px-3 text-right text-slate-700 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'bud', rowBg)}`}
+                          className={`py-2 px-3 text-right border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'bud', rowBg)}`}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-12 ml-auto rounded-sm" /> : r.isPct ? fmtPct(r.bud) : fmtAmt(r.bud)}
                         </td>
                         <td
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'act' })}
-                          className={`py-2 px-3 text-right font-semibold text-slate-900 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'act', rowBg)}`}
+                          className={`py-2 px-3 text-right font-semibold text-[#101828] border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'act', rowBg)}`}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-12 ml-auto rounded-sm" /> : r.isPct ? fmtPct(r.act) : fmtAmt(r.act)}
                         </td>
@@ -496,19 +496,19 @@ export default function HeatmapTab({
                           <>
                             <td
                               onMouseEnter={() => setHoveredCell({ row: idx, col: 'budAch' })}
-                              className={`py-2 px-3 text-right text-slate-300 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'budAch', rowBg)}`}
+                              className={`py-2 px-3 text-right text-[#98A2B3] border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'budAch', rowBg)}`}
                             >
                               —
                             </td>
                             <td
                               onMouseEnter={() => setHoveredCell({ row: idx, col: 'seq' })}
-                              className={`py-2 px-3 text-right text-slate-300 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'seq', rowBg)}`}
+                              className={`py-2 px-3 text-right text-[#98A2B3] border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'seq', rowBg)}`}
                             >
                               —
                             </td>
                             <td
                               onMouseEnter={() => setHoveredCell({ row: idx, col: 'yoy' })}
-                              className={`py-2 px-3 text-right text-slate-300 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'yoy', rowBg)}`}
+                              className={`py-2 px-3 text-right text-[#98A2B3] border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'yoy', rowBg)}`}
                             >
                               —
                             </td>
@@ -517,19 +517,19 @@ export default function HeatmapTab({
                           <>
                             <td
                               onMouseEnter={() => setHoveredCell({ row: idx, col: 'budAch' })}
-                              className={`py-2 px-3 text-right font-semibold border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'budAch', rowBg)} ${r.budAch >= 100 ? 'text-emerald-600' : 'text-slate-700'}`}
+                              className={`py-2 px-3 text-right font-semibold border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'budAch', rowBg)} ${r.budAch >= 100 ? 'text-[#12B981]' : 'text-[#344054]'}`}
                             >
                               {isUpdating ? <Shimmer className="h-4 w-10 ml-auto rounded-sm" /> : fmtPct(r.budAch)}
                             </td>
                             <td
                               onMouseEnter={() => setHoveredCell({ row: idx, col: 'seq' })}
-                              className={`py-2 px-3 text-right font-semibold border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'seq', rowBg)} ${r.seq >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}
+                              className={`py-2 px-3 text-right font-semibold border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'seq', rowBg)} ${r.seq >= 0 ? 'text-[#12B981]' : 'text-[#D92D20]'}`}
                             >
                               {isUpdating ? <Shimmer className="h-4 w-10 ml-auto rounded-sm" /> : fmtPct(r.seq)}
                             </td>
                             <td
                               onMouseEnter={() => setHoveredCell({ row: idx, col: 'yoy' })}
-                              className={`py-2 px-3 text-right font-semibold border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'yoy', rowBg)} ${r.yoy >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}
+                              className={`py-2 px-3 text-right font-semibold border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'yoy', rowBg)} ${r.yoy >= 0 ? 'text-[#12B981]' : 'text-[#D92D20]'}`}
                             >
                               {isUpdating ? <Shimmer className="h-4 w-10 ml-auto rounded-sm" /> : fmtPct(r.yoy)}
                             </td>
@@ -540,19 +540,19 @@ export default function HeatmapTab({
                       <>
                         <td
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'ly' })}
-                          className={`py-2 px-3 text-right text-slate-700 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'ly', rowBg)}`}
+                          className={`py-2 px-3 text-right border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'ly', rowBg)}`}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-12 ml-auto rounded-sm" /> : r.isPct ? fmtPct(r.ly) : fmtAmt(r.ly)}
                         </td>
                         <td
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'bud' })}
-                          className={`py-2 px-3 text-right text-slate-700 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'bud', rowBg)}`}
+                          className={`py-2 px-3 text-right border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'bud', rowBg)}`}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-12 ml-auto rounded-sm" /> : r.isPct ? fmtPct(r.bud) : fmtAmt(r.bud)}
                         </td>
                         <td
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'act' })}
-                          className={`py-2 px-3 text-right font-semibold text-slate-900 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'act', rowBg)}`}
+                          className={`py-2 px-3 text-right font-semibold text-[#101828] border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'act', rowBg)}`}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-12 ml-auto rounded-sm" /> : r.isPct ? fmtPct(r.act) : fmtAmt(r.act)}
                         </td>
@@ -560,13 +560,13 @@ export default function HeatmapTab({
                           <>
                             <td
                               onMouseEnter={() => setHoveredCell({ row: idx, col: 'budAch' })}
-                              className={`py-2 px-3 text-right text-slate-300 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'budAch', rowBg)}`}
+                              className={`py-2 px-3 text-right text-[#98A2B3] border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'budAch', rowBg)}`}
                             >
                               —
                             </td>
                             <td
                               onMouseEnter={() => setHoveredCell({ row: idx, col: 'yoy' })}
-                              className={`py-2 px-3 text-right text-slate-300 border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'yoy', rowBg)}`}
+                              className={`py-2 px-3 text-right text-[#98A2B3] border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'yoy', rowBg)}`}
                             >
                               —
                             </td>
@@ -575,13 +575,13 @@ export default function HeatmapTab({
                           <>
                             <td
                               onMouseEnter={() => setHoveredCell({ row: idx, col: 'budAch' })}
-                              className={`py-2 px-3 text-right font-semibold border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'budAch', rowBg)} ${r.budAch >= 100 ? 'text-emerald-600' : 'text-slate-700'}`}
+                              className={`py-2 px-3 text-right font-semibold border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'budAch', rowBg)} ${r.budAch >= 100 ? 'text-[#12B981]' : 'text-[#344054]'}`}
                             >
                               {isUpdating ? <Shimmer className="h-4 w-10 ml-auto rounded-sm" /> : fmtPct(r.budAch)}
                             </td>
                             <td
                               onMouseEnter={() => setHoveredCell({ row: idx, col: 'yoy' })}
-                              className={`py-2 px-3 text-right font-semibold border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'yoy', rowBg)} ${r.yoy >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}
+                              className={`py-2 px-3 text-right font-semibold border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'yoy', rowBg)} ${r.yoy >= 0 ? 'text-[#12B981]' : 'text-[#D92D20]'}`}
                             >
                               {isUpdating ? <Shimmer className="h-4 w-10 ml-auto rounded-sm" /> : fmtPct(r.yoy)}
                             </td>

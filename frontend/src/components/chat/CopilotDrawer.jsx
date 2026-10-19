@@ -111,8 +111,9 @@ export default function CopilotDrawer({
       const res = response.data;
       let answer = res.answer || res.response || res.result || 'No response returned from Finance AI Assistant.';
 
-      if (res.chart_option) {
-        answer += `\n\n\`\`\`echarts\n${JSON.stringify(res.chart_option, null, 2)}\n\`\`\``;
+      const chartOpt = res.chart_option || (res.visualization && (res.visualization.series || res.visualization.xAxis) ? res.visualization : null);
+      if (chartOpt && !answer.includes('```echarts') && !answer.includes('```chart')) {
+        answer += `\n\n\`\`\`echarts\n${JSON.stringify(chartOpt, null, 2)}\n\`\`\``;
       }
 
       const botMessage = {
@@ -187,17 +188,20 @@ export default function CopilotDrawer({
         }`}
         id="copilotPanel"
       >
-        <div className="px-4 py-3.5 border-b border-slate-200 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
+        <div className="px-4 py-3.5 border-b border-[#1D2939] flex items-center justify-between bg-[#101828] text-white">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-md bg-blue-600 flex items-center justify-center text-white shadow-xs">
+            <div className="w-8 h-8 rounded-lg bg-[#246BFD] flex items-center justify-center text-white shadow-xs">
               <Bot className="w-4.5 h-4.5" />
             </div>
             <div>
-              <span className="text-xs font-bold text-slate-950 block leading-tight">
-                Finance AI Analyst
-              </span>
-              <span className="text-[11px] text-slate-700 font-semibold">
-                MySQL Financial Intelligence
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#12B981] animate-pulse" />
+                <span className="text-xs font-bold text-white block leading-tight">
+                  Finance AI Analyst
+                </span>
+              </div>
+              <span className="text-[11px] text-slate-400 font-medium">
+                Enterprise Financial Intelligence
               </span>
             </div>
           </div>
@@ -207,7 +211,7 @@ export default function CopilotDrawer({
               <button
                 type="button"
                 onClick={() => setMessages([])}
-                className="p-1.5 text-slate-600 hover:text-slate-950 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
+                className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-md transition-colors cursor-pointer"
                 title="Clear chat"
               >
                 <Trash2 className="w-4 h-4" />
@@ -215,7 +219,7 @@ export default function CopilotDrawer({
             )}
             <button
               type="button"
-              className="p-1.5 text-slate-600 hover:text-slate-950 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
+              className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-md transition-colors cursor-pointer"
               id="copilotClose"
               onClick={() => setIsAiOpen(false)}
             >
@@ -224,26 +228,26 @@ export default function CopilotDrawer({
           </div>
         </div>
 
-        <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50/40 custom-scroll" id="copilotMessages">
+        <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-[#F5F7FB] custom-scroll" id="copilotMessages">
           {messages.length === 0 ? (
             <div className="flex flex-col gap-4 py-2">
-              <div className="p-4 rounded-md bg-white border border-slate-200 shadow-2xs flex flex-col gap-2">
+              <div className="p-4 rounded-xl bg-white border border-[#E4E7EC] shadow-2xs flex flex-col gap-2">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-md bg-blue-50 border border-blue-200 text-blue-800 flex items-center justify-center shrink-0">
-                    <Sparkles className="w-4 h-4 text-blue-600" />
+                  <div className="w-7 h-7 rounded-lg bg-[#EFF8FF] border border-[#B2DDFF] text-[#1D4ED8] flex items-center justify-center shrink-0">
+                    <Sparkles className="w-4 h-4 text-[#246BFD]" />
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold text-slate-950">Finance360 AI Analyst</h3>
-                    <span className="text-xs font-bold text-slate-800">Context: {activeScopeText}</span>
+                    <h3 className="text-xs font-bold text-[#101828]">Finance360 AI Analyst</h3>
+                    <span className="text-[11px] font-semibold text-[#667085]">Context: {activeScopeText}</span>
                   </div>
                 </div>
-                <p className="text-xs text-slate-700 font-medium leading-relaxed pt-1">
+                <p className="text-xs text-[#475467] font-normal leading-relaxed pt-1">
                   Ask any question about revenue, EBITDA drivers, budget variances, or request chart visualizations.
                 </p>
               </div>
 
               <div className="flex flex-col gap-2">
-                <span className="text-xs font-bold text-slate-800 uppercase tracking-wider px-1">
+                <span className="text-[11px] font-bold text-[#667085] uppercase tracking-wider px-1">
                   Suggested Prompts
                 </span>
                 <div className="grid grid-cols-1 gap-2">
@@ -254,22 +258,22 @@ export default function CopilotDrawer({
                         key={idx}
                         type="button"
                         onClick={() => handleSend(item.prompt)}
-                        className="w-full text-left p-3 rounded-md bg-white hover:bg-blue-50/50 border border-slate-200 hover:border-blue-300 transition-all cursor-pointer shadow-2xs group flex items-center justify-between gap-3"
+                        className="w-full text-left p-3 rounded-xl bg-white hover:bg-[#F0F5FF]/60 border border-[#E4E7EC] hover:border-[#246BFD]/40 transition-all cursor-pointer shadow-2xs group flex items-center justify-between gap-3"
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-8 h-8 rounded-md bg-slate-100 border border-slate-200 group-hover:bg-blue-100 group-hover:border-blue-300 flex items-center justify-center shrink-0 transition-colors">
-                            <ItemIcon className="w-4 h-4 text-slate-700 group-hover:text-blue-800" />
+                          <div className="w-8 h-8 rounded-lg bg-[#F8FAFC] border border-[#E4E7EC] group-hover:bg-[#EFF8FF] group-hover:border-[#B2DDFF] flex items-center justify-center shrink-0 transition-colors">
+                            <ItemIcon className="w-4 h-4 text-[#475467] group-hover:text-[#246BFD]" />
                           </div>
                           <div className="flex flex-col min-w-0">
-                            <span className="text-xs font-bold text-slate-950 group-hover:text-blue-950 truncate">
+                            <span className="text-xs font-bold text-[#101828] group-hover:text-[#246BFD] truncate">
                               {item.title}
                             </span>
-                            <span className="text-xs text-slate-700 font-medium truncate">
+                            <span className="text-xs text-[#667085] font-normal truncate">
                               {item.description}
                             </span>
                           </div>
                         </div>
-                        <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-blue-800 shrink-0 transition-colors" />
+                        <ArrowRight className="w-4 h-4 text-[#98A2B3] group-hover:text-[#246BFD] shrink-0 transition-colors" />
                       </button>
                     );
                   })}
@@ -283,15 +287,15 @@ export default function CopilotDrawer({
                 className={`flex gap-2.5 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {m.role === 'assistant' && (
-                  <div className="w-6 h-6 rounded-md bg-blue-50 border border-blue-200 text-blue-800 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-6 h-6 rounded-md bg-[#EFF8FF] border border-[#B2DDFF] text-[#246BFD] flex items-center justify-center shrink-0 mt-0.5">
                     <Bot className="w-3.5 h-3.5" />
                   </div>
                 )}
 
                 <div
-                  className={`max-w-[85%] p-3.5 rounded-md text-xs leading-relaxed shadow-xs ${m.role === 'user'
-                    ? 'bg-blue-600 text-white font-medium'
-                    : 'bg-white border border-slate-200 text-slate-900 font-medium'
+                  className={`p-3.5 rounded-xl text-xs leading-relaxed shadow-xs ${m.role === 'user'
+                    ? 'max-w-[85%] bg-[#246BFD] text-white font-medium'
+                    : 'w-full max-w-[95%] sm:max-w-[93%] bg-white border border-[#E4E7EC] text-[#101828] font-normal min-w-0'
                     }`}
                 >
                   {m.role === 'user' ? (
@@ -302,7 +306,7 @@ export default function CopilotDrawer({
                 </div>
 
                 {m.role === 'user' && (
-                  <div className="w-6 h-6 rounded-md bg-slate-200 text-slate-700 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-6 h-6 rounded-md bg-[#101828] text-white flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold">
                     <User className="w-3.5 h-3.5" />
                   </div>
                 )}
@@ -311,19 +315,19 @@ export default function CopilotDrawer({
           )}
 
           {loading && (
-            <div className="flex items-center gap-2 p-3 rounded-md bg-white border border-slate-200 text-slate-700 font-medium text-xs shadow-xs max-w-[85%]">
-              <Loader2 className="w-3.5 h-3.5 text-blue-600 animate-spin" />
-              <span>Analyzing MySQL financial data and computing metrics...</span>
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-white border border-[#E4E7EC] text-[#475467] font-medium text-xs shadow-xs max-w-[85%]">
+              <Loader2 className="w-3.5 h-3.5 text-[#246BFD] animate-spin" />
+              <span>Analyzing financial data and computing metrics...</span>
             </div>
           )}
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="p-3 bg-white border-t border-slate-200 flex items-center gap-2">
+        <div className="p-3 bg-white border-t border-[#E4E7EC] flex items-center gap-2">
           <input
             type="text"
             id="copilotInput"
-            className="flex-1 bg-slate-50 border border-slate-300 rounded-md px-3 py-2 text-xs text-slate-950 font-medium placeholder-slate-500 outline-none focus:bg-white focus:border-blue-600 transition-all"
+            className="flex-1 bg-[#F8FAFC] border border-[#E4E7EC] rounded-lg px-3 py-2 text-xs text-[#101828] font-medium placeholder-[#98A2B3] outline-none focus:bg-white focus:border-[#246BFD] focus:ring-1 focus:ring-[#246BFD] transition-all"
             placeholder="Ask about revenue, EBITDA, budget variances, KPIs..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -333,7 +337,7 @@ export default function CopilotDrawer({
           <button
             type="button"
             id="copilotSend"
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold rounded-md transition-colors cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-[#246BFD] hover:bg-[#1D4ED8] disabled:opacity-50 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer shrink-0 shadow-xs"
             onClick={() => handleSend()}
             disabled={loading || !input.trim()}
           >

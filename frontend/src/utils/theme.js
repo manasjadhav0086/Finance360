@@ -5,66 +5,67 @@
  * and deterministic category/metric color mappings.
  * 
  * Rules:
- * - One unified professional finance design language.
+ * - One unified professional finance design language based on the Finance360 palette.
  * - Same metric/category ALWAYS receives the exact same color across all charts & tabs.
- * - Dynamic legend ranking/order remains intact (color is bound to category name, not array index).
+ * - Tabular numerals & accessible high contrast.
  * - Purely visual - zero impact on business or data logic.
  */
 
 // Core Design Tokens
 export const THEME_TOKENS = {
   colors: {
-    // Primary: Deep Navy / Dark Blue
-    primary: '#0F172A',
-    primaryDark: '#020617',
-    primaryLight: '#1E293B',
-    primaryNavy: '#1E3A8A',
+    // Primary Navy & Secondary Navy
+    primary: '#101828',
+    primaryDark: '#0C111D',
+    primaryLight: '#1D2939',
+    primaryNavy: '#101828',
+    secondaryNavy: '#1D2939',
 
-    // Secondary: Slate / Muted Blue-Gray
-    secondary: '#475569',
-    secondaryLight: '#64748B',
+    // Secondary Text & Muted
+    secondary: '#475467',
+    secondaryLight: '#667085',
+    textMuted: '#667085',
+    textSubtle: '#98A2B3',
 
-    // Accent: Professional Blue
-    accent: '#2563EB',
+    // Primary Action Blue
+    accent: '#246BFD',
     accentDark: '#1D4ED8',
-    accentLight: '#3B82F6',
-    accentSubtle: '#EFF6FF',
+    accentLight: '#5389FD',
+    accentSubtle: '#EFF4FF',
 
     // Neutral & Backgrounds
-    background: '#F8FAFC',
+    background: '#F5F7FB',
     surface: '#FFFFFF',
-    surfaceSubtle: '#F8FAFC',
-    surfaceMuted: '#F1F5F9',
+    surfaceSubtle: '#F9FAFB',
+    surfaceMuted: '#F2F4F7',
 
     // Borders & Dividers
-    border: '#E2E8F0',
-    borderLight: '#F1F5F9',
-    borderDark: '#CBD5E1',
+    border: '#E4E7EC',
+    borderLight: '#F2F4F7',
+    borderDark: '#D0D5DD',
 
     // Typography
-    textPrimary: '#0F172A',
-    textSecondary: '#334155',
-    textMuted: '#64748B',
-    textSubtle: '#94A3B8',
+    textPrimary: '#101828',
+    textSecondary: '#667085',
 
     // Semantic Status Colors
-    success: '#059669',       // Professional Emerald
-    successDark: '#047857',
+    success: '#12B981',       // High-contrast positive emerald
+    successDark: '#059669',
     successBg: '#ECFDF5',
     successBorder: '#A7F3D0',
 
-    danger: '#E11D48',        // Professional Crimson/Rose
-    dangerDark: '#BE123C',
-    dangerBg: '#FFF1F2',
-    dangerBorder: '#FECDD3',
+    danger: '#D92D20',        // High-contrast negative crimson
+    dangerDark: '#B42318',
+    dangerBg: '#FEF3F2',
+    dangerBorder: '#FECDCA',
 
-    warning: '#D97706',       // Professional Amber
-    warningDark: '#B45309',
+    warning: '#F59E0B',       // Warning amber
+    warningDark: '#D97706',
     warningBg: '#FFFBEB',
     warningBorder: '#FDE68A',
 
-    info: '#0284C7',          // Professional Sky/Cyan
-    infoDark: '#0369A1',
+    info: '#0EA5E9',          // Informational cyan
+    infoDark: '#0284C7',
     infoBg: '#F0F9FF',
     infoBorder: '#BAE6FD',
   },
@@ -73,104 +74,110 @@ export const THEME_TOKENS = {
     xs: '4px',
     sm: '6px',
     md: '8px',
-    lg: '10px',
-    xl: '12px',
+    lg: '12px',
+    xl: '16px',
     full: '9999px',
   },
 
   shadows: {
     none: 'none',
-    subtle: '0 1px 2px 0 rgba(15, 23, 42, 0.04)',
-    card: '0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05)',
-    dropdown: '0 4px 12px 0 rgba(15, 23, 42, 0.08), 0 2px 4px -1px rgba(15, 23, 42, 0.04)',
-    modal: '0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.08)',
+    subtle: '0 1px 2px 0 rgba(16, 24, 40, 0.05)',
+    card: '0 1px 3px 0 rgba(16, 24, 40, 0.08), 0 1px 2px 0 rgba(16, 24, 40, 0.04)',
+    dropdown: '0 4px 12px 0 rgba(16, 24, 40, 0.08), 0 2px 4px -1px rgba(16, 24, 40, 0.04)',
+    modal: '0 20px 24px -4px rgba(16, 24, 40, 0.08), 0 8px 8px -4px rgba(16, 24, 40, 0.03)',
   },
 };
 
 /**
  * Centralized Category & Metric Color Mapping.
  * 
- * Ensures strict global consistency:
- * E.g., RPS is ALWAYS #1E40AF across all tabs and charts.
- * TPaaS is ALWAYS #2563EB.
- * Revenue is ALWAYS #1E40AF.
+ * Ensures strict global consistency across all charts & tabs.
  */
 export const METRIC_COLORS = {
-  // Business Groups (Vibrant and distinctive group colors)
-  'ETLS': '#7C3AED',          // Vibrant Royal Purple
-  '1 ETLS': '#7C3AED',        // Vibrant Royal Purple
-  'BIPS': '#F59E0B',          // Vibrant Amber / Gold
-  '2 BIPS': '#F59E0B',        // Vibrant Amber / Gold
-  'INT': '#0284C7',           // Vibrant Ocean / Sky Blue
-  '4 INT': '#0284C7',         // Vibrant Ocean / Sky Blue
-  'NEO': '#16A34A',           // Vibrant Emerald Green
-  '5 NEO': '#16A34A',         // Vibrant Emerald Green
-  'Digital': '#E11D48',       // Vibrant Crimson / Rose
-  '3 Digital': '#E11D48',     // Vibrant Crimson / Rose
+  // Business Groups (Distinctive professional group colors)
+  'ETLS': '#7C3AED',          // Professional Purple
+  '1 ETLS': '#7C3AED',
+  'BIPS': '#F59E0B',          // Warm Amber
+  '2 BIPS': '#F59E0B',
+  'INT': '#246BFD',           // Primary Action Blue
+  '4 INT': '#246BFD',
+  'NEO': '#12B981',           // Emerald
+  '5 NEO': '#12B981',
+  'Digital': '#0EA5E9',       // Clean Info Blue
+  '3 Digital': '#0EA5E9',
 
-  // Businesses under ETLS (Harmonious vibrant tints of #7C3AED)
+  // Businesses under ETLS
   'RPS': '#8B5CF6',
 
-  // Businesses under BIPS (Harmonious vibrant tints of #F59E0B)
+  // Businesses under BIPS
   'TPaaS': '#FBBF24',
   'EM': '#FCD34D',
 
-  // Businesses under INT (Harmonious vibrant tints of #0284C7)
-  'China': '#38BDF8',
+  // Businesses under INT
+  'China': '#3B82F6',
   'Enterprise': '#60A5FA',
 
-  // Businesses under NEO (Harmonious vibrant tints of #16A34A)
-  'SSE': '#22C55E',
-  'Stackroute': '#4ADE80',
+  // Businesses under NEO
+  'SSE': '#10B981',
+  'Stackroute': '#34D399',
 
-  // Businesses under Digital (Harmonious vibrant tints of #E11D48)
-  'Tech': '#F43F5E',
-  'Lateral': '#FB7185',
-  'Skills & Careers': '#FDA4AF',
-  'SNC': '#FECDD3',
+  // Businesses under Digital
+  'Tech': '#0284C7',
+  'Lateral': '#38BDF8',
+  'Skills & Careers': '#7DD3FC',
+  'SNC': '#BAE6FD',
 
-  // Core Financial Metrics (Vibrant and high-contrast)
-  'Revenue': '#0284C7',
-  'Net Revenue': '#0284C7',
+  // Core Financial Metrics (Consistent across all tabs)
+  'Revenue': '#246BFD',
+  'Net Revenue': '#246BFD',
+  'Actuals': '#246BFD',
+  'Actual': '#246BFD',
+  'ACT': '#246BFD',
   'Order Intake': '#0EA5E9',
   'Total Order Intake': '#0EA5E9',
-  'Variable Cost': '#EA580C',
-  'VC%': '#EA580C',
-  'Gross Profit': '#16A34A',
-  'Gross Margin': '#16A34A',
-  'Gross Margin %': '#16A34A',
-  'GP %': '#16A34A',
-  'GM%': '#16A34A',
+  'Budget': '#98A2B3',
+  'BUD': '#98A2B3',
+  'Prior Year': '#D0D5DD',
+  'PY': '#D0D5DD',
+  'LY': '#D0D5DD',
+  'Variable Cost': '#F97316',
+  'VC%': '#F97316',
+  'Total Direct Cost': '#F97316',
+  'Gross Profit': '#12B981',
+  'Gross Margin': '#12B981',
+  'Gross Margin %': '#12B981',
+  'GP %': '#12B981',
+  'GM%': '#12B981',
   'Throughput': '#06B6D4',
   'People Cost': '#6366F1',
   'Marketing Expenses': '#0D9488',
   'Marketing Cost': '#0D9488',
   'Fixed Costs': '#64748B',
   'Other Cost %': '#64748B',
-  'Total Opex': '#9333EA',
-  'Total OPEX': '#9333EA',
-  'EBITDA Contribution': '#E11D48',
-  'EBITDA Contribution %': '#E11D48',
-  'EBITDA CONTRIBUTION %': '#E11D48',
-  'EBITDA': '#059669',
-  'EBITDA %': '#059669',
-  'OM%': '#059669',
+  'Total Opex': '#8B5CF6',
+  'Total OPEX': '#8B5CF6',
+  'Total Operating Expenses': '#8B5CF6',
+  'EBITDA Contribution': '#EC4899',
+  'EBITDA Contribution %': '#EC4899',
+  'EBITDA CONTRIBUTION %': '#EC4899',
+  'EBITDA': '#12B981',
+  'EBITDA %': '#12B981',
+  'OM%': '#12B981',
   'Collection': '#10B981',
-  'Capex': '#D946EF',
-  'Net Cash': '#0284C7',
-  'Total': '#0F172A',
+  'Capex': '#A855F7',
+  'Net Cash': '#246BFD',
+  'Total': '#101828',
 };
 
 /**
  * Generates an array of lighter tints of a base color hex for child businesses
- * belonging to a parent business group.
  */
 export function getLighterTints(baseHex, count) {
-  let hex = String(baseHex || '#2563EB').replace('#', '');
+  let hex = String(baseHex || '#246BFD').replace('#', '');
   if (hex.length === 3) hex = hex.split('').map((c) => c + c).join('');
-  const r = parseInt(hex.substring(0, 2), 16) || 120;
-  const g = parseInt(hex.substring(2, 4), 16) || 120;
-  const b = parseInt(hex.substring(4, 6), 16) || 120;
+  const r = parseInt(hex.substring(0, 2), 16) || 36;
+  const g = parseInt(hex.substring(2, 4), 16) || 107;
+  const b = parseInt(hex.substring(4, 6), 16) || 253;
 
   if (count <= 1) {
     const tr = Math.round(r + (255 - r) * 0.22);
@@ -192,26 +199,22 @@ export function getLighterTints(baseHex, count) {
  * Harmonious 12-Color Enterprise Series Palette for deterministic fallbacks.
  */
 export const ENTERPRISE_SERIES_PALETTE = [
-  '#0284C7', // Vibrant Sky Blue
-  '#EA580C', // Vibrant Tangerine
-  '#16A34A', // Vibrant Emerald Green
-  '#9333EA', // Vibrant Purple
-  '#E11D48', // Vibrant Crimson
-  '#F59E0B', // Vibrant Amber
-  '#06B6D4', // Vibrant Cyan
-  '#7C3AED', // Vibrant Violet
-  '#0D9488', // Vibrant Teal
-  '#EC4899', // Vibrant Pink
-  '#10B981', // Vibrant Mint
-  '#64748B', // Crisp Slate
+  '#246BFD', // Primary Action Blue
+  '#12B981', // Emerald Success
+  '#F59E0B', // Amber
+  '#0EA5E9', // Cyan Info
+  '#7C3AED', // Royal Purple
+  '#F97316', // Orange
+  '#6366F1', // Indigo
+  '#0D9488', // Teal
+  '#EC4899', // Pink
+  '#10B981', // Mint
+  '#64748B', // Slate
+  '#1D2939', // Navy
 ];
 
 /**
  * Deterministically resolves a color for any category or metric name.
- * 
- * 1. Checks exact match in METRIC_COLORS
- * 2. Checks normalized/trimmed/aliased match
- * 3. Falls back deterministically via hash of the name into ENTERPRISE_SERIES_PALETTE
  */
 export function getCategoryColor(name, fallbackIdx = 0) {
   if (!name || typeof name !== 'string') {
@@ -269,7 +272,7 @@ export const CHART_THEME = {
   textMuted: THEME_TOKENS.colors.textMuted,
   textSubtle: THEME_TOKENS.colors.textSubtle,
   borderColor: THEME_TOKENS.colors.border,
-  splitLineColor: '#F1F5F9',
+  splitLineColor: '#F2F4F7',
   surfaceBg: THEME_TOKENS.colors.surface,
   gridTop: 32,
   gridBottom: 36,

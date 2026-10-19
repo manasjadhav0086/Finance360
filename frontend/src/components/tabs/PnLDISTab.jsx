@@ -4,16 +4,43 @@ import Shimmer from '../ui/Shimmer';
 import { getPeriodLabels, normalizeMonth, normalizeQuarter, getQuarterForMonth, getPreviousQuarter, getHighestQuarter } from '../../utils/periodUtils';
 
 const PNL_DIS_ROWS = [
-  { key: 'Order Intake', label: 'Order Intake', bold: true, hl: 'bg-amber-100 border-l-4 border-l-amber-500 font-bold' },
-  { key: 'Revenue', label: 'Revenue', bold: true, hl: 'bg-blue-100 border-l-4 border-l-blue-600 font-bold' },
+  {
+    key: 'Order Intake',
+    label: 'Order Intake',
+    bold: true,
+    hl: 'bg-[#FFFBEB]/80 font-semibold text-[#92400E]',
+    textCol: 'text-[#92400E]',
+    accentBorder: 'border-l-[3.5px] border-l-[#D97706]',
+    dotColor: 'bg-[#D97706]',
+  },
+  {
+    key: 'Revenue',
+    label: 'Revenue',
+    bold: true,
+    hl: 'bg-[#EFF6FF] font-semibold text-[#1E40AF]',
+    textCol: 'text-[#1E40AF]',
+    accentBorder: 'border-l-[3.5px] border-l-[#2563EB]',
+    dotColor: 'bg-[#2563EB]',
+  },
   { key: 'Variable Cost', label: 'Variable Cost' },
   { key: 'VC%', label: 'VC%', unit: 'pct' },
-  { key: 'Throughput', label: 'Throughput', bold: true },
+  {
+    key: 'Throughput',
+    label: 'Throughput',
+    bold: true,
+    hl: 'bg-[#F0FDF4] font-semibold text-[#166534]',
+    textCol: 'text-[#166534]',
+    accentBorder: 'border-l-[3.5px] border-l-[#16A34A]',
+    dotColor: 'bg-[#16A34A]',
+  },
   {
     key: 'Other Direct Cost',
     label: 'Other Direct Cost',
     bold: true,
-    hl: 'bg-slate-100 font-bold',
+    hl: 'bg-[#F8FAFC] font-semibold text-[#334155]',
+    textCol: 'text-[#334155]',
+    accentBorder: 'border-l-[3.5px] border-l-[#64748B]',
+    dotColor: 'bg-[#64748B]',
     groupable: true,
     group: 'otherDirect',
   },
@@ -23,14 +50,40 @@ const PNL_DIS_ROWS = [
   { key: 'Travel_Dir', label: 'Travel_Dir', level: 2, group: 'otherDirect', bullet: true },
   { key: 'Telecom_Dir', label: 'Telecom_Dir', level: 2, group: 'otherDirect', bullet: true },
   { key: 'Legal & Professional_Dir', label: 'Legal & Professional_Dir', level: 2, group: 'otherDirect', bullet: true },
-  { key: 'Total Direct Cost', label: 'Total Direct Cost', bold: true, hl: 'bg-blue-100 border-l-4 border-l-blue-600 font-bold' },
-  { key: 'Gross Profit', label: 'Gross Profit', bold: true, hl: 'bg-emerald-100 border-l-4 border-l-emerald-600 font-bold' },
-  { key: 'Gross Margin %', label: 'Gross Margin %', unit: 'pct', bold: true },
+  {
+    key: 'Total Direct Cost',
+    label: 'Total Direct Cost',
+    bold: true,
+    hl: 'bg-[#F8FAFC] font-semibold text-[#334155]',
+    textCol: 'text-[#334155]',
+    accentBorder: 'border-l-[3.5px] border-l-[#64748B]',
+    dotColor: 'bg-[#64748B]',
+  },
+  {
+    key: 'Gross Profit',
+    label: 'Gross Profit',
+    bold: true,
+    hl: 'bg-[#F0FDF4] font-semibold text-[#166534]',
+    textCol: 'text-[#166534]',
+    accentBorder: 'border-l-[3.5px] border-l-[#16A34A]',
+    dotColor: 'bg-[#16A34A]',
+  },
+  {
+    key: 'Gross Margin %',
+    label: 'Gross Margin %',
+    unit: 'pct',
+    bold: true,
+    hl: 'bg-[#F0FDF4] font-semibold text-[#166534]',
+    textCol: 'text-[#166534]',
+    accentBorder: 'border-l-[3.5px] border-l-[#16A34A]',
+    dotColor: 'bg-[#16A34A]',
+  },
   {
     key: 'S&M Cost',
     label: 'S&M Cost',
     bold: true,
-    hl: 'bg-slate-100 font-bold',
+    hl: 'bg-[#F8FAFC] font-semibold text-[#334155]',
+    textCol: 'text-[#334155]',
     groupable: true,
     group: 'smCost',
   },
@@ -44,7 +97,8 @@ const PNL_DIS_ROWS = [
     key: 'Indirect Cost',
     label: 'Indirect Cost',
     bold: true,
-    hl: 'bg-slate-100 font-bold',
+    hl: 'bg-[#F8FAFC] font-semibold text-[#334155]',
+    textCol: 'text-[#334155]',
     groupable: true,
     group: 'indirectCost',
   },
@@ -57,14 +111,71 @@ const PNL_DIS_ROWS = [
   { key: 'Administration', label: 'Administration', level: 2, group: 'indirectCost', bullet: true },
   { key: 'PICA', label: 'PICA' },
   { key: 'Corp Allocation', label: 'Corp Allocation' },
-  { key: 'Total Operating Expenses', label: 'Total Operating Expenses', bold: true, hl: 'bg-orange-100 border-l-4 border-l-orange-500 font-bold' },
-  { key: 'EBITDA Contribution', label: 'EBITDA Contribution', bold: true },
+  {
+    key: 'Total Operating Expenses',
+    label: 'Total Operating Expenses',
+    bold: true,
+    hl: 'bg-[#FFF7ED] font-semibold text-[#9A3412]',
+    textCol: 'text-[#9A3412]',
+    accentBorder: 'border-l-[3.5px] border-l-[#EA580C]',
+    dotColor: 'bg-[#EA580C]',
+  },
+  {
+    key: 'EBITDA Contribution',
+    label: 'EBITDA Contribution',
+    bold: true,
+    hl: 'bg-[#FFF1F2] font-semibold text-[#9F1239]',
+    textCol: 'text-[#9F1239]',
+    accentBorder: 'border-l-[3.5px] border-l-[#E11D48]',
+    dotColor: 'bg-[#E11D48]',
+  },
   { key: 'IPR Creation', label: 'IPR Creation' },
-  { key: 'EBITDA', label: 'EBITDA', bold: true, hl: 'bg-emerald-100 border-l-4 border-l-emerald-600 font-bold' },
-  { key: 'EBITDA %', label: 'EBITDA %', unit: 'pct', bold: true, hl: 'bg-emerald-100 border-l-4 border-l-emerald-600 font-bold' },
-  { key: 'Collection', label: 'Collection', bold: true, hl: 'bg-amber-100 border-l-4 border-l-amber-500 font-bold' },
-  { key: 'Capex', label: 'Capex', bold: true, hl: 'bg-blue-100 border-l-4 border-l-blue-500 font-bold' },
-  { key: 'Net Cash', label: 'Net Cash', bold: true, hl: 'bg-blue-100 border-l-4 border-l-blue-500 font-bold' },
+  {
+    key: 'EBITDA',
+    label: 'EBITDA',
+    bold: true,
+    hl: 'bg-[#ECFDF5] font-bold text-[#065F46]',
+    textCol: 'text-[#065F46]',
+    accentBorder: 'border-l-[3.5px] border-l-[#059669]',
+    dotColor: 'bg-[#059669]',
+  },
+  {
+    key: 'EBITDA %',
+    label: 'EBITDA %',
+    unit: 'pct',
+    bold: true,
+    hl: 'bg-[#ECFDF5] font-bold text-[#065F46]',
+    textCol: 'text-[#065F46]',
+    accentBorder: 'border-l-[3.5px] border-l-[#059669]',
+    dotColor: 'bg-[#059669]',
+  },
+  {
+    key: 'Collection',
+    label: 'Collection',
+    bold: true,
+    hl: 'bg-[#F0FDFA] font-semibold text-[#115E59]',
+    textCol: 'text-[#115E59]',
+    accentBorder: 'border-l-[3.5px] border-l-[#0D9488]',
+    dotColor: 'bg-[#0D9488]',
+  },
+  {
+    key: 'Capex',
+    label: 'Capex',
+    bold: true,
+    hl: 'bg-[#FAF5FF] font-semibold text-[#581C87]',
+    textCol: 'text-[#581C87]',
+    accentBorder: 'border-l-[3.5px] border-l-[#7C3AED]',
+    dotColor: 'bg-[#7C3AED]',
+  },
+  {
+    key: 'Net Cash',
+    label: 'Net Cash',
+    bold: true,
+    hl: 'bg-[#F0F9FF] font-bold text-[#075985]',
+    textCol: 'text-[#075985]',
+    accentBorder: 'border-l-[3.5px] border-l-[#0284C7]',
+    dotColor: 'bg-[#0284C7]',
+  },
 ];
 
 export default function PnLDISTab({
@@ -173,21 +284,21 @@ export default function PnLDISTab({
     <div className="space-y-3">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">P&amp;L DIS</h1>
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Direct, Indirect &amp; S&amp;M Functional Statement</span>
+          <h1 className="text-xl font-bold tracking-tight text-[#101828]">P&amp;L DIS</h1>
+          <span className="text-xs font-semibold text-[#667085] uppercase tracking-wider">Direct, Indirect &amp; S&amp;M Functional Statement</span>
         </div>
 
-        <div className="inline-flex rounded-lg bg-slate-100 p-1 border border-slate-200 self-start sm:self-auto">
+        <div className="inline-flex rounded-lg bg-[#F2F4F7] p-1 border border-[#E4E7EC] self-start sm:self-auto">
           <button
             type="button"
-            className={`px-3.5 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${mode === 'fy' ? 'bg-[#249791] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 font-semibold'}`}
+            className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${mode === 'fy' ? 'bg-[#246BFD] text-white shadow-xs' : 'text-[#667085] hover:text-[#101828]'}`}
             onClick={() => setMode('fy')}
           >
             Full Year
           </button>
           <button
             type="button"
-            className={`px-3.5 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${mode === 'q' ? 'bg-[#249791] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 font-semibold'}`}
+            className={`px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${mode === 'q' ? 'bg-[#246BFD] text-white shadow-xs' : 'text-[#667085] hover:text-[#101828]'}`}
             onClick={() => setMode('q')}
           >
             Quarterly
@@ -195,15 +306,15 @@ export default function PnLDISTab({
         </div>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
-        <div className="px-4 py-2.5 bg-gradient-to-r from-[#090D16] via-[#111827] to-[#1E293B] border-b border-slate-800/80 border-l-4 border-l-slate-400 flex items-center justify-between shadow-xs shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-[2px] bg-slate-300 shrink-0" />
-            <span className="text-[14px] font-bold text-white tracking-tight">
+      <div className="bg-white border border-[#E4E7EC] rounded-xl shadow-xs overflow-hidden flex flex-col">
+        <div className="px-4 py-2.5 bg-[#101828] border-b border-[#1D2939] flex items-center justify-between shadow-xs shrink-0">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-[#246BFD] shrink-0" />
+            <span className="text-sm font-semibold text-white tracking-tight">
               {mode === 'q' ? `P&L DIS Quarterly View (${periodLabels.currentPeriod})` : `P&L DIS Full Year Statement (${periodLabels.currentPeriod})`}
             </span>
           </div>
-          <span className="text-xs font-mono text-slate-300 font-medium">{tableData.length} Functional Items</span>
+          <span className="text-xs font-mono tabular-nums text-[#98A2B3] font-medium">{tableData.length} Functional Items</span>
         </div>
 
         <div
@@ -214,10 +325,10 @@ export default function PnLDISTab({
             className="w-full border-separate border-spacing-0 text-xs min-w-[750px]"
             onMouseLeave={() => setHoveredCell({ row: null, col: null })}
           >
-            <thead className="bg-[#249791]">
-              <tr className="bg-[#249791] text-white font-bold h-[32px]">
+            <thead className="bg-[#101828]">
+              <tr className="bg-[#101828] text-white font-semibold h-[34px]">
                 <th
-                  className={`py-2 px-3 text-left sticky top-0 left-0 z-30 min-w-[220px] w-[220px] border-r border-b border-[#1d827d] bg-[#249791] text-white font-bold transition-all duration-150 ${hoveredCell.col === 'particulars' ? 'bg-[#1c7b76]' : ''} ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.25)]' : ''}`}
+                  className={`py-2 px-3 text-left sticky top-0 left-0 z-30 min-w-[220px] w-[220px] border-r border-b border-[#1D2939] bg-[#101828] text-white font-semibold transition-all duration-150 ${hoveredCell.col === 'particulars' ? 'bg-[#1D2939]' : ''} ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.25)]' : ''}`}
                   onMouseEnter={() => setHoveredCell({ row: null, col: 'particulars' })}
                 >
                   Particulars (INR Mn)
@@ -225,43 +336,43 @@ export default function PnLDISTab({
                 {mode === 'q' ? (
                   <>
                     <th
-                      className={`py-2.5 px-3 text-right sticky top-0 z-20 min-w-[110px] border-r border-b border-[#1d827d] bg-[#249791] transition-colors ${hoveredCell.col === 'ly' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right sticky top-0 z-20 min-w-[110px] border-r border-b border-[#1D2939] bg-[#101828] font-semibold text-xs transition-colors ${hoveredCell.col === 'ly' ? 'bg-[#1D2939] text-white' : 'text-[#D0D5DD]'}`}
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'ly' })}
                     >
                       {periodLabels.lyActualLabel}
                     </th>
                     <th
-                      className={`py-2.5 px-3 text-right sticky top-0 z-20 min-w-[110px] border-r border-b border-[#1d827d] bg-[#249791] transition-colors ${hoveredCell.col === 'prevQ' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right sticky top-0 z-20 min-w-[110px] border-r border-b border-[#1D2939] bg-[#101828] font-semibold text-xs transition-colors ${hoveredCell.col === 'prevQ' ? 'bg-[#1D2939] text-white' : 'text-[#D0D5DD]'}`}
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'prevQ' })}
                     >
                       {periodLabels.lastQtrActualLabel}
                     </th>
                     <th
-                      className={`py-2.5 px-3 text-right sticky top-0 z-20 min-w-[110px] border-r border-b border-[#1d827d] bg-[#249791] transition-colors ${hoveredCell.col === 'bud' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right sticky top-0 z-20 min-w-[110px] border-r border-b border-[#1D2939] bg-[#101828] font-semibold text-xs transition-colors ${hoveredCell.col === 'bud' ? 'bg-[#1D2939] text-white' : 'text-[#D0D5DD]'}`}
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'bud' })}
                     >
                       {periodLabels.budgetLabel}
                     </th>
                     <th
-                      className={`py-2.5 px-3 text-right sticky top-0 z-20 min-w-[110px] border-r border-b border-[#1d827d] bg-[#249791] transition-colors ${hoveredCell.col === 'act' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right sticky top-0 z-20 min-w-[110px] border-r border-b border-[#1D2939] bg-[#101828] font-semibold text-xs transition-colors ${hoveredCell.col === 'act' ? 'bg-[#1D2939] text-white' : 'text-[#D0D5DD]'}`}
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'act' })}
                     >
                       {periodLabels.actualLabel}
                     </th>
                     <th
-                      className={`py-2.5 px-3 text-right sticky top-0 z-20 min-w-[100px] border-r border-b border-[#1d827d] bg-[#249791] transition-colors ${hoveredCell.col === 'budAch' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right sticky top-0 z-20 min-w-[100px] border-r border-b border-[#1D2939] bg-[#101828] font-semibold text-xs transition-colors ${hoveredCell.col === 'budAch' ? 'bg-[#1D2939] text-white' : 'text-[#D0D5DD]'}`}
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'budAch' })}
                     >
                       {periodLabels.budAchLabel}
                     </th>
                     <th
-                      className={`py-2.5 px-3 text-right sticky top-0 z-20 min-w-[100px] border-r border-b border-[#1d827d] bg-[#249791] transition-colors ${hoveredCell.col === 'qoq' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right sticky top-0 z-20 min-w-[100px] border-r border-b border-[#1D2939] bg-[#101828] font-semibold text-xs transition-colors ${hoveredCell.col === 'qoq' ? 'bg-[#1D2939] text-white' : 'text-[#D0D5DD]'}`}
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'qoq' })}
                     >
                       {periodLabels.qoqLabel}
                     </th>
                     <th
-                      className={`py-2.5 px-3 text-right sticky top-0 z-20 min-w-[100px] border-r border-b border-[#1d827d] bg-[#249791] transition-colors ${hoveredCell.col === 'yoy' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right sticky top-0 z-20 min-w-[100px] border-r border-b border-[#1D2939] bg-[#101828] font-semibold text-xs transition-colors ${hoveredCell.col === 'yoy' ? 'bg-[#1D2939] text-white' : 'text-[#D0D5DD]'}`}
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'yoy' })}
                     >
                       {periodLabels.yoyLabel}
@@ -270,31 +381,31 @@ export default function PnLDISTab({
                 ) : (
                   <>
                     <th
-                      className={`py-2.5 px-3 text-right sticky top-0 z-20 min-w-[120px] border-r border-b border-[#1d827d] bg-[#249791] transition-colors ${hoveredCell.col === 'ly' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right sticky top-0 z-20 min-w-[120px] border-r border-b border-[#1D2939] bg-[#101828] font-semibold text-xs transition-colors ${hoveredCell.col === 'ly' ? 'bg-[#1D2939] text-white' : 'text-[#D0D5DD]'}`}
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'ly' })}
                     >
                       {periodLabels.lyActualLabel}
                     </th>
                     <th
-                      className={`py-2.5 px-3 text-right sticky top-0 z-20 min-w-[120px] border-r border-b border-[#1d827d] bg-[#249791] transition-colors ${hoveredCell.col === 'bud' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right sticky top-0 z-20 min-w-[120px] border-r border-b border-[#1D2939] bg-[#101828] font-semibold text-xs transition-colors ${hoveredCell.col === 'bud' ? 'bg-[#1D2939] text-white' : 'text-[#D0D5DD]'}`}
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'bud' })}
                     >
                       {periodLabels.budgetLabel}
                     </th>
                     <th
-                      className={`py-2.5 px-3 text-right sticky top-0 z-20 min-w-[120px] border-r border-b border-[#1d827d] bg-[#249791] transition-colors ${hoveredCell.col === 'act' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right sticky top-0 z-20 min-w-[120px] border-r border-b border-[#1D2939] bg-[#101828] font-semibold text-xs transition-colors ${hoveredCell.col === 'act' ? 'bg-[#1D2939] text-white' : 'text-[#D0D5DD]'}`}
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'act' })}
                     >
                       {periodLabels.actualLabel}
                     </th>
                     <th
-                      className={`py-2.5 px-3 text-right sticky top-0 z-20 min-w-[110px] border-r border-b border-[#1d827d] bg-[#249791] transition-colors ${hoveredCell.col === 'budAch' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right sticky top-0 z-20 min-w-[110px] border-r border-b border-[#1D2939] bg-[#101828] font-semibold text-xs transition-colors ${hoveredCell.col === 'budAch' ? 'bg-[#1D2939] text-white' : 'text-[#D0D5DD]'}`}
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'budAch' })}
                     >
                       {periodLabels.budAchLabel}
                     </th>
                     <th
-                      className={`py-2.5 px-3 text-right sticky top-0 z-20 min-w-[110px] border-r border-b border-[#1d827d] bg-[#249791] transition-colors ${hoveredCell.col === 'yoy' ? 'bg-[#1c7b76] text-white' : 'bg-[#249791] text-white'}`}
+                      className={`py-2 px-3 text-right sticky top-0 z-20 min-w-[110px] border-r border-b border-[#1D2939] bg-[#101828] font-semibold text-xs transition-colors ${hoveredCell.col === 'yoy' ? 'bg-[#1D2939] text-white' : 'text-[#D0D5DD]'}`}
                       onMouseEnter={() => setHoveredCell({ row: null, col: 'yoy' })}
                     >
                       {periodLabels.yoyLabel}
@@ -303,7 +414,7 @@ export default function PnLDISTab({
                 )}
               </tr>
             </thead>
-            <tbody className="font-mono text-[13px] sm:text-[13.5px]">
+            <tbody className="font-mono tabular-nums text-[13px]">
               {tableData.map((row, idx) => {
                 const level = row.level || 1;
                 if (row.group && level === 2 && !openGroups[row.group]) {
@@ -311,69 +422,70 @@ export default function PnLDISTab({
                 }
 
                 const isPct = row.unit === 'pct';
-                const rowBg = row.hl ? row.hl : idx % 2 === 0 ? 'bg-white' : 'bg-slate-50';
+                const rowBg = row.hl ? row.hl : idx % 2 === 0 ? 'bg-white' : 'bg-[#FAFAFA]';
 
                 return (
-                  <tr key={idx} className={`${row.bold ? 'font-semibold text-slate-900' : 'text-slate-700'}`}>
+                  <tr key={idx} className={`${row.bold ? 'font-semibold text-[#101828]' : 'text-[#344054]'}`}>
                     <td
-                      className={`py-2 px-3 font-sans sticky left-0 z-10 border-r border-b border-slate-200 transition-all duration-100 ${getCellBg(idx, 'particulars', rowBg)} ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)]' : ''} ${row.bold ? 'font-bold text-slate-900' : 'text-slate-700'}`}
+                      className={`py-2 px-3 font-sans sticky left-0 z-10 border-r border-b border-[#E4E7EC] transition-all duration-100 ${row.accentBorder || ''} ${getCellBg(idx, 'particulars', rowBg)} ${isScrolledX ? 'shadow-[4px_0_8px_-2px_rgba(0,0,0,0.08)]' : ''} ${row.bold ? 'font-semibold' : 'text-[#344054]'}`}
                       onMouseEnter={() => setHoveredCell({ row: idx, col: 'particulars' })}
                     >
-                      <div className={`flex items-center gap-1.5 ${level === 2 ? 'pl-5 text-slate-500 font-normal' : ''}`}>
+                      <div className={`flex items-center gap-1.5 ${level === 2 ? 'pl-5 text-[#667085] font-normal' : ''}`}>
                         {row.groupable && (
                           <button
                             type="button"
-                            className="w-4 h-4 flex items-center justify-center text-slate-400 hover:text-slate-700 font-bold cursor-pointer"
+                            className="w-4 h-4 flex items-center justify-center text-[#98A2B3] hover:text-[#101828] font-bold cursor-pointer"
                             onClick={() => toggleGroup(row.group)}
                           >
                             {openGroups[row.group] ? '▾' : '▸'}
                           </button>
                         )}
-                        {row.bullet && <span className="text-slate-400">•</span>}
-                        <span>{row.label}</span>
+                        {row.dotColor && <span className={`w-2 h-2 rounded-full ${row.dotColor} shrink-0 inline-block shadow-xs mr-0.5`} />}
+                        {row.bullet && <span className="text-[#98A2B3]">•</span>}
+                        <span className={row.textCol || ''}>{row.label}</span>
                       </div>
                     </td>
 
                     {mode === 'q' ? (
                       <>
                         <td
-                          className={`py-2 px-3 text-right border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'ly', rowBg)} ${row.ly < 0 ? 'text-rose-600' : 'text-slate-700'}`}
+                          className={`py-2 px-3 text-right border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'ly', rowBg)} ${row.ly < 0 ? 'text-[#D92D20]' : 'text-[#344054]'}`}
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'ly' })}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-12 ml-auto rounded-sm" /> : isPct ? pnlFmtPct(row.ly) : pnlFmtAmt(row.ly)}
                         </td>
                         <td
-                          className={`py-2 px-3 text-right border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'prevQ', rowBg)} ${row.prevQ < 0 ? 'text-rose-600' : 'text-slate-700'}`}
+                          className={`py-2 px-3 text-right border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'prevQ', rowBg)} ${row.prevQ < 0 ? 'text-[#D92D20]' : 'text-[#344054]'}`}
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'prevQ' })}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-12 ml-auto rounded-sm" /> : isPct ? pnlFmtPct(row.prevQ) : pnlFmtAmt(row.prevQ)}
                         </td>
                         <td
-                          className={`py-2 px-3 text-right border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'bud', rowBg)} ${row.bud < 0 ? 'text-rose-600' : 'text-slate-700'}`}
+                          className={`py-2 px-3 text-right border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'bud', rowBg)} ${row.bud < 0 ? 'text-[#D92D20]' : 'text-[#344054]'}`}
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'bud' })}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-12 ml-auto rounded-sm" /> : isPct ? pnlFmtPct(row.bud) : pnlFmtAmt(row.bud)}
                         </td>
                         <td
-                          className={`py-2 px-3 text-right font-bold border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'act', rowBg)} ${row.act < 0 ? 'text-rose-600' : 'text-slate-900'}`}
+                          className={`py-2 px-3 text-right font-semibold border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'act', rowBg)} ${row.act < 0 ? 'text-[#D92D20]' : 'text-[#101828]'}`}
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'act' })}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-12 ml-auto rounded-sm" /> : isPct ? pnlFmtPct(row.act) : pnlFmtAmt(row.act)}
                         </td>
                         <td
-                          className={`py-2 px-3 text-right font-semibold border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'budAch', rowBg)} ${row.budAch >= 100 ? 'text-emerald-600' : 'text-slate-700'}`}
+                          className={`py-2 px-3 text-right font-semibold border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'budAch', rowBg)} ${row.budAch >= 100 ? 'text-[#12B981]' : 'text-[#344054]'}`}
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'budAch' })}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-10 ml-auto rounded-sm" /> : pnlFmtPct(row.budAch)}
                         </td>
                         <td
-                          className={`py-2 px-3 text-right font-semibold border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'qoq', rowBg)} ${row.qoq >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}
+                          className={`py-2 px-3 text-right font-semibold border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'qoq', rowBg)} ${row.qoq >= 0 ? 'text-[#12B981]' : 'text-[#D92D20]'}`}
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'qoq' })}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-10 ml-auto rounded-sm" /> : pnlFmtPct(row.qoq)}
                         </td>
                         <td
-                          className={`py-2 px-3 text-right font-semibold border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'yoy', rowBg)} ${row.yoy >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}
+                          className={`py-2 px-3 text-right font-semibold border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'yoy', rowBg)} ${row.yoy >= 0 ? 'text-[#12B981]' : 'text-[#D92D20]'}`}
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'yoy' })}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-10 ml-auto rounded-sm" /> : pnlFmtPct(row.yoy)}
@@ -382,31 +494,31 @@ export default function PnLDISTab({
                     ) : (
                       <>
                         <td
-                          className={`py-2 px-3 text-right border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'ly', rowBg)} ${row.ly < 0 ? 'text-rose-600' : 'text-slate-700'}`}
+                          className={`py-2 px-3 text-right border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'ly', rowBg)} ${row.ly < 0 ? 'text-[#D92D20]' : 'text-[#344054]'}`}
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'ly' })}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-12 ml-auto rounded-sm" /> : isPct ? pnlFmtPct(row.ly) : pnlFmtAmt(row.ly)}
                         </td>
                         <td
-                          className={`py-2 px-3 text-right border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'bud', rowBg)} ${row.bud < 0 ? 'text-rose-600' : 'text-slate-700'}`}
+                          className={`py-2 px-3 text-right border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'bud', rowBg)} ${row.bud < 0 ? 'text-[#D92D20]' : 'text-[#344054]'}`}
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'bud' })}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-12 ml-auto rounded-sm" /> : isPct ? pnlFmtPct(row.bud) : pnlFmtAmt(row.bud)}
                         </td>
                         <td
-                          className={`py-2 px-3 text-right font-bold border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'act', rowBg)} ${row.act < 0 ? 'text-rose-600' : 'text-slate-900'}`}
+                          className={`py-2 px-3 text-right font-semibold border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'act', rowBg)} ${row.act < 0 ? 'text-[#D92D20]' : 'text-[#101828]'}`}
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'act' })}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-12 ml-auto rounded-sm" /> : isPct ? pnlFmtPct(row.act) : pnlFmtAmt(row.act)}
                         </td>
                         <td
-                          className={`py-2 px-3 text-right font-semibold border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'budAch', rowBg)} ${row.budAch >= 100 ? 'text-emerald-600' : 'text-slate-700'}`}
+                          className={`py-2 px-3 text-right font-semibold border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'budAch', rowBg)} ${row.budAch >= 100 ? 'text-[#12B981]' : 'text-[#344054]'}`}
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'budAch' })}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-10 ml-auto rounded-sm" /> : pnlFmtPct(row.budAch)}
                         </td>
                         <td
-                          className={`py-2 px-3 text-right font-semibold border-r border-b border-slate-200 transition-colors duration-100 ${getCellBg(idx, 'yoy', rowBg)} ${row.yoy >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}
+                          className={`py-2 px-3 text-right font-semibold border-r border-b border-[#E4E7EC] transition-colors duration-100 ${getCellBg(idx, 'yoy', rowBg)} ${row.yoy >= 0 ? 'text-[#12B981]' : 'text-[#D92D20]'}`}
                           onMouseEnter={() => setHoveredCell({ row: idx, col: 'yoy' })}
                         >
                           {isUpdating ? <Shimmer className="h-4 w-10 ml-auto rounded-sm" /> : pnlFmtPct(row.yoy)}

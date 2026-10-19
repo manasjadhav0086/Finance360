@@ -59,7 +59,10 @@ async function fetchView(viewKey, segment, biz1, userScope = { isUnrestricted: t
     `;
     const filterClauses = [];
     if (!userScope.isUnrestricted) {
-      if (userScope.allowedBizs?.length) {
+      if (userScope.allowedSegments?.length > 0 && userScope.allowedBizs?.length > 0) {
+        filterClauses.push('Segment IN (?) AND Biz1 IN (?)');
+        params.push(userScope.allowedSegments, userScope.allowedBizs);
+      } else if (userScope.allowedBizs?.length) {
         filterClauses.push('Biz1 IN (?)');
         params.push(userScope.allowedBizs);
       } else if (userScope.allowedSegments?.length) {
@@ -70,12 +73,22 @@ async function fetchView(viewKey, segment, biz1, userScope = { isUnrestricted: t
       }
     }
     if (segment && segment.toUpperCase() !== 'ALL') {
+      const cleanSeg = segment.trim();
+      if (!userScope.isUnrestricted) {
+        const isAllowed = (userScope.allowedSegments || []).some(s => s.toLowerCase() === cleanSeg.toLowerCase());
+        if (!isAllowed) filterClauses.push('1 = 0');
+      }
       filterClauses.push('Segment = ?');
-      params.push(segment.trim());
+      params.push(cleanSeg);
     }
     if (biz1 && biz1.toUpperCase() !== 'ALL') {
+      const cleanBiz = biz1.trim();
+      if (!userScope.isUnrestricted) {
+        const isAllowed = (userScope.allowedBizs || []).some(b => b.toLowerCase() === cleanBiz.toLowerCase());
+        if (!isAllowed) filterClauses.push('1 = 0');
+      }
       filterClauses.push('Biz1 = ?');
-      params.push(biz1.trim());
+      params.push(cleanBiz);
     }
     if (filterClauses.length > 0) {
       sql += ' AND ' + filterClauses.join(' AND ');
@@ -106,7 +119,10 @@ async function fetchView(viewKey, segment, biz1, userScope = { isUnrestricted: t
     `;
     const filterClauses = [];
     if (!userScope.isUnrestricted) {
-      if (userScope.allowedBizs?.length) {
+      if (userScope.allowedSegments?.length > 0 && userScope.allowedBizs?.length > 0) {
+        filterClauses.push('Segment IN (?) AND Biz1 IN (?)');
+        params.push(userScope.allowedSegments, userScope.allowedBizs);
+      } else if (userScope.allowedBizs?.length) {
         filterClauses.push('Biz1 IN (?)');
         params.push(userScope.allowedBizs);
       } else if (userScope.allowedSegments?.length) {
@@ -117,12 +133,22 @@ async function fetchView(viewKey, segment, biz1, userScope = { isUnrestricted: t
       }
     }
     if (segment && segment.toUpperCase() !== 'ALL') {
+      const cleanSeg = segment.trim();
+      if (!userScope.isUnrestricted) {
+        const isAllowed = (userScope.allowedSegments || []).some(s => s.toLowerCase() === cleanSeg.toLowerCase());
+        if (!isAllowed) filterClauses.push('1 = 0');
+      }
       filterClauses.push('Segment = ?');
-      params.push(segment.trim());
+      params.push(cleanSeg);
     }
     if (biz1 && biz1.toUpperCase() !== 'ALL') {
+      const cleanBiz = biz1.trim();
+      if (!userScope.isUnrestricted) {
+        const isAllowed = (userScope.allowedBizs || []).some(b => b.toLowerCase() === cleanBiz.toLowerCase());
+        if (!isAllowed) filterClauses.push('1 = 0');
+      }
       filterClauses.push('Biz1 = ?');
-      params.push(biz1.trim());
+      params.push(cleanBiz);
     }
     if (filterClauses.length > 0) {
       sql += ' AND ' + filterClauses.join(' AND ');
@@ -158,7 +184,10 @@ async function fetchView(viewKey, segment, biz1, userScope = { isUnrestricted: t
   }
 
   if (!userScope.isUnrestricted) {
-    if (userScope.allowedBizs?.length) {
+    if (hasSegmentCol && userScope.allowedSegments?.length > 0 && userScope.allowedBizs?.length > 0) {
+      sql += ' AND Segment IN (?) AND Biz1 IN (?)';
+      params.push(userScope.allowedSegments, userScope.allowedBizs);
+    } else if (userScope.allowedBizs?.length) {
       sql += ' AND Biz1 IN (?)';
       params.push(userScope.allowedBizs);
     } else if (hasSegmentCol && userScope.allowedSegments?.length) {
@@ -170,23 +199,34 @@ async function fetchView(viewKey, segment, biz1, userScope = { isUnrestricted: t
   }
 
   if (segment && segment.toUpperCase() !== 'ALL') {
-    const matchingBizs = Array.from(segToBizs.get(segment.trim()) || []);
+    const cleanSeg = segment.trim();
+    if (!userScope.isUnrestricted) {
+      const isAllowed = (userScope.allowedSegments || []).some(s => s.toLowerCase() === cleanSeg.toLowerCase());
+      if (!isAllowed) sql += ' AND 1=0';
+    }
+
+    const matchingBizs = Array.from(segToBizs.get(cleanSeg) || []);
     if (hasSegmentCol) {
       if (matchingBizs.length > 0) {
         sql += ' AND (Segment = ? OR Biz1 IN (?))';
-        params.push(segment.trim(), matchingBizs);
+        params.push(cleanSeg, matchingBizs);
       } else {
         sql += ' AND Segment = ?';
-        params.push(segment.trim());
+        params.push(cleanSeg);
       }
     } else if (matchingBizs.length > 0) {
-      sql += ' AND Biz1 IN (?)';
+      sql += ' AND Biz1 IN (?))';
       params.push(matchingBizs);
     }
   }
 
   if (biz1 && biz1.toUpperCase() !== 'ALL') {
     const bizVal = biz1.trim();
+    if (!userScope.isUnrestricted) {
+      const isAllowed = (userScope.allowedBizs || []).some(b => b.toLowerCase() === bizVal.toLowerCase());
+      if (!isAllowed) sql += ' AND 1=0';
+    }
+
     const matchingAliases = Array.from(new Set([bizVal, ...(bizAliases.get(bizVal) || [])]));
     sql += ' AND Biz1 IN (?)';
     params.push(matchingAliases);

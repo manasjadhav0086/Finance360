@@ -195,17 +195,25 @@ export async function fetchAndNormalize(options = {}) {
       const bOld = String(bmr.biz1 || '').trim();
       const bNew = String(bmr.biz1_n || '').trim();
 
-      if (userScope.allowedBizs && userScope.allowedBizs.length > 0) {
-        return (userScope.allowedBizs || []).some(
-          (b) => b.toLowerCase() === bOld.toLowerCase() || b.toLowerCase() === bNew.toLowerCase()
-        );
-      }
-      return (userScope.allowedSegments || []).some(
+      const segMatch = (userScope.allowedSegments || []).some(
         (s) => s.toLowerCase() === sOld.toLowerCase() || s.toLowerCase() === sNew.toLowerCase()
       );
+      const bizMatch = (userScope.allowedBizs || []).some(
+        (b) => b.toLowerCase() === bOld.toLowerCase() || b.toLowerCase() === bNew.toLowerCase()
+      );
+
+      if (userScope.allowedSegments?.length > 0 && userScope.allowedBizs?.length > 0) {
+        return segMatch && bizMatch;
+      }
+      if (userScope.allowedSegments?.length > 0) return segMatch;
+      if (userScope.allowedBizs?.length > 0) return bizMatch;
+      return false;
     });
 
-    if (userScope.allowedBizs?.length > 0) {
+    if (userScope.allowedSegments?.length > 0 && userScope.allowedBizs?.length > 0) {
+      whereClauses.push('`Segment` IN (?) AND `Biz1` IN (?)');
+      queryParams.push(userScope.allowedSegments, userScope.allowedBizs);
+    } else if (userScope.allowedBizs?.length > 0) {
       whereClauses.push('`Biz1` IN (?)');
       queryParams.push(userScope.allowedBizs);
     } else if (userScope.allowedSegments?.length > 0) {
@@ -235,6 +243,17 @@ export async function fetchAndNormalize(options = {}) {
 
   if (segment && segment.toUpperCase() !== 'ALL') {
     const cleanSeg = segment.trim();
+    // Intersect client-selected Business Group with user's authorized scope
+    if (!userScope.isUnrestricted) {
+      const isSegAllowed = (userScope.allowedSegments || []).some(
+        (s) => s.toLowerCase() === cleanSeg.toLowerCase()
+      );
+      if (!isSegAllowed) {
+        // Direct attempt to query unauthorized Business Group returns empty data
+        whereClauses.push('1 = 0');
+      }
+    }
+
     const matchingBus = new Set();
     for (const bmr of bmRecords || []) {
       if ((bmr.segment || '').toLowerCase() === cleanSeg.toLowerCase()) {
@@ -253,6 +272,17 @@ export async function fetchAndNormalize(options = {}) {
 
   if (biz1 && biz1.toUpperCase() !== 'ALL') {
     const cleanBu = biz1.trim();
+    // Intersect client-selected Business with user's authorized scope
+    if (!userScope.isUnrestricted) {
+      const isBizAllowed = (userScope.allowedBizs || []).some(
+        (b) => b.toLowerCase() === cleanBu.toLowerCase()
+      );
+      if (!isBizAllowed) {
+        // Direct attempt to query unauthorized Business returns empty data
+        whereClauses.push('1 = 0');
+      }
+    }
+
     whereClauses.push('`Biz1` = ?');
     queryParams.push(cleanBu);
   }
@@ -332,16 +362,26 @@ export async function fetchAndNormalize(options = {}) {
     const segStr = String(rSeg || '').trim().toLowerCase();
     const bizStr = String(rBiz || '').trim().toLowerCase();
 
-    if (userScope.allowedBizs && userScope.allowedBizs.length > 0) {
-      if (bizStr) {
-        return (userScope.allowedBizs || []).some((b) => b.toLowerCase() === bizStr);
-      }
-      return (userScope.allowedSegments || []).some((s) => s.toLowerCase() === segStr);
+    // Group-level check
+    const isSegMatch = userScope.allowedSegments?.length > 0
+      ? userScope.allowedSegments.some((s) => s.toLowerCase() === segStr)
+      : false;
+
+    // Business-level check
+    const isBizMatch = userScope.allowedBizs?.length > 0
+      ? userScope.allowedBizs.some((b) => b.toLowerCase() === bizStr)
+      : false;
+
+    // If both group-level and business-level scopes are defined, enforce intersection
+    if (userScope.allowedSegments?.length > 0 && userScope.allowedBizs?.length > 0) {
+      if (segStr && bizStr) return isSegMatch && isBizMatch;
+      if (segStr) return isSegMatch;
+      if (bizStr) return isBizMatch;
+      return false;
     }
 
-    if (userScope.allowedSegments && userScope.allowedSegments.length > 0) {
-      return (userScope.allowedSegments || []).some((s) => s.toLowerCase() === segStr);
-    }
+    if (userScope.allowedSegments?.length > 0) return isSegMatch;
+    if (userScope.allowedBizs?.length > 0) return isBizMatch;
 
     return false;
   };
@@ -386,8 +426,10 @@ export async function fetchAndNormalize(options = {}) {
     if (!rowFy || !q || !metricName) return;
     fysSet.add(rowFy);
     quartersSet.add(q);
-    if (seg) segmentsSet.add(seg);
-    if (biz) {
+    if (seg && (userScope.isUnrestricted || (userScope.allowedSegments || []).some(s => s.toLowerCase() === seg.toLowerCase()))) {
+      segmentsSet.add(seg);
+    }
+    if (biz && (userScope.isUnrestricted || (userScope.allowedBizs || []).some(b => b.toLowerCase() === biz.toLowerCase()))) {
       bizUnitsSet.add(biz);
       if (seg && !buSegmentMap[biz]) {
         buSegmentMap[biz] = seg;
@@ -747,8 +789,12 @@ export async function fetchAndNormalize(options = {}) {
   }
 
   const fys = Array.from(fysSet).sort();
-  const segments = Array.from(segmentsSet).sort();
-  const bizUnits = Array.from(bizUnitsSet).sort();
+  const segments = userScope.isUnrestricted
+    ? Array.from(segmentsSet).sort()
+    : Array.from(new Set(userScope.allowedSegmentLabels?.length ? userScope.allowedSegmentLabels : userScope.allowedSegments || [])).sort();
+  const bizUnits = userScope.isUnrestricted
+    ? Array.from(bizUnitsSet).sort()
+    : Array.from(new Set(userScope.allowedBizLabels?.length ? userScope.allowedBizLabels : userScope.allowedBizs || [])).sort();
   const quarters = ['Q1', 'Q2', 'Q3', 'Q4', 'Total'];
   const fyActBud = {};
   for (const [k, v] of Object.entries(fyActBudMap)) {

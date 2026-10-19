@@ -82,16 +82,16 @@ function UserScopeDialog({
     <div className="fixed inset-0 z-60 flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-150">
       <div className="fixed inset-0" onClick={onClose} />
       <div className="relative w-full max-w-xl bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden flex flex-col z-10 animate-in zoom-in-95 duration-150 max-h-[92vh]">
-        <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
+        <div className="px-4 sm:px-6 py-4 border-b border-[#1D2939] flex items-center justify-between bg-[#101828] text-white">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shadow-xs shrink-0">
-              {isEdit ? <Edit3 className="w-4.5 h-4.5" /> : <UserPlus className="w-4.5 h-4.5" />}
+            <div className="w-8 h-8 rounded-lg bg-[#246BFD] text-white flex items-center justify-center shadow-xs shrink-0">
+              {isEdit ? <Edit3 className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm font-bold text-slate-900 truncate">
+              <h3 className="text-sm font-bold text-white truncate">
                 {isEdit ? 'Edit Scoped Data Permissions' : 'Authorize New User'}
               </h3>
-              <p className="text-xs text-slate-500 font-medium truncate max-w-sm">
+              <p className="text-xs text-slate-400 font-normal truncate max-w-sm">
                 {isEdit
                   ? (userName ? `${userName} (${userEmail})` : userEmail)
                   : 'Add user and configure authorized data visibility'}
@@ -101,16 +101,16 @@ function UserScopeDialog({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-md cursor-pointer shrink-0"
+            className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-md cursor-pointer shrink-0 transition-colors"
           >
             <X className="w-4.5 h-4.5" />
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="p-4 sm:p-6 flex-1 overflow-y-auto custom-scroll flex flex-col gap-4">
+        <form onSubmit={onSubmit} className="p-4 sm:p-6 flex-1 overflow-y-auto custom-scroll flex flex-col gap-4 bg-white">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-[#344054] mb-1">
                 Full Name
               </label>
               <input
@@ -118,14 +118,14 @@ function UserScopeDialog({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Finance Analyst"
-                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-md outline-none focus:bg-white focus:border-blue-600 font-medium"
+                className="w-full px-3 py-2 text-xs bg-[#F8FAFC] border border-[#E4E7EC] rounded-lg outline-none focus:bg-white focus:border-[#246BFD] focus:ring-1 focus:ring-[#246BFD] font-medium text-[#101828]"
               />
             </div>
 
             {!isEdit ? (
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Email Address <span className="text-red-500">*</span>
+                <label className="block text-xs font-semibold text-[#344054] mb-1">
+                  Email Address <span className="text-[#D92D20]">*</span>
                 </label>
                 <input
                   type="email"
@@ -133,18 +133,18 @@ function UserScopeDialog({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="user@finance360.com"
-                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-md outline-none focus:bg-white focus:border-blue-600 font-medium"
+                  className="w-full px-3 py-2 text-xs bg-[#F8FAFC] border border-[#E4E7EC] rounded-lg outline-none focus:bg-white focus:border-[#246BFD] focus:ring-1 focus:ring-[#246BFD] font-medium text-[#101828]"
                 />
               </div>
             ) : (
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-[#344054] mb-1">
                   Account Status
                 </label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-md outline-none focus:bg-white focus:border-blue-600 font-semibold cursor-pointer"
+                  className="w-full px-3 py-2 text-xs bg-[#F8FAFC] border border-[#E4E7EC] rounded-lg outline-none focus:bg-white focus:border-[#246BFD] font-semibold text-[#101828] cursor-pointer"
                 >
                   <option value="active">Active (Access Granted)</option>
                   <option value="pending_setup">Pending Setup (Password Required)</option>
@@ -154,13 +154,13 @@ function UserScopeDialog({
             )}
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-[#344054] mb-1">
                 Platform Role
               </label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-md outline-none focus:bg-white focus:border-blue-600 font-semibold cursor-pointer"
+                className="w-full px-3 py-2 text-xs bg-[#F8FAFC] border border-[#E4E7EC] rounded-lg outline-none focus:bg-white focus:border-[#246BFD] font-semibold text-[#101828] cursor-pointer"
               >
                 <option value="user">User (Scoped Data Access)</option>
                 <option value="admin">Admin (Complete Access)</option>
@@ -169,21 +169,21 @@ function UserScopeDialog({
           </div>
 
           {!isEdit && (
-            <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-lg text-xs text-blue-900 leading-relaxed">
+            <div className="p-3 bg-[#EFF8FF] border border-[#B2DDFF] rounded-lg text-xs text-[#1D4ED8] leading-relaxed">
               <span className="font-bold">First-Login Setup:</span> This account will be initialized in <strong>Pending Setup</strong> status. The user will be required to set a permanent password upon first login before accessing any dashboard or financial reports.
             </div>
           )}
 
           {role === 'user' ? (
-            <div className="p-4 bg-slate-50/60 border border-slate-200 rounded-lg flex flex-col gap-3.5">
+            <div className="p-4 bg-[#F8FAFC] border border-[#E4E7EC] rounded-xl flex flex-col gap-3.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-blue-600" />
-                  <span className="text-xs font-bold text-slate-900">
+                  <Building2 className="w-4 h-4 text-[#246BFD]" />
+                  <span className="text-xs font-bold text-[#101828]">
                     Data Visibility Restrictions
                   </span>
                 </div>
-                <span className="text-[11px] text-slate-500 font-medium">
+                <span className="text-[11px] text-[#667085] font-medium">
                   Select at least 1 Business
                 </span>
               </div>
@@ -191,7 +191,7 @@ function UserScopeDialog({
               <div className="flex flex-col gap-3">
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs font-bold text-slate-800">
+                    <span className="text-xs font-bold text-[#344054]">
                       Authorized Business Groups (Segment)
                     </span>
                     <div className="flex gap-2 text-[11px]">
@@ -201,15 +201,15 @@ function UserScopeDialog({
                           setGroups([...businessOptions.groups]);
                           setBizs([...businessOptions.businesses]);
                         }}
-                        className="text-blue-600 hover:underline cursor-pointer font-semibold"
+                        className="text-[#246BFD] hover:underline cursor-pointer font-semibold"
                       >
                         Select All
                       </button>
-                      <span className="text-slate-300">|</span>
+                      <span className="text-[#D0D5DD]">|</span>
                       <button
                         type="button"
                         onClick={() => setGroups([])}
-                        className="text-slate-500 hover:underline cursor-pointer"
+                        className="text-[#667085] hover:underline cursor-pointer"
                       >
                         Clear
                       </button>
@@ -224,9 +224,9 @@ function UserScopeDialog({
                           key={group}
                           type="button"
                           onClick={() => handleToggleGroup(group)}
-                          className={`px-3 py-1.5 text-xs rounded-md border transition-all font-semibold cursor-pointer ${isSelected
-                            ? 'bg-blue-600 border-blue-600 text-white font-bold shadow-xs'
-                            : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400'
+                          className={`px-3 py-1.5 text-xs rounded-lg border transition-all font-semibold cursor-pointer ${isSelected
+                            ? 'bg-[#246BFD] border-[#246BFD] text-white font-bold shadow-xs'
+                            : 'bg-white border-[#D0D5DD] text-[#344054] hover:bg-[#F8FAFC] hover:border-[#98A2B3]'
                             }`}
                         >
                           {cleanLabel(group)}
@@ -238,29 +238,29 @@ function UserScopeDialog({
 
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs font-bold text-slate-800">
+                    <span className="text-xs font-bold text-[#344054]">
                       Authorized Businesses (Biz1)
                     </span>
                     <div className="flex gap-2 text-[11px]">
                       <button
                         type="button"
                         onClick={() => setBizs([...businessOptions.businesses])}
-                        className="text-blue-600 hover:underline cursor-pointer font-semibold"
+                        className="text-[#246BFD] hover:underline cursor-pointer font-semibold"
                       >
                         Select All
                       </button>
-                      <span className="text-slate-300">|</span>
+                      <span className="text-[#D0D5DD]">|</span>
                       <button
                         type="button"
                         onClick={() => setBizs([])}
-                        className="text-slate-500 hover:underline cursor-pointer"
+                        className="text-[#667085] hover:underline cursor-pointer"
                       >
                         Clear
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto custom-scroll p-2.5 border border-slate-200 rounded-md bg-white">
+                  <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto custom-scroll p-2.5 border border-[#E4E7EC] rounded-lg bg-white">
                     {businessOptions.businesses.map((biz) => {
                       const isSelected = bizs.includes(biz);
                       return (
@@ -269,8 +269,8 @@ function UserScopeDialog({
                           type="button"
                           onClick={() => handleToggleBiz(biz)}
                           className={`px-2.5 py-1 text-[11px] font-medium rounded-md border transition-all cursor-pointer ${isSelected
-                            ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs font-semibold'
-                            : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
+                            ? 'bg-[#ECFDF5] border-[#12B981] text-[#027A48] shadow-xs font-semibold'
+                            : 'bg-[#F8FAFC] border-[#E4E7EC] text-[#475467] hover:bg-[#F2F4F7] hover:border-[#D0D5DD]'
                             }`}
                         >
                           {biz}
@@ -282,23 +282,23 @@ function UserScopeDialog({
               </div>
             </div>
           ) : (
-            <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg text-xs text-purple-900 leading-relaxed font-medium">
+            <div className="p-4 bg-[#EFF8FF] border border-[#B2DDFF] rounded-xl text-xs text-[#1D4ED8] leading-relaxed font-medium">
               Administrator role automatically grants complete access to all Business Groups and Businesses data.
             </div>
           )}
 
-          <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-[#E4E7EC]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-slate-200 rounded-md text-xs font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer"
+              className="px-4 py-2 border border-[#D0D5DD] rounded-lg text-xs font-semibold text-[#344054] hover:bg-[#F8FAFC] cursor-pointer transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-semibold flex items-center gap-1.5 cursor-pointer disabled:bg-blue-400 shadow-xs"
+              className="px-4 py-2 bg-[#246BFD] hover:bg-[#1D4ED8] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer disabled:bg-[#B2DDFF] shadow-xs transition-colors"
             >
               {isSubmitting ? (
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -635,16 +635,16 @@ export default function SettingsModal({ isOpen, onClose, currentUser }) {
             </div>
           )}
 
-          <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
+          <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-[#1D2939] flex items-center justify-between bg-[#101828] text-white">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shrink-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#246BFD] text-white flex items-center justify-center shadow-md shrink-0">
                 <KeyRound className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight truncate">
+                <h2 className="text-sm sm:text-base font-bold text-white tracking-tight truncate">
                   Settings & User Access Control
                 </h2>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-xs text-slate-400 font-normal">
                   Manage accounts, role-based access, and row-level Business Group & Business data visibility
                 </p>
               </div>
@@ -653,22 +653,22 @@ export default function SettingsModal({ isOpen, onClose, currentUser }) {
             <button
               type="button"
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+              className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          <div className="p-4 sm:p-6 flex-1 overflow-y-auto custom-scroll flex flex-col gap-4 sm:gap-5">
+          <div className="p-4 sm:p-6 flex-1 overflow-y-auto custom-scroll flex flex-col gap-4 sm:gap-5 bg-white">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
               <div className="relative flex-1 max-w-sm">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                <Search className="w-4 h-4 text-[#98A2B3] absolute left-3 top-2.5" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search by user, email, business group, or business..."
-                  className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg outline-none focus:bg-white focus:border-blue-600 transition-all text-slate-900 font-medium placeholder-slate-400"
+                  className="w-full pl-9 pr-3 py-2 text-xs bg-[#F8FAFC] border border-[#E4E7EC] rounded-lg outline-none focus:bg-white focus:border-[#246BFD] focus:ring-1 focus:ring-[#246BFD] transition-all text-[#101828] font-medium placeholder-[#98A2B3]"
                 />
               </div>
 
@@ -677,7 +677,7 @@ export default function SettingsModal({ isOpen, onClose, currentUser }) {
                   type="button"
                   onClick={fetchUsers}
                   disabled={loading}
-                  className="px-3.5 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  className="px-3.5 py-2 border border-[#E4E7EC] rounded-lg text-xs font-semibold text-[#344054] hover:bg-[#F8FAFC] hover:text-[#101828] transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                   Refresh
@@ -686,7 +686,7 @@ export default function SettingsModal({ isOpen, onClose, currentUser }) {
                 <button
                   type="button"
                   onClick={() => setIsAddUserOpen(true)}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-[0.99]"
+                  className="px-4 py-2 bg-[#246BFD] hover:bg-[#1D4ED8] text-white rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-[0.99]"
                 >
                   <UserPlus className="w-3.5 h-3.5" />
                   Add User
@@ -694,11 +694,11 @@ export default function SettingsModal({ isOpen, onClose, currentUser }) {
               </div>
             </div>
 
-            <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+            <div className="border border-[#E4E7EC] rounded-xl overflow-hidden bg-white shadow-2xs">
               <div className="overflow-x-auto custom-scroll">
                 <table className="w-full border-collapse text-left text-xs min-w-[760px]">
                   <thead>
-                    <tr className="bg-slate-50/90 border-b border-slate-200 text-slate-600 font-semibold text-[11px] uppercase tracking-wider">
+                    <tr className="bg-[#F8FAFC] border-b border-[#E4E7EC] text-[#475467] font-semibold text-[11px] uppercase tracking-wider">
                       <th className="py-3.5 px-4">User</th>
                       <th className="py-3.5 px-3">Role</th>
                       <th className="py-3.5 px-3">Status</th>
@@ -706,17 +706,17 @@ export default function SettingsModal({ isOpen, onClose, currentUser }) {
                       <th className="py-3.5 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 font-sans">
+                  <tbody className="divide-y divide-[#F2F4F7] font-sans">
                     {loading && users.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="py-10 text-center text-slate-400 font-medium">
-                          <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-blue-600" />
+                        <td colSpan={5} className="py-10 text-center text-[#98A2B3] font-medium">
+                          <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-[#246BFD]" />
                           Loading user directory...
                         </td>
                       </tr>
                     ) : filteredUsers.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="py-10 text-center text-slate-400 font-medium">
+                        <td colSpan={5} className="py-10 text-center text-[#98A2B3] font-medium">
                           No users found matching your search.
                         </td>
                       </tr>
@@ -735,24 +735,24 @@ export default function SettingsModal({ isOpen, onClose, currentUser }) {
                         const mustChangePass = Boolean(u.must_change_password);
 
                         return (
-                          <tr key={u._id || u.email} className={`hover:bg-slate-50/80 transition-colors ${userStatus === 'disabled' ? 'bg-slate-50/40 opacity-75' : ''}`}>
+                          <tr key={u._id || u.email} className={`hover:bg-[#F8FAFC] transition-colors ${userStatus === 'disabled' ? 'bg-[#F8FAFC]/50 opacity-75' : ''}`}>
                             <td className="py-3.5 px-4">
                               <div className="flex items-center gap-3">
-                                <div className={`w-9 h-9 rounded-xl border flex items-center justify-center font-bold text-xs shrink-0 ${displayRole === 'admin' ? 'bg-purple-50 border-purple-200 text-purple-700' : 'bg-blue-50 border-blue-200 text-blue-700'}`}>
+                                <div className={`w-9 h-9 rounded-xl border flex items-center justify-center font-bold text-xs shrink-0 ${displayRole === 'admin' ? 'bg-[#EFF8FF] border-[#B2DDFF] text-[#1D4ED8]' : 'bg-[#F8FAFC] border-[#E4E7EC] text-[#344054]'}`}>
                                   {(u.name || u.email || 'U').substring(0, 2).toUpperCase()}
                                 </div>
                                 <div className="flex flex-col min-w-0">
                                   <div className="flex items-center gap-1.5">
-                                    <span className="font-bold text-slate-900 truncate">
+                                    <span className="font-bold text-[#101828] truncate">
                                       {u.name || u.email.split('@')[0]}
                                     </span>
                                     {isCurrentUser && (
-                                      <span className="text-[10px] font-bold px-1.5 py-0.2 bg-blue-100 text-blue-800 rounded">
+                                      <span className="text-[10px] font-bold px-1.5 py-0.2 bg-[#EFF8FF] text-[#1D4ED8] rounded border border-[#B2DDFF]">
                                         You
                                       </span>
                                     )}
                                   </div>
-                                  <span className="text-slate-400 text-[11px] truncate">
+                                  <span className="text-[#667085] text-[11px] truncate">
                                     {u.email}
                                   </span>
                                 </div>
@@ -762,8 +762,8 @@ export default function SettingsModal({ isOpen, onClose, currentUser }) {
                             <td className="py-3.5 px-3">
                               <span
                                 className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${displayRole === 'admin'
-                                  ? 'bg-purple-100 text-purple-800 border border-purple-200'
-                                  : 'bg-slate-100 text-slate-700 border border-slate-200'
+                                  ? 'bg-[#EFF8FF] text-[#1D4ED8] border border-[#B2DDFF]'
+                                  : 'bg-[#F2F4F7] text-[#344054] border border-[#E4E7EC]'
                                   }`}
                               >
                                 {displayRole}
@@ -772,15 +772,15 @@ export default function SettingsModal({ isOpen, onClose, currentUser }) {
 
                             <td className="py-3.5 px-3">
                               {userStatus === 'disabled' ? (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-rose-100 text-rose-800 border border-rose-200">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#FEF3F2] text-[#B42318] border border-[#FECDCA]">
                                   Disabled
                                 </span>
                               ) : mustChangePass || userStatus === 'pending_setup' ? (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-200" title="User must configure permanent password on first login">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#FFFAEB] text-[#B54708] border border-[#FEDF89]" title="User must configure permanent password on first login">
                                   Pending Setup
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#ECFDF5] text-[#027A48] border border-[#A6F4C5]">
                                   Active
                                 </span>
                               )}
@@ -788,23 +788,23 @@ export default function SettingsModal({ isOpen, onClose, currentUser }) {
 
                             <td className="py-3.5 px-3 max-w-xs">
                               {displayRole === 'admin' ? (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-purple-700">
+                                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#1D4ED8]">
                                   <Shield className="w-3.5 h-3.5" />
                                   All Business Groups & Businesses (Admin)
                                 </span>
                               ) : !hasSpecificScope ? (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
+                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#D92D20] bg-[#FEF3F2] px-2 py-0.5 rounded border border-[#FECDCA]">
                                   No Access (0 Businesses)
                                 </span>
                               ) : (
                                 <div className="flex flex-col gap-1">
                                   {groups.length > 0 && (
                                     <div className="flex flex-wrap items-center gap-1">
-                                      <span className="text-[10px] font-bold text-slate-400">Groups:</span>
+                                      <span className="text-[10px] font-bold text-[#98A2B3]">Groups:</span>
                                       {groups.map((g) => (
                                         <span
                                           key={g}
-                                          className="px-1.5 py-0.2 bg-blue-50 border border-blue-200 text-blue-800 text-[10px] font-semibold rounded-xs"
+                                          className="px-1.5 py-0.2 bg-[#EFF8FF] border border-[#B2DDFF] text-[#1D4ED8] text-[10px] font-semibold rounded-xs"
                                         >
                                           {cleanLabel(g)}
                                         </span>
@@ -813,11 +813,11 @@ export default function SettingsModal({ isOpen, onClose, currentUser }) {
                                   )}
                                   {bizs.length > 0 && (
                                     <div className="flex flex-wrap items-center gap-1">
-                                      <span className="text-[10px] font-bold text-slate-400">Business:</span>
+                                      <span className="text-[10px] font-bold text-[#98A2B3]">Business:</span>
                                       {bizs.map((b) => (
                                         <span
                                           key={b}
-                                          className="px-1.5 py-0.2 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-medium rounded-xs"
+                                          className="px-1.5 py-0.2 bg-[#ECFDF5] border border-[#A6F4C5] text-[#027A48] text-[10px] font-medium rounded-xs"
                                         >
                                           {b}
                                         </span>
@@ -830,7 +830,7 @@ export default function SettingsModal({ isOpen, onClose, currentUser }) {
 
                             <td className="py-3.5 px-4 text-right">
                               {isCurrentUser ? (
-                                <span className="text-[10px] text-slate-400 italic">—</span>
+                                <span className="text-[10px] text-[#98A2B3] italic">—</span>
                               ) : (
                                 <div className="flex items-center justify-end gap-1.5">
                                   {/* Send invite / setup link button */}
@@ -839,7 +839,7 @@ export default function SettingsModal({ isOpen, onClose, currentUser }) {
                                     title="Send or generate password setup link"
                                     disabled={isActionBusy}
                                     onClick={() => handleSendInvite(u)}
-                                    className="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 rounded-md transition-colors cursor-pointer"
+                                    className="p-1.5 text-[#344054] hover:text-[#246BFD] hover:bg-[#EFF8FF] border border-[#E4E7EC] hover:border-[#B2DDFF] rounded-lg transition-colors cursor-pointer"
                                   >
                                     <Mail className="w-3.5 h-3.5" />
                                   </button>
@@ -850,9 +850,9 @@ export default function SettingsModal({ isOpen, onClose, currentUser }) {
                                     title={userStatus === 'disabled' ? 'Activate User Account' : 'Disable User Account'}
                                     disabled={isActionBusy}
                                     onClick={() => handleToggleStatus(u)}
-                                    className={`p-1.5 rounded-md border transition-colors cursor-pointer ${userStatus === 'disabled'
-                                      ? 'text-emerald-700 hover:bg-emerald-50 border-emerald-200'
-                                      : 'text-slate-600 hover:text-amber-700 hover:bg-amber-50 border-slate-200 hover:border-amber-200'
+                                    className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${userStatus === 'disabled'
+                                      ? 'text-[#027A48] hover:bg-[#ECFDF5] border-[#A6F4C5]'
+                                      : 'text-[#344054] hover:text-[#B54708] hover:bg-[#FFFAEB] border-[#E4E7EC] hover:border-[#FEDF89]'
                                       }`}
                                   >
                                     {userStatus === 'disabled' ? <Power className="w-3.5 h-3.5" /> : <PowerOff className="w-3.5 h-3.5" />}
@@ -864,7 +864,7 @@ export default function SettingsModal({ isOpen, onClose, currentUser }) {
                                     title="Edit Scoped Permissions"
                                     disabled={isActionBusy}
                                     onClick={() => handleOpenEdit(u)}
-                                    className="px-2.5 py-1 text-slate-600 hover:text-blue-600 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 rounded-md text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
+                                    className="px-2.5 py-1 text-[#344054] hover:text-[#246BFD] hover:bg-[#EFF8FF] border border-[#E4E7EC] hover:border-[#B2DDFF] rounded-lg text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1"
                                   >
                                     <Edit3 className="w-3 h-3" />
                                     <span>Scope</span>
@@ -876,7 +876,7 @@ export default function SettingsModal({ isOpen, onClose, currentUser }) {
                                     title="Delete Account"
                                     disabled={isActionBusy}
                                     onClick={() => handleRequestDelete(u)}
-                                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-md transition-colors cursor-pointer"
+                                    className="p-1.5 text-[#667085] hover:text-[#D92D20] hover:bg-[#FEF3F2] border border-[#E4E7EC] hover:border-[#FECDCA] rounded-lg transition-colors cursor-pointer"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </button>

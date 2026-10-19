@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { ChevronDown, Check, Search, RotateCcw, CheckCheck, X, Sparkles, Menu, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, Check, Search, RotateCcw, X, Sparkles, Menu, SlidersHorizontal } from 'lucide-react';
 import { getMonthsForQuarter } from '../utils/periodUtils';
 
 function CustomDropdown({
@@ -10,6 +10,7 @@ function CustomDropdown({
   multi = false,
   allOptionLabel = 'All',
   searchable = false,
+  align = 'left',
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -110,36 +111,43 @@ function CustomDropdown({
 
   return (
     <div className="relative flex flex-col" ref={dropdownRef}>
-      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 select-none">
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#667085] mb-1 select-none">
         {label}
       </span>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between gap-2 px-3 py-1.5 rounded-md border text-xs transition-all cursor-pointer select-none ${isOpen
-          ? 'bg-white border-blue-600 ring-2 ring-blue-600/20 text-slate-950 shadow-xs font-semibold'
-          : !isAllSelected
-            ? 'bg-blue-50 border-blue-600 text-blue-950 font-semibold shadow-xs'
-            : 'bg-white border-slate-300 text-slate-900 hover:bg-slate-50 hover:border-slate-400 shadow-2xs font-medium'
-          }`}
+        className={`flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg border text-xs transition-all cursor-pointer select-none min-h-[34px] ${
+          isOpen
+            ? 'bg-white border-[#246BFD] ring-2 ring-[#246BFD]/15 text-[#101828] shadow-xs font-semibold'
+            : !isAllSelected
+            ? 'bg-[#EFF4FF] border-[#246BFD] text-[#1D4ED8] font-semibold shadow-xs'
+            : 'bg-white border-[#D0D5DD] text-[#101828] hover:bg-[#F9FAFB] hover:border-[#98A2B3] shadow-xs font-medium'
+        }`}
       >
-        <span className={`max-w-[140px] truncate ${!isAllSelected ? 'text-blue-950 font-semibold' : 'text-slate-900 font-medium'}`}>
+        <span className={`max-w-[130px] truncate ${!isAllSelected ? 'text-[#1D4ED8] font-semibold' : 'text-[#101828] font-medium'}`}>
           {displayText}
         </span>
         {!isAllSelected && multi && selectedValues.length > 1 && (
-          <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-xs ml-auto">
+          <span className="bg-[#246BFD] text-white text-[10px] font-bold px-1.5 py-0.2 rounded shadow-xs ml-auto">
             {selectedValues.length}
           </span>
         )}
         <ChevronDown
-          className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? 'rotate-180 text-blue-700' : !isAllSelected ? 'text-blue-800' : 'text-slate-700'}`}
+          className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${
+            isOpen ? 'rotate-180 text-[#246BFD]' : !isAllSelected ? 'text-[#246BFD]' : 'text-[#667085]'
+          }`}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 sm:left-auto right-auto sm:right-0 mt-1.5 z-50 bg-white border border-slate-300 rounded-lg shadow-xl w-full sm:w-auto min-w-[220px] max-w-[calc(100vw-32px)] p-2 flex flex-col gap-1.5 animate-in fade-in duration-150">
-          <div className="flex items-center justify-between px-2 pb-1.5 border-b border-slate-200 text-[11px]">
-            <span className="font-bold text-slate-800 uppercase tracking-wider text-[10px]">
+        <div
+          className={`absolute top-full mt-1.5 z-50 bg-white border border-[#E4E7EC] rounded-xl shadow-xl w-full sm:w-auto min-w-[220px] max-w-[calc(100vw-32px)] p-2 flex flex-col gap-1.5 animate-in fade-in duration-150 ${
+            align === 'right' ? 'right-0 left-auto' : 'left-0 right-auto'
+          }`}
+        >
+          <div className="flex items-center justify-between px-2 pb-1.5 border-b border-[#F2F4F7] text-[11px]">
+            <span className="font-bold text-[#101828] uppercase tracking-wider text-[10px]">
               Filter {label}
             </span>
             {multi && (
@@ -147,17 +155,17 @@ function CustomDropdown({
                 <button
                   type="button"
                   onClick={handleSelectAll}
-                  className="text-[11px] font-bold text-blue-700 hover:text-blue-900 cursor-pointer"
+                  className="text-[11px] font-semibold text-[#246BFD] hover:text-[#1D4ED8] cursor-pointer"
                 >
-                  All
+                  Select All
                 </button>
-                <span className="text-slate-300 font-bold">|</span>
+                <span className="text-[#D0D5DD]">|</span>
                 <button
                   type="button"
                   onClick={handleClearAll}
-                  className="text-[11px] font-bold text-slate-600 hover:text-slate-900 cursor-pointer"
+                  className="text-[11px] font-semibold text-[#667085] hover:text-[#101828] cursor-pointer"
                 >
-                  Reset
+                  Clear
                 </button>
               </div>
             )}
@@ -165,34 +173,36 @@ function CustomDropdown({
 
           {searchable && options.length > 5 && (
             <div className="relative px-1 pt-0.5">
-              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
+              <Search className="w-3.5 h-3.5 text-[#98A2B3] absolute left-3 top-2.5" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search..."
-                className="w-full pl-8 pr-2.5 py-1 text-xs bg-slate-50 border border-slate-300 rounded-md outline-none focus:bg-white focus:border-blue-600 transition-all text-slate-900 font-medium placeholder-slate-400"
+                className="w-full pl-8 pr-2.5 py-1 text-xs bg-[#F9FAFB] border border-[#D0D5DD] rounded-md outline-none focus:bg-white focus:border-[#246BFD] transition-all text-[#101828] font-medium placeholder-[#98A2B3]"
               />
             </div>
           )}
 
-          <div className="max-h-60 overflow-y-auto flex flex-col gap-1 pt-1 pr-0.5 custom-scroll">
+          <div className="max-h-60 overflow-y-auto flex flex-col gap-0.5 pt-1 pr-0.5 custom-scroll">
             {multi && (
               <button
                 type="button"
                 onClick={() => handleToggleOption('ALL')}
-                className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-left transition-colors cursor-pointer ${isAllSelected
-                  ? 'bg-blue-50 border border-blue-200 text-blue-950 font-semibold'
-                  : 'text-slate-800 hover:bg-slate-50 border border-transparent'
-                  }`}
+                className={`w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs font-medium text-left transition-colors cursor-pointer ${
+                  isAllSelected
+                    ? 'bg-[#EFF4FF] text-[#1D4ED8] font-semibold'
+                    : 'text-[#344054] hover:bg-[#F9FAFB]'
+                }`}
               >
                 <div
-                  className={`w-4 h-4 rounded flex items-center justify-center shrink-0 transition-colors ${isAllSelected
-                    ? 'border-2 border-blue-600 bg-blue-600 text-white'
-                    : 'border-2 border-slate-400 bg-white'
-                    }`}
+                  className={`w-4 h-4 rounded flex items-center justify-center shrink-0 transition-colors ${
+                    isAllSelected
+                      ? 'border-2 border-[#246BFD] bg-[#246BFD] text-white'
+                      : 'border-2 border-[#D0D5DD] bg-white'
+                  }`}
                 >
-                  {isAllSelected && <Check className="w-3.5 h-3.5 text-white stroke-[2.5]" />}
+                  {isAllSelected && <Check className="w-3 h-3 text-white stroke-[2.5]" />}
                 </div>
                 <span className="truncate">{allOptionLabel}</span>
               </button>
@@ -208,29 +218,31 @@ function CustomDropdown({
                   key={val}
                   type="button"
                   onClick={() => handleToggleOption(val)}
-                  className={`w-full flex items-center ${multi ? 'gap-2.5 justify-start' : 'justify-between'} px-2.5 py-1.5 rounded-md text-xs font-medium text-left transition-colors cursor-pointer ${isSelected
-                    ? 'bg-blue-50 border border-blue-200 text-blue-950 font-semibold'
-                    : 'text-slate-800 hover:bg-slate-50 border border-transparent'
-                    }`}
+                  className={`w-full flex items-center ${
+                    multi ? 'gap-2.5 justify-start' : 'justify-between'
+                  } px-2 py-1.5 rounded-lg text-xs font-medium text-left transition-colors cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#EFF4FF] text-[#1D4ED8] font-semibold'
+                      : 'text-[#344054] hover:bg-[#F9FAFB]'
+                  }`}
                 >
                   {multi ? (
                     <>
                       <div
-                        className={`w-4 h-4 rounded flex items-center justify-center shrink-0 transition-colors ${isSelected
-                          ? 'border-2 border-blue-600 bg-blue-600 text-white'
-                          : 'border-2 border-slate-400 bg-white'
-                          }`}
+                        className={`w-4 h-4 rounded flex items-center justify-center shrink-0 transition-colors ${
+                          isSelected
+                            ? 'border-2 border-[#246BFD] bg-[#246BFD] text-white'
+                            : 'border-2 border-[#D0D5DD] bg-white'
+                        }`}
                       >
-                        {isSelected && <Check className="w-3.5 h-3.5 text-white stroke-[2.5]" />}
+                        {isSelected && <Check className="w-3 h-3 text-white stroke-[2.5]" />}
                       </div>
                       <span className="truncate">{text}</span>
                     </>
                   ) : (
                     <>
                       <span className="truncate">{text}</span>
-                      {isSelected && (
-                        <Check className="w-4 h-4 text-blue-600 stroke-[2.5] shrink-0 ml-auto" />
-                      )}
+                      {isSelected && <Check className="w-3.5 h-3.5 text-[#246BFD] stroke-[2.5]" />}
                     </>
                   )}
                 </button>
@@ -238,9 +250,7 @@ function CustomDropdown({
             })}
 
             {filteredOptions.length === 0 && (
-              <div className="py-3 text-center text-xs text-slate-500 font-medium italic">
-                No matching options
-              </div>
+              <div className="py-4 text-center text-xs text-[#98A2B3]">No matches found</div>
             )}
           </div>
         </div>
@@ -250,79 +260,49 @@ function CustomDropdown({
 }
 
 export default function Topbar({
-  onToggleSidebar,
+  activeTab = 'overview360',
   filters = {},
-  updateFilters,
-  dashboardData,
-  loading,
-  refreshAll,
-  getActiveBusinesses,
-  isAdmin,
-  user,
-  onOpenAi,
+  updateFilters = () => {},
+  dashboardData = {},
+  onToggleSidebar = () => {},
+  onOpenAi = () => {},
   hideFilters = false,
+  getActiveBusinesses,
 }) {
-  const fys = dashboardData?.meta?.fys || [];
-  const quarters = [
-    { value: 'Q1', label: 'Q1' },
-    { value: 'Q2', label: 'Q2' },
-    { value: 'Q3', label: 'Q3' },
-    { value: 'Q4', label: 'Q4' },
-  ];
+  const cleanLabel = (text) => {
+    if (typeof text !== 'string') return text;
+    return text.replace(/^\d+[\s._-]+/, '').trim() || text;
+  };
+
+  const fys = useMemo(() => {
+    const list = dashboardData?.meta?.fys || ['FY26', 'FY25'];
+    return list.map((f) => ({ value: f, label: f }));
+  }, [dashboardData]);
+
+  const quarters = useMemo(() => {
+    return [
+      { value: 'Q1', label: 'Q1' },
+      { value: 'Q2', label: 'Q2' },
+      { value: 'Q3', label: 'Q3' },
+      { value: 'Q4', label: 'Q4' },
+    ];
+  }, []);
+
+  const handleYearChange = (newFy) => {
+    updateFilters({ fy: newFy });
+  };
+
+  const handleQuarterChange = (newQuarter) => {
+    updateFilters({ quarter: newQuarter });
+  };
 
   const monthOptions = useMemo(() => {
-    const availableMonths = getMonthsForQuarter(filters.quarter);
-    return availableMonths.map((m) => ({ value: m, label: m }));
+    const months = getMonthsForQuarter(filters.quarter || 'Total');
+    return months.map((m) => ({ value: m, label: m }));
   }, [filters.quarter]);
 
-  const handleQuarterChange = (val) => {
-    const normQ = val === 'ALL' || (Array.isArray(val) && val.length === quarters.length) ? 'Total' : val;
-    const availableMonths = getMonthsForQuarter(normQ);
-
-    let nextMonth = filters.month;
-    if (nextMonth && nextMonth !== 'ALL') {
-      if (Array.isArray(nextMonth)) {
-        const validMonths = nextMonth.filter((m) => availableMonths.includes(m));
-        nextMonth = validMonths.length > 0 ? (validMonths.length === availableMonths.length ? 'ALL' : validMonths) : 'ALL';
-      } else if (!availableMonths.includes(nextMonth)) {
-        nextMonth = 'ALL';
-      }
-    }
-
-    updateFilters({
-      quarter: normQ,
-      month: nextMonth,
-    });
-  };
-
-  const handleYearChange = (val) => {
-    const fyVal = Array.isArray(val) ? val[0] : val;
-    updateFilters({
-      fy: fyVal,
-    });
-  };
-
-  const cleanLabel = (text) => {
-    if (!text) return '';
-    return String(text).replace(/^\d+[\s._-]+/, '').trim() || text;
-  };
-
   const segments = useMemo(() => {
-    const meta = dashboardData?.meta;
-    let list = [];
-    if (meta?.business_mapping && Array.isArray(meta.business_mapping)) {
-      const seen = {};
-      meta.business_mapping.forEach((r) => {
-        const s = (r.segment_n || r.segment || r.Segment || '').trim();
-        if (s && !seen[s]) {
-          seen[s] = true;
-          list.push(s);
-        }
-      });
-      list.sort();
-    } else {
-      list = meta?.segments ? [...meta.segments] : [];
-    }
+    const list = dashboardData?.meta?.segments || [];
     return list.map((s) => ({
       value: s,
       label: cleanLabel(s),
@@ -332,20 +312,15 @@ export default function Topbar({
   const businesses = useMemo(() => {
     let rawList = [];
     if (typeof getActiveBusinesses === 'function') {
-      try {
-        rawList = getActiveBusinesses(filters.segment) || [];
-      } catch {
-        // Fall back to mapping
-      }
-    }
-    if (!rawList.length) {
+      rawList = getActiveBusinesses(filters.segment);
+    } else {
       const meta = dashboardData?.meta;
-      if (meta?.business_mapping && Array.isArray(meta.business_mapping)) {
+      if (meta?.business_mapping && meta.business_mapping.length > 0) {
         const selectedSegs = Array.isArray(filters.segment)
           ? filters.segment
           : filters.segment && filters.segment !== 'ALL'
-            ? [filters.segment]
-            : [];
+          ? [filters.segment]
+          : [];
         const seen = {};
         meta.business_mapping.forEach((r) => {
           const segN = (r.segment_n || '').trim();
@@ -415,7 +390,7 @@ export default function Topbar({
   const filterControls = (
     <>
       <CustomDropdown
-        label="Year"
+        label="Fiscal Year"
         options={fys}
         value={filters.fy}
         onChange={handleYearChange}
@@ -474,19 +449,20 @@ export default function Topbar({
         multi={true}
         searchable={true}
         allOptionLabel="All Businesses"
+        align="right"
       />
     </>
   );
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-3 sm:px-4 lg:px-6 py-2 sm:py-2.5 shadow-xs">
-      {/* Mobile Header Bar: Menu toggle, Logo, Filter toggle & AI button */}
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#E4E7EC] px-3 sm:px-4 lg:px-6 py-2.5 shadow-xs">
+      {/* Mobile Top Header: Menu toggle, Logo, Filter toggle & AI button */}
       <div className="flex lg:hidden items-center justify-between gap-2 w-full">
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onToggleSidebar}
-            className="p-2 -ml-1 text-slate-700 hover:text-[#1E56A0] hover:bg-slate-100 rounded-lg transition-colors cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center"
+            className="p-2 -ml-1 text-[#344054] hover:text-[#101828] hover:bg-[#F2F4F7] rounded-lg transition-colors cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center"
             aria-label="Open navigation menu"
             id="mobileMenuBtn"
           >
@@ -496,9 +472,9 @@ export default function Topbar({
             <img
               src="/fin/finance360_logo.png"
               alt="Finance360"
-              className="h-6 w-6 object-contain rounded-full bg-slate-100"
+              className="h-6 w-6 object-contain rounded-md bg-[#F2F4F7] p-0.5"
             />
-            <span className="font-bold text-sm sm:text-base text-slate-900 tracking-tight">Finance360</span>
+            <span className="font-bold text-sm sm:text-base text-[#101828] tracking-tight">Finance360</span>
           </div>
         </div>
 
@@ -509,8 +485,8 @@ export default function Topbar({
               onClick={() => setIsMobileFilterOpen((prev) => !prev)}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer min-h-[36px] ${
                 isMobileFilterOpen || activeFilterCount > 0
-                  ? 'bg-blue-50 border-blue-600 text-blue-700 font-bold shadow-xs'
-                  : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
+                  ? 'bg-[#EFF4FF] border-[#246BFD] text-[#1D4ED8] font-bold shadow-xs'
+                  : 'bg-white border-[#D0D5DD] text-[#344054] hover:bg-[#F9FAFB]'
               }`}
               aria-expanded={isMobileFilterOpen}
               aria-label="Toggle filters"
@@ -519,7 +495,7 @@ export default function Topbar({
               <SlidersHorizontal className="w-3.5 h-3.5" />
               <span className="hidden xs:inline text-xs">Filters</span>
               {activeFilterCount > 0 && (
-                <span className="bg-blue-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+                <span className="bg-[#246BFD] text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
                   {activeFilterCount}
                 </span>
               )}
@@ -528,12 +504,12 @@ export default function Topbar({
 
           <button
             type="button"
-            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-xs transition-colors cursor-pointer min-h-[36px]"
+            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-white bg-[#246BFD] hover:bg-[#1D4ED8] rounded-lg shadow-xs transition-colors cursor-pointer min-h-[36px]"
             id="mobileAskAiBtn"
             title="Open Finance AI Copilot"
             onClick={onOpenAi}
           >
-            <Sparkles className="w-3.5 h-3.5 text-blue-200" />
+            <Sparkles className="w-3.5 h-3.5 text-white/80" />
             <span className="hidden xs:inline">Ask AI</span>
           </button>
         </div>
@@ -541,25 +517,25 @@ export default function Topbar({
 
       {/* Mobile Collapsible Filter Drawer/Panel */}
       {!hideFilters && isMobileFilterOpen && (
-        <div className="lg:hidden mt-2 p-3 bg-slate-50 border border-slate-200 rounded-xl shadow-inner flex flex-col gap-2.5 animate-in fade-in duration-150">
-          <div className="flex items-center justify-between pb-1.5 border-b border-slate-200 text-xs">
-            <span className="font-bold text-slate-800 uppercase tracking-wider text-[11px]">
-              Dashboard Filters {activeFilterCount > 0 ? `(${activeFilterCount} Active)` : ''}
+        <div className="lg:hidden mt-2 p-3.5 bg-[#F9FAFB] border border-[#E4E7EC] rounded-xl shadow-xs flex flex-col gap-3 animate-in fade-in duration-150">
+          <div className="flex items-center justify-between pb-2 border-b border-[#E4E7EC] text-xs">
+            <span className="font-bold text-[#101828] uppercase tracking-wider text-[10px]">
+              Filters {activeFilterCount > 0 ? `(${activeFilterCount} Active)` : ''}
             </span>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={resetFilters}
-                className="text-[11px] font-bold text-slate-600 hover:text-rose-600 flex items-center gap-1 cursor-pointer"
+                className="text-[11px] font-semibold text-[#667085] hover:text-[#D92D20] flex items-center gap-1 cursor-pointer"
               >
                 <RotateCcw className="w-3 h-3" />
                 <span>Reset</span>
               </button>
-              <span className="text-slate-300">|</span>
+              <span className="text-[#D0D5DD]">|</span>
               <button
                 type="button"
                 onClick={() => setIsMobileFilterOpen(false)}
-                className="text-[11px] font-bold text-blue-600 hover:text-blue-800 cursor-pointer"
+                className="text-[11px] font-semibold text-[#246BFD] hover:text-[#1D4ED8] cursor-pointer"
               >
                 Done
               </button>
@@ -579,26 +555,26 @@ export default function Topbar({
             {filterControls}
           </div>
         ) : (
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#667085]">
             <span>Finance360 Suite</span>
           </div>
         )}
 
-        <div className="flex items-center gap-2.5 ml-auto shrink-0 flex-wrap sm:flex-nowrap self-end pb-0.5">
+        <div className="flex items-center gap-2 ml-auto shrink-0 flex-wrap sm:flex-nowrap self-end pb-0.5">
           <button
             type="button"
-            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-all cursor-pointer shadow-xs group shrink-0 min-h-[34px]"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-[#246BFD] hover:bg-[#1D4ED8] rounded-lg transition-all cursor-pointer shadow-xs group shrink-0 min-h-[34px]"
             id="askFinanceAiBtn"
             title="Open Finance AI Copilot"
             onClick={onOpenAi}
           >
-            <Sparkles className="w-3.5 h-3.5 text-blue-200 group-hover:scale-110 transition-transform" />
+            <Sparkles className="w-3.5 h-3.5 text-white/80 group-hover:scale-110 transition-transform" />
             <span>Ask Finance AI</span>
           </button>
 
           <button
             type="button"
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-800 hover:text-slate-950 bg-white hover:bg-slate-100 border border-slate-300 rounded-md transition-colors cursor-pointer shadow-2xs min-h-[34px]"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#344054] hover:text-[#101828] bg-white hover:bg-[#F9FAFB] border border-[#D0D5DD] rounded-lg transition-colors cursor-pointer shadow-xs min-h-[34px]"
             id="resetFiltersBtn"
             title="Reset all filters to default"
             onClick={resetFilters}

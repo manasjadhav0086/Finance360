@@ -4,7 +4,7 @@ import mysqlService from './utils/mysqlClient.js';
 
 async function updateUserRole() {
   try {
-    const targetEmail = (process.argv[2] || 'admin@finance360.local').trim().toLowerCase();
+    const targetEmail = (process.argv[2] || process.env.ADMIN_EMAIL || 'admin@misar.io').trim().toLowerCase();
     console.log(`Setting role to 'admin' for: ${targetEmail}`);
 
     const user = await User.findOneAndUpdate(

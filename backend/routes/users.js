@@ -5,6 +5,8 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import { verifyUser, verifyAdmin, clearAuthCache } from '../middleware/auth.js';
 import emailService from '../utils/emailService.js';
+import { clearDashboardCache } from './dashboard.js';
+import { clearPerformanceCache } from './performance.js';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'finance360-jwt-secret-key-production-ready-2025';
@@ -533,6 +535,8 @@ router.put('/:user_id', verifyAdmin, async (req, res) => {
     );
 
     clearAuthCache(targetUser.email);
+    clearDashboardCache();
+    clearPerformanceCache();
 
     res.json({
       message: "User details updated successfully.",
@@ -576,6 +580,8 @@ router.delete('/:user_id', verifyAdmin, async (req, res) => {
 
     await User.findByIdAndDelete(user_id);
     clearAuthCache(targetUser.email);
+    clearDashboardCache();
+    clearPerformanceCache();
 
     res.json({
       message: "User deleted successfully."

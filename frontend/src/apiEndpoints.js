@@ -1,6 +1,6 @@
 // Central API config
 
-const API_BASE_URL = `/fin/api`;
+const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL || '/fin/api').replace(/\/+$/, '');
 
 export const apiEndpoints = {
   API_BASE_URL: API_BASE_URL,
