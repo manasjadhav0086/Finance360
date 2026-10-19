@@ -8,7 +8,6 @@ import {
   FileSpreadsheet,
   Layers,
   TrendingUp,
-  Target,
   Globe,
   LogOut,
   Settings,
@@ -33,11 +32,6 @@ const NAV_GROUPS = [
         id: 'heatmap',
         label: 'Heatmap Matrix',
         icon: Flame,
-      },
-      {
-        id: 'kpis',
-        label: 'KPI Scorecard',
-        icon: Target,
       },
       {
         id: 'othermetrics',
@@ -121,9 +115,9 @@ export default function Sidebar({
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center shrink-0">
               <img
-                src="/fin/finance360_logo.svg"
+                src="/fin/finance360_logo.png"
                 alt="Finance360"
-                className="h-8 w-8 object-contain shadow-xs rounded-md"
+                className="h-9 w-9 object-contain rounded-full shadow-xs bg-white p-0.5"
               />
             </div>
             <div className="h-7 w-px bg-white/25 shrink-0" />

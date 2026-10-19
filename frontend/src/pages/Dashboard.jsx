@@ -16,7 +16,6 @@ import HeatmapTab from '../components/tabs/HeatmapTab';
 import PnLSummaryTab from '../components/tabs/PnLSummaryTab';
 import PnLDISTab from '../components/tabs/PnLDISTab';
 import PnLTrendTab from '../components/tabs/PnLTrendTab';
-import KPIsTab from '../components/tabs/KPIsTab';
 import OtherMetricsTab from '../components/tabs/OtherMetricsTab';
 import LiveNewsTab from '../components/tabs/LiveNewsTab';
 
@@ -35,7 +34,7 @@ export default function Dashboard({ isAdmin, user }) {
     try {
       const searchParams = new URLSearchParams(window.location.search);
       const tabParam = searchParams.get('tab');
-      const validTabs = ['overview360', 'performance', 'heatmap', 'kpis', 'othermetrics', 'pnlsummary', 'pnldis', 'pnltrend', 'livenews'];
+      const validTabs = ['overview360', 'performance', 'heatmap', 'othermetrics', 'pnlsummary', 'pnldis', 'pnltrend', 'livenews'];
       if (tabParam && validTabs.includes(tabParam)) {
         return tabParam;
       }
@@ -377,23 +376,16 @@ export default function Dashboard({ isAdmin, user }) {
         const getMonthlyEntityNode = (tree, entityKey) => {
           if (!tree || !entityKey) return null;
           const agg = {};
-          let latestHc = null;
-
           applicableMonths.forEach((m) => {
             const mNode = tree[entityKey]?.[fy]?.[scenario]?.[m];
             if (!mNode) return;
             Object.entries(mNode).forEach(([k, val]) => {
-              if (val === null || val === undefined || isNaN(val)) return;
-              if (k === 'Headcount') {
-                latestHc = Number(val);
-                return;
-              }
+              if (val === null || val === undefined || isNaN(val) || k === 'Headcount' || k === 'Learners Count') return;
               if (DATA?.meta?.metric_type?.[k] === 'Percentage' || k.endsWith('%')) return;
               agg[k] = Number(((agg[k] || 0) + Number(val)).toFixed(4));
             });
           });
 
-          if (latestHc !== null) agg['Headcount'] = latestHc;
           if (Object.keys(agg).length === 0) return null;
 
           const totalRev = agg['Revenue'] || 0;
@@ -493,18 +485,13 @@ export default function Dashboard({ isAdmin, user }) {
             const mNode = DATA?.monthly?.bu?.[b]?.[fy]?.[scenario]?.[m];
             if (!mNode) return;
             Object.entries(mNode).forEach(([k, val]) => {
-              if (val === null || val === undefined || isNaN(val)) return;
-              if (k === 'Headcount') {
-                latestHc = (latestHc || 0) + Number(val);
-                return;
-              }
+              if (val === null || val === undefined || isNaN(val) || k === 'Headcount' || k === 'Learners Count') return;
               if (DATA?.meta?.metric_type?.[k] === 'Percentage' || k.endsWith('%')) return;
               aggNode[k] = Number(((aggNode[k] || 0) + Number(val)).toFixed(4));
             });
           });
         });
 
-        if (latestHc !== null) aggNode['Headcount'] = latestHc;
         if (Object.keys(aggNode).length === 0) return null;
 
         const totalRev = aggNode['Revenue'] || 0;
@@ -581,17 +568,12 @@ export default function Dashboard({ isAdmin, user }) {
           const subNode = getScopedDataNode(fy, scenario, subQ, activeFilters);
           if (!subNode) return;
           Object.entries(subNode).forEach(([k, val]) => {
-            if (val === null || val === undefined || isNaN(val)) return;
-            if (k === 'Headcount') {
-              latestHc = Number(val);
-              return;
-            }
+            if (val === null || val === undefined || isNaN(val) || k === 'Headcount' || k === 'Learners Count') return;
             if (DATA?.meta?.metric_type?.[k] === 'Percentage' || k.endsWith('%')) return;
             aggQuarterNode[k] = Number(((aggQuarterNode[k] || 0) + Number(val)).toFixed(4));
           });
         });
 
-        if (latestHc !== null) aggQuarterNode['Headcount'] = latestHc;
         if (Object.keys(aggQuarterNode).length === 0) return null;
 
         const totalRev = aggQuarterNode['Revenue'] || 0;
@@ -897,17 +879,6 @@ export default function Dashboard({ isAdmin, user }) {
       case 'pnltrend':
         return (
           <PnLTrendTab
-            dashboardData={dashboardData}
-            filters={filters}
-            getScopedMetric={getScopedMetric}
-            isAdmin={isAdmin}
-            user={user}
-            isUpdating={isFilterUpdating}
-          />
-        );
-      case 'kpis':
-        return (
-          <KPIsTab
             dashboardData={dashboardData}
             filters={filters}
             getScopedMetric={getScopedMetric}

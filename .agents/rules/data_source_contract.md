@@ -1,15 +1,17 @@
-# Permanent Data Contract & BigQuery Source of Truth
+# Permanent Data Contract & MySQL Source of Truth
 
-This document establishes the permanent, non-negotiable data architecture and source-of-truth rules for the Finance360 Finance Dashboard.
+This document establishes the permanent data architecture and source-of-truth rules for the Finance360 Finance Dashboard.
+All backend operations consume data from MySQL (`finance_data` database) using parameterized queries.
 
 ---
 
-## 1. BigQuery View → Dashboard Mapping (Source of Truth)
+## 1. MySQL Table → Dashboard Mapping (Source of Truth)
 
-Each tab and chart must consume data strictly from its designated BigQuery view. No view substitutions, no mixing, and no recreating BigQuery grouping/business logic in JavaScript.
+Each tab and chart consumes data strictly from its designated MySQL table and schema contract.
+Authoritative tables: `dataai`, `order_intake`, `capex`, `collection`, `users`.
 
 ### Tab: Performance Tiles
-| # | Component | Mapped BigQuery View | Invariant Rules |
+| # | Component | Mapped MySQL Source | Invariant Rules |
 |---|---|---|---|
 | 1 | **Performance Cards** | `dataai` | Existing formulas/calculations in view must be preserved. |
 | 2 | **Revenue Trend** | `RevbizWise` | Stacked period trend by Business Unit. |

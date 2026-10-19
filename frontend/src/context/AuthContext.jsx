@@ -35,7 +35,6 @@ const AuthContext = createContext({
   authLoading: false,
   login: () => { },
   logout: () => { },
-  keycloak: null,
 });
 
 export const AuthProvider = ({ children }) => {
@@ -103,7 +102,6 @@ export const AuthProvider = ({ children }) => {
         authLoading: false,
         login,
         logout,
-        keycloak: null,
       }}
     >
       {children}

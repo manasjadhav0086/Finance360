@@ -38,8 +38,6 @@ const TREND_SUMMARY_ROWS = [
   { key: 'Collection', label: 'Collection', bold: true, hl: 'bg-amber-100 border-l-4 border-l-amber-500 font-bold' },
   { key: 'Capex', label: 'Capex', bold: true, hl: 'bg-blue-100 border-l-4 border-l-blue-500 font-bold' },
   { key: 'Net Cash', label: 'Net Cash', bold: true, hl: 'bg-blue-100 border-l-4 border-l-blue-500 font-bold' },
-  { key: 'Headcount', label: 'Headcount', unit: 'count', bold: true, hl: 'bg-cyan-100 border-l-4 border-l-cyan-600 font-bold' },
-  { key: 'Learners Count', label: 'Learners Count', unit: 'count', bold: true, hl: 'bg-teal-100 border-l-4 border-l-teal-600 font-bold' },
 ];
 
 const TREND_DIS_ROWS = [
@@ -102,8 +100,6 @@ const TREND_DIS_ROWS = [
   { key: 'Collection', label: 'Collection', bold: true, hl: 'bg-amber-100 border-l-4 border-l-amber-500 font-bold' },
   { key: 'Capex', label: 'Capex', bold: true, hl: 'bg-blue-100 border-l-4 border-l-blue-500 font-bold' },
   { key: 'Net Cash', label: 'Net Cash', bold: true, hl: 'bg-blue-100 border-l-4 border-l-blue-500 font-bold' },
-  { key: 'Headcount', label: 'Headcount', unit: 'count', bold: true, hl: 'bg-cyan-100 border-l-4 border-l-cyan-600 font-bold' },
-  { key: 'Learners Count', label: 'Learners Count', unit: 'count', bold: true, hl: 'bg-teal-100 border-l-4 border-l-teal-600 font-bold' },
 ];
 
 function fyShift(fy, delta) {

@@ -24,7 +24,7 @@ export function clearAuthCache(targetIdOrEmail) {
 
 /**
  * Enterprise Standalone Authentication & RBAC Middleware
- * Completely decoupled from Keycloak / external SSO for zero-cost standalone operation.
+ * Independent MySQL-backed authentication for zero-cost operation.
  */
 export const verifyUser = async (req, res, next) => {
   let token = null;

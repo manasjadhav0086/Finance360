@@ -487,7 +487,7 @@ export function getMonthContext(monthName, fyStr = 'FY26') {
 
 /**
  * Extracts a normalized 'YYYY-MM' string from any date representation
- * (Date object, string date 'YYYY-MM-DD', BigQuery date object, ISO timestamp).
+ * (Date object, string date 'YYYY-MM-DD', MySQL DATE object, ISO timestamp).
  */
 export function extractYearMonth(dateVal) {
   if (!dateVal) return null;
