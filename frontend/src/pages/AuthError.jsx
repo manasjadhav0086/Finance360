@@ -44,7 +44,7 @@ export default function AuthError() {
         <div className="mb-6 flex items-center gap-3">
           <div className="h-9 w-9 rounded-xl bg-white p-1.5 shadow-xs border border-[#E4E7EC] flex items-center justify-center shrink-0">
             <img
-              src="/fin/finance360_logo.png"
+              src="/finance360_logo.png"
               alt="Finance360"
               className="h-full w-full object-contain"
             />

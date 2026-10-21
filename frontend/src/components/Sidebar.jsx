@@ -143,7 +143,7 @@ export default function Sidebar({
           <div className="flex items-center gap-3 min-w-0">
             <div className="flex items-center justify-center shrink-0">
               <img
-                src="/fin/finance360_logo.png"
+                src="/finance360_logo.png"
                 alt="Finance360"
                 className="h-8 w-8 object-contain rounded-lg shadow-xs bg-white p-1"
               />

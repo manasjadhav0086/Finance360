@@ -470,7 +470,7 @@ export default function Topbar({
           </button>
           <div className="flex items-center gap-1.5">
             <img
-              src="/fin/finance360_logo.png"
+              src="/finance360_logo.png"
               alt="Finance360"
               className="h-6 w-6 object-contain rounded-md bg-[#F2F4F7] p-0.5"
             />

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Dashboard from './pages/Dashboard';
 import LoginPage from './pages/LoginPage';
@@ -27,7 +27,7 @@ function ProtectedRoute({ children }) {
   }
 
   if (!isLoggedIn) {
-    const currentPath = location.pathname.startsWith('/fin') ? location.pathname.slice(4) : location.pathname;
+    const currentPath = location.pathname.startsWith('/fin') ? location.pathname.slice(4) || '/' : location.pathname;
     const redirectQuery = currentPath && currentPath !== '/' && currentPath !== '/login'
       ? `?redirect=${encodeURIComponent(currentPath + location.search)}`
       : '';
@@ -47,7 +47,7 @@ function LogoutHandler() {
   useEffect(() => {
     logout();
     // Redirect cleanly back to login page
-    window.location.replace('/fin/login');
+    window.location.replace('/login');
   }, [logout]);
 
   return (
@@ -58,6 +58,11 @@ function LogoutHandler() {
       </div>
     </div>
   );
+}
+
+function ResetPasswordRedirect() {
+  const location = useLocation();
+  return <Navigate to={`/reset-password${location.search}`} replace />;
 }
 
 function MainApp() {
@@ -129,6 +134,17 @@ function MainApp() {
           </ProtectedRoute>
         }
       />
+
+      {/* Backward-compatible redirects for legacy /fin/* paths */}
+      <Route path="/fin" element={<Navigate to="/" replace />} />
+      <Route path="/fin/login" element={<Navigate to="/login" replace />} />
+      <Route path="/fin/dashboard" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/fin/change-password" element={<Navigate to="/change-password" replace />} />
+      <Route path="/fin/forgot-password" element={<Navigate to="/forgot-password" replace />} />
+      <Route path="/fin/reset-password" element={<ResetPasswordRedirect />} />
+      <Route path="/fin/auth-error" element={<Navigate to="/auth-error" replace />} />
+      <Route path="/fin/*" element={<Navigate to="/" replace />} />
+
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
@@ -138,7 +154,7 @@ function MainApp() {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter basename="/fin">
+      <BrowserRouter>
         <MainApp />
       </BrowserRouter>
     </AuthProvider>
