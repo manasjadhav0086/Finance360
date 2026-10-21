@@ -398,7 +398,7 @@ router.post('/create', verifyAdmin, async (req, res) => {
       temporaryPassword: defaultUserPass,
     });
 
-    const setupLink = `${emailService.getAppUrl()}/fin/reset-password?token=${rawSetupToken}`;
+    const setupLink = `${emailService.getAppUrl()}/reset-password?token=${rawSetupToken}`;
 
     res.status(201).json({
       message: 'User authorized successfully. First-login password workflow initialized.',
@@ -435,7 +435,7 @@ router.post('/send-invite/:user_id', verifyAdmin, async (req, res) => {
       temporaryPassword: process.env.DEFAULT_USER_PASSWORD || 'Welcome@Finance360',
     });
 
-    const setupLink = `${emailService.getAppUrl()}/fin/reset-password?token=${rawSetupToken}`;
+    const setupLink = `${emailService.getAppUrl()}/reset-password?token=${rawSetupToken}`;
 
     res.json({
       success: true,

@@ -80,7 +80,7 @@ export const emailService = {
     const config = getSmtpConfig();
     const cleanTo = String(to || '').toLowerCase().trim();
     const recipientName = name ? name.trim() : cleanTo.split('@')[0];
-    const resetLink = `${config.appUrl}/fin/reset-password?token=${encodeURIComponent(resetToken)}`;
+    const resetLink = `${config.appUrl}/reset-password?token=${encodeURIComponent(resetToken)}`;
 
     if (!config.isConfigured) {
       console.warn(
@@ -171,8 +171,8 @@ export const emailService = {
     const config = getSmtpConfig();
     const cleanTo = String(to || '').toLowerCase().trim();
     const recipientName = name ? name.trim() : cleanTo.split('@')[0];
-    const loginLink = `${config.appUrl}/fin/login`;
-    const setupLink = `${config.appUrl}/fin/reset-password?token=${encodeURIComponent(setupToken)}`;
+    const loginLink = `${config.appUrl}/login`;
+    const setupLink = `${config.appUrl}/reset-password?token=${encodeURIComponent(setupToken)}`;
     const tempPassword = temporaryPassword || process.env.DEFAULT_USER_PASSWORD || 'Welcome@Finance360';
 
     if (!config.isConfigured) {
