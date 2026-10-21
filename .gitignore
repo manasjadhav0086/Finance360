@@ -88,6 +88,8 @@ secrets/
 *.json
 !package.json
 !package-lock.json
+!vercel.json
+!*/vercel.json
 
 # ------------------------------------------
 # 7. IDE & Editor Files

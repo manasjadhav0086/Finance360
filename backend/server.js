@@ -50,7 +50,27 @@ app.get(`${basePath}/health`, async (req, res) => {
   });
 });
 
-// Startup: Verify MySQL connectivity and initialize tables
+// Root health check fallback
+app.get('/health', async (req, res) => {
+  const dbStatus = await mysqlService.testConnection();
+  res.json({
+    status: dbStatus ? 'OK' : 'DEGRADED',
+    database: 'MySQL',
+    connected: dbStatus,
+    message: 'Server is running'
+  });
+});
+
+// Centralized error handler
+app.use((err, req, res, next) => {
+  console.error('[Internal Error]', err.message);
+  const isProd = process.env.NODE_ENV === 'production';
+  res.status(err.status || 500).json({
+    error: isProd ? 'An internal server error occurred.' : (err.message || 'Internal error'),
+  });
+});
+
+// Startup: Verify MySQL connectivity and initialize tables (local development only)
 async function startServer() {
   try {
     const isConnected = await mysqlService.testConnection();
@@ -77,6 +97,10 @@ async function startServer() {
   }
 }
 
-startServer();
+// In Vercel serverless environments, VERCEL is '1', so we export app directly
+// In local development, startServer() runs the HTTP listener and cache warmup
+if (process.env.VERCEL !== '1') {
+  startServer();
+}
 
 export default app;
